@@ -46,10 +46,11 @@ a <- c(1:36)
 for(i in 1:length(a)){
   closeAllConnections()
   i2 <- a[i]
-  Bio2_routine(occ = occ_list[[1]],
-               drop_out = "IQR",
-               polygon_M = "Data/biogeographic_shp/wwf_ecoregions/wwf_terr_ecos.shp",
-               proj_models = "M-M", 
+  Bio2_routine(occ = occ_list[[3]],
+               drop_out = "freq",
+               polygon_M = "Data/biogeographic_shp/bior_colextent/bior.shp",
+               raster_M = "Data/biogeographic_shp/bior_colextent/bior.tif",
+               proj_models = "M-M",
                dist_MOV = 10, 
                do_future = FALSE,
                clim_vars = "worldclim",
@@ -95,7 +96,7 @@ parallel::parLapply(cl = cl, X = occ_list, fun = rutina16k)
 stopCluster(cl)
 
   ###############
-  occ = occ_list[[1]] # Occurrence data at least must have species name, latitude, longitude, and date columns
+  occ = occ_list[[3]] # Occurrence data at least must have species name, latitude, longitude, and date columns
   clim_vars = "worldclim"
   TGS_kernel = "bias_layer/primates.tif"  
   drop_out = "IQR"

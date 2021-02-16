@@ -48,10 +48,10 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   
   # table of evaluation results
   eval_results <- eval1@results
-  write.csv(eval_results, paste0(folder.sp, "/eval_results/eval_models.csv"), row.names = F)
+  write.csv(eval_results, paste0(folder.sp, "/eval_results_enmeval/eval_models.csv"), row.names = F)
   
   # writing all enmeval modelling objects
-  save(eval1, file = paste0(folder.sp, "/eval_results/eval_models.RData") )
+  save(eval1, file = paste0(folder.sp, "/eval_results_enmeval/eval_models.RData") )
   
   #--------------------
   # 3. select models made by enmeval: meet project evaluation criterion
@@ -82,10 +82,10 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   eval1_models <- eval1@models[which(eval_results$settings == best3$settings)]
   
   #write best models data frame
-  write.csv(best3, paste0(folder.sp, "/eval_results/best_models.csv"), row.names = F)
+  write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
   
   # writing best modelling objects
-  save(eval1_models, file = paste0(folder.sp, "/eval_results/best_models.RData"))  
+  save(eval1_models, file = paste0(folder.sp, "/eval_results_enmeval/best_models.RData"))  
   
   #--------------------
   # 4. current predictions
@@ -217,10 +217,10 @@ do.enmeval2 <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir,
   
   # table of evaluation results
   eval_results <- eval1@results
-  write.csv(eval_results, paste0(folder.sp, "/eval_results/eval_models.csv"), row.names = F)
+  write.csv(eval_results, paste0(folder.sp, "/eval_results_enmeval/eval_models.csv"), row.names = F)
   
   # writing all enmeval modelling objects
-  save(eval1, file = paste0(folder.sp, "/eval_results/eval_models.RData") )
+  save(eval1, file = paste0(folder.sp, "/eval_results_enmeval/eval_models.RData") )
   
   #--------------------
   # 3. select models made by enmeval: meet project evaluation criterion
@@ -251,10 +251,10 @@ do.enmeval2 <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir,
   eval1_models <- eval1@models[which(eval_results$settings == best3$settings)]
   
   #write best models data frame
-  write.csv(best3, paste0(folder.sp, "/eval_results/best_models.csv"), row.names = F)
+  write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
   
   # writing best modelling objects
-  save(eval1_models, file = paste0(folder.sp, "/eval_results/best_models.RData"))  
+  save(eval1_models, file = paste0(folder.sp, "/eval_results_enmeval/best_models.RData"))  
   
   #--------------------
   # 4. current predictions

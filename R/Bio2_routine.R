@@ -21,7 +21,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
                          dist_MOV, clim_vars, dir_clim, dir_other, TGS_kernel, col_sp = NULL, col_lat = NULL,
                          col_lon = NULL, do_future = NULL, extension_vars = NULL, tipo = NULL, crs_proyect = NULL,
                          beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, kept = NULL,
-                         IQR_mtpl = NULL, date_period = NULL, event_date = NULL) {
+                         IQR_mtpl = NULL, date_period = NULL, event_date = NULL, E = NULL) {
 
   # ellipsis arguments
   if (is.null(col_sp)) col_sp <- "acceptedNameUsage" # Which is the species name column
@@ -45,6 +45,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   } # solo minusculas
   if (is.null(kept)) kept <- FALSE # kuenm argument to clean competitor models
   if (is.null(IQR_mtpl)) IQR_mtpl <- 5
+  if (is.null(E)) E <- 10
 
   #--------------------------------------
   # 0. Setup
@@ -310,17 +311,17 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
     linesmsg6.1 <- tryCatch(
       expr = {
-        pathAmaxent <- do.enmeval(
+        PathAmaxent <- do.enmeval(
           occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.class = fc_5.25,
           env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
           env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
           col.lon = col_lon, col.lat = col_lat, proj.models = proj_models
         )
-        paste("\nPath A, number occ less or equal to 25\n Enmeval modelling: ok.")
+        paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
       },
       error = function(error_message) {
         e1 <- conditionMessage(error_message)
-        return(paste0("\nPath A, number occ less or equal to 25 \nEnmeval fail.\nError R: ", e1))
+        return(paste0("\nPath A, number occ less or equal to 25 \nSmall samples Maxent modelling fail.\nError R: ", e1))
       }
     )
 
@@ -354,7 +355,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     # kuenm (Maxent)
     linesmsg6.2 <- tryCatch(
       expr = {
-        pathBMaxent <- do.kuenm(
+        PathBMaxent <- do.kuenm(
           occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
           biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
           maxent.path = getwd(), selection. = "OR_AICc", proj.models = proj_models,
@@ -364,7 +365,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
           # MISSING for Unix and macOs the automated input of biasfile, ready for windows
         ) ####### MISSING
         paste0(
-          "\nKuenm modelling: ok. Check Final models folder in the species directory folder."
+          "\nLarge samples Maxent modelling: ok. Check Final models folder in the species directory folder."
         )
       },
       error = function(error_message) {
@@ -385,7 +386,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
           do.future = do_future, proj.models = proj_models, crs.proyect = crs_proyect
         )
         paste0(
-          "\nBiomod modelling: ok. Check Final_models_biomod folder for predictions."
+          "\nLarge samples Maxent modelling:: ok. Check Final_models_biomod folder for predictions."
         )
       },
       errror = function(error_message) {
@@ -418,7 +419,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   )
 
   #------- tracking file
-  writeLines(text = linesmsg5, con = filelog, sep = "\n")
+  writeLines(text = linesmsg7, con = filelog, sep = "\n")
 
   #--------------------------------------
   # 8. Analisis MOP
