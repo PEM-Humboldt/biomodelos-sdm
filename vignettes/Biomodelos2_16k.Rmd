@@ -1,0 +1,80 @@
+---
+title: "Biomodelos2_16kImplementation"
+author: "Carlos Jair Muñoz Rodriguez, Rafael Moreno Arias, Gabriel Alejandro Perilla Suarez, María Helena Olaya Rodríguez, Cristian Alexander Cruz Rodriguez,  Andrés Felipe Suárez Castro, Luis Hernando Romero Jiménez, Elkin Alexi Noguera Urbano"
+date: "1/2/2021"
+output: html_document
+---
+
+
+# Setup
+
+## Working directory
+
+```{r setup_wd, include=TRUE}
+dir.create("C:/16kproyect", showWarnings = FALSE)
+
+knitr::opts_knit$set(root.dir = "C:/16kproyect/" )
+```
+
+## Packages
+
+```{r setup_source, include=TRUE}
+source("setup.R",  local = knitr::knit_global())
+```
+
+```{r setup_pkg.installing, echo = T, message = F, include= T}
+do.install(x= vector.packages)
+```
+
+
+```{r setup_pkg.load, echo = T, message = F, include= T}
+do.load(x = vector.packages)
+```
+
+### Kuenm installing and loading
+
+```{r setup_pkg.kuenm, echo = T, message = F, include= T}
+if (!require(kuenm)) {
+  devtools::install_github("marlonecobos/kuenm")
+}
+```
+
+## Folder structure
+
+```{r setup_folder.structure, echo = T, message = F, include= T}
+do.folder.structure(clim.datasets = c("worldclim", "chelsa"))
+```
+
+Data located inside the working directory:
+
+*   R: all scripts of Biomodelos 2 routine
+*   bias_layer. Needed (?) MISSING
+*   Data.
+    +   biogeographic_shp: **bior.shp** and **bior.tif**.
+    +   env_vars: 
+        -   other: 
+        -   climatic: worldclim
+    +   primary_occurrences: *registros_primates_set16.csv*
+    +   shapes: (needed ? MISSING)
+
+# Primate Occurrence Set16
+
+```{r occ_data, echo = T, message = F, include= T, warning = F}
+set16_df <- read.csv("Data/primary_occurrences/registros_primates_set16.csv",
+  stringsAsFactors = FALSE, sep = ","
+)
+
+occ_list <- split(set16_df, f = set16_df$acceptedNameUsage)
+```
+
+# Biomodelos 2 Routine
+
+```{r routine_source, include=TRUE}
+source("R/Bio2_routine.R",  local = knitr::knit_global())
+```
+
+Experimental run 1
+
+```{r routine_run, include=TRUE}
+Bio2_routine(occ = occ_list[[1]])
+```
