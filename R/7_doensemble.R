@@ -1,11 +1,12 @@
 do.ensemble <- function(respathA, respathB1, respathB2, do.future,
-                        occ., threshold., col.lon, col.lat, folder.sp){
+                        occ., threshold., col.lon, col.lat, folder.sp,
+                        crs.proyect){
   
   # empty raster to save layers from modeling process 
   ras_current <- raster::stack()
   
   # results from small samples maxent modeling
-  if(!is.null(NULL)){
+  if(!is.null(respathA)){
     ras_current <-  raster::stack(respathA$c_proj, ras_current)
   }
   
@@ -20,6 +21,7 @@ do.ensemble <- function(respathA, respathB1, respathB2, do.future,
     ras_current <- raster::stack(ras_biomod01, ras_current)
   }
   
+    raster::crs(ras_current) <- sp::CRS(crs.proyect)
   # MISSING only one model
   
   # branch for species with only one best model

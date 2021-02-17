@@ -96,7 +96,7 @@ parallel::parLapply(cl = cl, X = occ_list, fun = rutina16k)
 stopCluster(cl)
 
   ###############
-  occ = occ_list[[3]] # Occurrence data at least must have species name, latitude, longitude, and date columns
+  occ = occ_list[[1]] # Occurrence data at least must have species name, latitude, longitude, and date columns
   clim_vars = "worldclim"
   TGS_kernel = "bias_layer/primates.tif"  
   drop_out = "IQR"
@@ -108,7 +108,7 @@ stopCluster(cl)
   dir_other = "Data/env_vars/other/"
   TGS_kernel = "bias_layer/primates.tif"
   
-  do_future = FALSE  
+  do_future = TRUE
 
   raster_M = NULL
   area_G = NULL

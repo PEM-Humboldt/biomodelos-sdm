@@ -213,9 +213,12 @@ dobackPAlist <- function(dat, BiasfilePo) {
   backgPres_logic <- c(rep(FALSE, nrow(BiasfilePo)), rep(TRUE, nrow(dat)))
 
   # 2.2 extract a sample of 10000 coordinates with replace and having in account the sample probability
-
-  sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = 10000, replace = TRUE, prob = BiasfilePo[, 3])
-
+  
+  if(nrow(BiasfilePo) > 10000){
+    sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = 10000, replace = TRUE, prob = BiasfilePo[, 3])
+  }else{
+    sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = ceiling(nrow(BiasfilePo)*0.7), replace = TRUE, prob = BiasfilePo[, 3])  
+  }
   # 2.3 activate each coordinate of the sample taken from the bias file, active = TRUE
 
   backgPres_logic[sBias] <- TRUE

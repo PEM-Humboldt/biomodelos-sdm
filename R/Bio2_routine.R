@@ -315,7 +315,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
           occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.class = fc_5.25,
           env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
           env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
-          col.lon = col_lon, col.lat = col_lat, proj.models = proj_models
+          col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
+          crs.proyect = crs_procrs_proyect#block
         )
         paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
       },
@@ -408,7 +409,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
         respathA = PathAMaxent, respathB1 = PathBMaxent,
         respathB2 = PathBOther, do.future = do_future,
         occ. = M_$occurrences, threshold. = E, col.lon = col_lon,
-        col.lat = col_lat, folder.sp = folder_sp
+        col.lat = col_lat, folder.sp = folder_sp, crs.proyect = crs_proyect
       )
       paste("Ensemble of models: ok")
     },
