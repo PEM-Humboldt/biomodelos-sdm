@@ -25,7 +25,7 @@ Libraries required and their versions
 "kuenm" version 1.1.6
 ```
 
-### onal] Required files
+### Required files
 
 URLs to download required files or templates to download before to run each script.
 
