@@ -51,6 +51,7 @@ clean_rawocc <- function(occ., col.lon, col.lat, spp.col, col.date, date, drop.o
   #}else{
   #  occurrences <- occ.flaged
   #}
+  
   return(occ.flaged)
 }
 
@@ -63,16 +64,33 @@ clean_char_unique <- function(data., sppcol, collon, collat, coldate) {
   
   data.small <- data.[, c(sppcol, collon, collat, coldate)]
   
-  data.small[, sppcol] <- gsub("@[>!¿<#?&/\\]", "", data.[, sppcol])
-  data.small[, collon] <- gsub("@[>!¿<#?&/\\]", "", data.[, collon])
-  data.small[, collat] <- gsub("@[>!¿<#?&/\\]", "", data.[, collat])
-  data.small[, coldate] <- gsub("@[>!¿<#?&/\\]", "", data.[, coldate])
+  data.small <- completeFun(data.small, c(collon, collat))
+  
+  data.small[, sppcol] <- gsub("@[>!¿<#?&/\\]", "", data.small[, sppcol])
+  data.small[, collon] <- gsub("@[>!¿<#?&/\\]", "", data.small[, collon])
+  data.small[, collat] <- gsub("@[>!¿<#?&/\\]", "", data.small[, collat])
+  data.small[, coldate] <- gsub("@[>!¿<#?&/\\]", "", data.small[, coldate])
 
   # making columns to their
   data.small[, collon] <- as.numeric(data.small[, collon])
   data.small[, collat] <- as.numeric(data.small[, collat])
   data.small[, coldate] <- as.Date(data.small[, coldate])
-  data.small <- unique(data.small)
+  
+  data.small <- duplicatedFun(data = data.small, cols = c(collon, collat))
 
   return(data.small)
+}
+
+#----------------------
+
+completeFun <- function(data, cols) {
+  completeVec <- complete.cases(data[, cols])
+  return(data[completeVec, ])
+}
+
+#----------------------
+duplicatedFun <- function(data, cols) {
+  dupVec <- duplicated(data[, cols])
+ # dupIndex <- which(dupVec == TRUE)
+  return(data[!dupVec, ] )
 }

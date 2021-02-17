@@ -45,7 +45,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   } # solo minusculas
   if (is.null(kept)) kept <- FALSE # kuenm argument to clean competitor models
   if (is.null(IQR_mtpl)) IQR_mtpl <- 5
-  if (is.null(E)) E <- 10
+  if (is.null(E)) E <- 5
 
   #--------------------------------------
   # 0. Setup
@@ -286,7 +286,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
         TGS.kernel = TGS_kernel,
         shape.M = M_$shape_M,
         env.M = envars$M,
-        ext = "*.asc"
+        ext = "*.asc",
+        folder.sp = folder_sp
       )
       paste("Bias file development: ok")
     },
@@ -298,7 +299,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   #------- tracking file
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
-
+  
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------

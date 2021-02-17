@@ -21,7 +21,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   M_var_dir <- env.Mdir
   out_dir <- paste0(folder.sp, "/", "candidate_models")
   batch_cal <- "candidate_models"
-  biasarg <- kuenm.path.bias(bias.file = biasfile)
+  biasarg <- kuenm.path.bias(bias.file = biasfile, foldersp = folder.sp)
   wait <- FALSE
   run <- TRUE
   
@@ -123,13 +123,13 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   
   # Erasing .asc files in order to make small the size of species folders
   
-  erase.asc <- list.dirs(paste0(folder.sp, "/final_models_kuenm/current/"), full.names = T, recursive = F)
+  #erase.asc <- list.dirs(paste0(folder.sp, "/final_models_kuenm/current/"), full.names = T, recursive = F)
   
-  for (i in 1:length(erase.asc)) {
-    if (file.exists(erase.asc[i])) {
-      unlink(erase.asc[i], recursive = T, force = T)
-    }
-  }
+  #for (i in 1:length(erase.asc)) {
+  #  if (file.exists(erase.asc[i])) {
+  #    unlink(erase.asc[i], recursive = T, force = T)
+  #  }
+  #}
   
   # writing final models in .tif extensions
   for (i in 1:nlayers(current_proj)) {
@@ -182,8 +182,9 @@ kuenm.occ <- function(data., spname, foldersp, occname) {
 
 #--------------------------
 
-kuenm.path.bias <- function(bias.file = biasfile) {
-  workdir <- getwd()
+kuenm.path.bias <- function(bias.file = biasfile, foldersp = folder.sp) {
+  
+  workdir <- paste0(getwd(),"/", foldersp)
   
   if (.Platform$OS.type == "unix") {
     s1 <- "/"

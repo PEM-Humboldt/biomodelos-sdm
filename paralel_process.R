@@ -41,15 +41,15 @@ source("R/Bio2_routine.R")
 
 all1 <- Sys.time()
 
-a <- c(1:36)
+a <- c(37, 35)
 
 for(i in 1:length(a)){
   closeAllConnections()
   i2 <- a[i]
-  Bio2_routine(occ = occ_list[[3]],
-               drop_out = "freq",
-               polygon_M = "Data/biogeographic_shp/bior_colextent/bior.shp",
-               raster_M = "Data/biogeographic_shp/bior_colextent/bior.tif",
+  Bio2_routine(occ = occ_list[[37]],
+               drop_out = "IQR",
+               polygon_M = "Data/biogeographic_shp/wwf_ecoregions/wwf_terr_ecos.shp",
+               raster_M = NULL,
                proj_models = "M-M",
                dist_MOV = 10, 
                do_future = FALSE,
@@ -96,7 +96,7 @@ parallel::parLapply(cl = cl, X = occ_list, fun = rutina16k)
 stopCluster(cl)
 
   ###############
-  occ = occ_list[[1]] # Occurrence data at least must have species name, latitude, longitude, and date columns
+  occ = occ_list[[37]] # Occurrence data at least must have species name, latitude, longitude, and date columns
   clim_vars = "worldclim"
   TGS_kernel = "bias_layer/primates.tif"  
   drop_out = "IQR"
@@ -108,14 +108,13 @@ stopCluster(cl)
   dir_other = "Data/env_vars/other/"
   TGS_kernel = "bias_layer/primates.tif"
   
-  do_future = TRUE
+  do_future = FALSE
 
   raster_M = NULL
   area_G = NULL
   col_sp = NULL
   col_lat = NULL
   col_lon = NULL
-  #do_future = NULL
   extension_vars = NULL
   tipo = NULL
   crs_proyect = NULL
@@ -127,3 +126,4 @@ stopCluster(cl)
   IQR_mtpl = NULL
   date_period = NULL
   event_date = NULL
+  E = NULL

@@ -15,7 +15,7 @@
 # 4(5): Article 55. This involves creating a probability surface for the study area, with a Kernel
 # Density Estimator (KDE), where higher probability values are assigned to areas with more locality   # points. Then, pseudo-absences are selected probabilistically, based on that surface.
 
-get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G) {
+get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G, folder.sp) {
 
   ## import raster(bias_layer) and crop to the extent and shape of M composed
 
@@ -23,12 +23,15 @@ get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G) {
   
   # Bias in M
   
-  BiasfileM <- round(Biasfile, digits = 0) %>% 
-    raster::crop(shape.M) %>%
+  BiasfileM <- Biasfile %>% raster::crop(shape.M) %>%
     raster::mask(shape.M)
   
+  #round(Biasfile, digits = 0) %>% 
+  
   BiasfileM <- raster::projectRaster(BiasfileM, env.M)
-  raster::writeRaster(BiasfileM, paste0("BiasfileM.asc"), overwrite = T)
+  #BiasfileM[BiasfileM <= 0] <- 0.000009
+  
+  raster::writeRaster(BiasfileM, paste0(folder.sp, "/BiasfileM.asc"), overwrite = T)
   
 #  if(proj.models == "M-G"){
 #    # Bias in G
@@ -49,7 +52,6 @@ get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G) {
 
   data.spat <- sp::SpatialPointsDataFrame(coords = data.[, c(2:3)], data = data.frame(data.[, 1]))
   
-
   # giving a buffer to each occurrence not to get background near to register
 
   data.buffer <- rgeos::gBuffer(data.spat, width = res(env.M)[1])

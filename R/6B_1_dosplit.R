@@ -6,15 +6,27 @@
 dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat) {
   
   # bias sample to create the background for modeling
-  Sbg <- bias.file[
-    sample(
-      x = seq(1:nrow(bias.file)),
-      size = 10000,
-      replace = F,
-      prob = bias.file[, 3]
-    ),
-    1:2
-  ]
+  if(nrow(bias.file) > 10000){
+    Sbg <- bias.file[
+      sample(
+        x = seq(1:nrow(bias.file)),
+        size = 10000,
+        replace = F,
+        prob = bias.file[, 3]
+      ),
+      1:2
+    ]
+  }else{
+    Sbg <- bias.file[
+      sample(
+        x = seq(1:nrow(bias.file)),
+        size = nrow(bias.file)*0.7,
+        replace = F,
+        prob = bias.file[, 3]
+      ),
+      1:2
+    ]
+  }
   
   # enmeval needs a data frame with longitude and latitude coordinates with these names and this
   # order
