@@ -312,12 +312,12 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
     linesmsg6.1 <- tryCatch(
       expr = {
-        PathAmaxent <- do.enmeval(
+        PathAMaxent <- do.enmeval(
           occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.class = fc_5.25,
           env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
           env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
           col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
-          crs.proyect = crs_procrs_proyect#block
+          crs.proyect = crs_proyect #block
         )
         paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
       },
@@ -381,7 +381,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     linesmsg6.3 <- tryCatch(
       expr = {
         PathBOther <- do.biomod(
-          data.splitted = occSplitted, sp.name = sp_name, folder.sp = folder_sp,
+          data.splitted = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
           Biasfile = BiasSp, env.Mdir = paste0(folder_sp, "/M_variables"),
           env.Gdir = paste0(folder_sp, "/G_variables"),
           env.Fdir = paste0(folder_sp, "/F_variables"), nrep.s = 10,
