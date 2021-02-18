@@ -55,15 +55,14 @@ do.folder.structure <- function(clim.datasets) {
 # devtools # Collection of package development tools.
 
 vector.packages <- c(
-  "plyr", "dplyr", "automap",  "rJava", "PresenceAbsence", "devtools", "parallel", "testthat",
-  "CoordinateCleaner", "sf", "rnaturalearth", "rnaturalearthdata", "spThin",
-  "raster", "dismo", "biomod2", "ENMeval","rgdal"
+  "plyr", "dplyr", "automap", "PresenceAbsence", "devtools",
+  "CoordinateCleaner", "sf", "spThin", "raster", "dismo", "biomod2", "ENMeval","rgdal"
   )
 
 
 # Installing
 
-do.install <- function(x, update_pck = F) {
+do.install <- function(x, update.packages = F) {
   tryCatch(
     expr = {
       
@@ -74,7 +73,7 @@ do.install <- function(x, update_pck = F) {
         return(paste0("packages installed ", length(missing_pkgs),",", missing_pkgs))
       }
       
-      if (update_pck == T){
+      if (update.packages == T){
         install.packages(x, repos = "https://www.icesi.edu.co/CRAN/" )
         return(paste0("packages installed "))
       }
