@@ -30,7 +30,7 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
     resul <- (list(shape_M = M, occurrences = occ.br[, c(1:3)]))
   }
 
-  if (drop.out == "IQR") {
+  if (drop.out == "IQR" | drop.out == "any") {
 
     # A. Biogeographic units
 
