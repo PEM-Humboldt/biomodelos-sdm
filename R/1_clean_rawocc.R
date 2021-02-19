@@ -1,5 +1,5 @@
-clean_rawocc <- function(occ., col.lon, col.lat, spp.col, col.date, date, drop.out,
-                         IQR.mtpl, do.clean = do_clean) {
+clean_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, #col.date, date,
+                         IQR.mtpl, do.clean) { 
 
   # Rafael Moreno function
   # Function to clean conflicting, erroneous and duplicate characters
@@ -8,8 +8,8 @@ clean_rawocc <- function(occ., col.lon, col.lat, spp.col, col.date, date, drop.o
     data. = occ.,
     sppcol = spp.col,
     collon = col.lon,
-    collat = col.lat,
-    coldate = col.date
+    collat = col.lat
+#    coldate = col.date
   )
 
   if (do_clean == TRUE) {
@@ -62,23 +62,23 @@ clean_rawocc <- function(occ., col.lon, col.lat, spp.col, col.date, date, drop.o
 # Rafael Moreno function
 # Function to clean conflicting, erroneous and duplicate characters
 
-clean_char_unique <- function(col.id, data., sppcol, collon, collat, coldate) {
+clean_char_unique <- function(col.id, data., sppcol, collon, collat) { #, coldate
 
   # removing conflicting characters in species, longitude, latitude and date columns
 
-  data.small <- data.[, c(col.id, sppcol, collon, collat, coldate)]
+  data.small <- data.[, c(col.id, sppcol, collon, collat)] #, coldate
 
   data.small <- completeFun(data.small, c(collon, collat))
 
   data.small[, sppcol] <- gsub("@[>!¿<#?&/\\]", "", data.small[, sppcol])
   data.small[, collon] <- gsub("@[>!¿<#?&/\\]", "", data.small[, collon])
   data.small[, collat] <- gsub("@[>!¿<#?&/\\]", "", data.small[, collat])
-  data.small[, coldate] <- gsub("@[>!¿<#?&/\\]", "", data.small[, coldate])
+  #data.small[, coldate] <- gsub("@[>!¿<#?&/\\]", "", data.small[, coldate])
 
   # making columns to their
   data.small[, collon] <- as.numeric(data.small[, collon])
   data.small[, collat] <- as.numeric(data.small[, collat])
-  data.small[, coldate] <- as.Date(data.small[, coldate])
+  #data.small[, coldate] <- as.Date(data.small[, coldate])
 
   data.small <- duplicatedFun(data = data.small, cols = c(collon, collat))
 
@@ -98,3 +98,5 @@ duplicatedFun <- function(data, cols) {
   # dupIndex <- which(dupVec == TRUE)
   return(data[!dupVec, ])
 }
+
+# MISSING alternative filtering dates
