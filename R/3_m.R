@@ -1,5 +1,5 @@
 M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.Mov,
-                   drop.out) {
+                   drop.out, do.clean) {
   Polygon. <- sf::st_read(polygon.M)
 
   if (drop.out == "freq") {
@@ -15,8 +15,11 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
     # count and frequency for each bio geographic region
 
     occ.br <- plyr::ddply(occr, "bior", dplyr::mutate, biofreq = length(ID) / nrow(occr))
-    occ.br <- dplyr::filter(.data = occ.br, biofreq > 0.05)
 
+    if (do.clean == TRUE){
+      occ.br <- dplyr::filter(.data = occ.br, biofreq > 0.05) # MISSING let user choice
+    }
+    
     # Create expression to filter the bio geographical with more than 5 % of data
     namreg <- as.expression(unique(occ.br$bior))
 
@@ -27,7 +30,7 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
 
     sf::write_sf(M, paste0(folder.sp, "/shape_M.shp"))
 
-    resul <- (list(shape_M = M, occurrences = occ.br[, c(1:3)]))
+    resul <- (list(shape_M = M, occurrences = subset(occ.br, select = -c(ID, bior, biofreq))))
   }
 
   if (drop.out == "IQR" | drop.out == "any") {
@@ -46,12 +49,16 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
     coord_buff <- st_buffer(coord, dist.Mov / 120)
 
     coord_buff <- st_crop(coord_buff, Polygon.)
-    
+
     # intersecting coordinates with buffer and polgons from shapefile, the data is lost
 
     tryCatch(
-    exp= {bgBio <- Polygon.$geometry[coord_buff] %>% as_Spatial()},
-    error = function(error_message) {stop("points buffer outside polygon")}
+      exp = {
+        bgBio <- Polygon.$geometry[coord_buff] %>% as_Spatial()
+      },
+      error = function(error_message) {
+        stop("points buffer outside polygon")
+      }
     )
     # B. Minimun Convex Polygonum (MCP) with a buffer distance associated to distbuf
 
@@ -81,7 +88,7 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
 ### Function to extract bioregion data and joint it with occurrence dataset
 
 bior_extract <- function(RasPolygon, data., collon, collat) {
-  extc <- raster::extract(RasPolygon, data.[, c(collon,collat)], fun = "simple", df = TRUE)
+  extc <- raster::extract(RasPolygon, data.[, c(collon, collat)], fun = "simple", df = TRUE)
   data.2 <- cbind(data., extc)
   data.2 <- na.omit(data.2)
   as.factor <- data.2[4]
