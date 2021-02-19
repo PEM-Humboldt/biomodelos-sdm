@@ -1,22 +1,22 @@
 do.uniq1km <- function(occ., col.lon, col.lat, sp.col, sp.name, uniq1k.method) {
   
-  if (uniq1k_method == "sq1km") {
+  if (uniq1k.method == "sq1km") {
     dropUniq <- clean_dup(
-      data = occ., longitude = col.lon, latitude = col.lat, threshold = 1 / 120
+      data = occ., longitude = col.lon, latitude = col.lat, threshold = 1 / 120 #missing let user choice
     )
   }
 
-  if (uniq1k_method == "spthin") {
-    dropUniq <- spThin::thin(
+  if (uniq1k.method == "spthin") {
+    thinned <- spThin::thin(
       loc.data = occ., lat.col = col.lat, long.col = col.lon, spec.col = sp.col, thin.par = 1,
       reps = 20, verbose = TRUE, locs.thinned.list.return = TRUE, write.files = FALSE
       # thin.par parameter should be setting according to species natural history
     )
     
-    dropdf <- dropUniq[[1]]
-    dropdf[, sp.col] <- rep(sp.name, nrow(dropdf))
+    thindf <- thinned[[1]]
+    thindf[, sp.col] <- rep(sp.name, nrow(thindf))
     
-    lonlatThinned <- paste0(dropdf$Longitude, dropdf$Latitude)
+    lonlatThinned <- paste0(thindf$Longitude, thindf$Latitude)
     
     lonlatnothinned <- paste0(occ.$decimalLongitude, occ.$decimalLatitude)
     
