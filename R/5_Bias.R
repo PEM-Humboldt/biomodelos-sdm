@@ -15,7 +15,8 @@
 # 4(5): Article 55. This involves creating a probability surface for the study area, with a Kernel
 # Density Estimator (KDE), where higher probability values are assigned to areas with more locality   # points. Then, pseudo-absences are selected probabilistically, based on that surface.
 
-get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G, folder.sp) {
+get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G, folder.sp,
+                       col.lon = col_lon, col.lat = col_lat, col.sp = col_sp) {
 
   ## import raster(bias_layer) and crop to the extent and shape of M composed
 
@@ -50,7 +51,7 @@ get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G, folder.sp
 
   data.spat <- data.
 
-  data.spat <- sp::SpatialPointsDataFrame(coords = data.[, c(2:3)], data = data.frame(data.[, 1]))
+  data.spat <- sp::SpatialPointsDataFrame(coords = data.[, c(col.lon, col.lat)], data = data.frame(data.[, col.sp]))
   
   # giving a buffer to each occurrence not to get background near to register
 
