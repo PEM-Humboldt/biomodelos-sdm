@@ -56,7 +56,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
     RMvalues = beta.mult, fc = toupper(f.class), algorithm = "maxent.jar"
   )
   
-  dir.create(paste0(folder.sp, "/eval_results_enmeval"))
+  dir.create(paste0(folder.sp, "/eval_results_enmeval"), showWarnings = FALSE)
   
   # table of evaluation results
   eval_results <- eval1@results
@@ -71,7 +71,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   
   # selecting from the table the best enmeval models
   # AUC greater than 0.7
-  best1 <- eval_results[which(eval_results$avg.test.AUC >= 0.7), ]
+  best1 <- eval_results[which(eval_results$avg.test.AUC >= 0.7), ] %>% na.omit()
   
   if (nrow(best1) != 0) {
     # model with the OR10 less minimun value
@@ -99,7 +99,6 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   
   eval1_models <- eval1@models[index_select]
   
-  
   #write best models data frame
   write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
   
@@ -115,9 +114,11 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
     # filter best models and predict them in M
     current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.M))
     names(current_proj) <- best3$settings
+    current_proj <- stack(current_proj)
   } else if (proj.models == "M-G") {
     current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.M))
     names(current_proj) <- best3$settings
+    current_proj <- stack(current_proj)
   }
   
   # write current M or G prediction layers
@@ -125,12 +126,12 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   dir.create(paste0(folder.sp, "/final_models_enmeval"), showWarnings = F)
   dir.create(paste0(folder.sp, "/final_models_enmeval/current"), showWarnings = F)
   
-  for (i in 1:length(current_proj)) {
+  for (i in 1:nlayers(current_proj)) {
     Ras <- current_proj[[i]]
     raster::crs(Ras) <- sp::CRS(crs.proyect)
     writeRaster(Ras, paste0(
       folder.sp, "/final_models_enmeval/current/",
-      names(current_proj[i]), ".tif"
+      names(current_proj[[i]]), ".tif"
     ),
     format = "GTiff",
     overwrite = T
@@ -175,9 +176,10 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
       )
     }
     
-    #results if modeling future is active
+    # results in case of do.future = TRUE
     return(list(c_proj = current_proj, f_proj = fut_proj, best = best3))
   }
   
+  # results in case of do.future = FALSE
   return(list(c_proj = current_proj, f_proj = NULL, best = best3))
 }

@@ -12,7 +12,7 @@ clean_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, #col.date, d
 #    coldate = col.date
   )
 
-  if (do_clean == TRUE) {
+  if (do.clean == TRUE) {
     # flagging and removing occurrences failing in political centroids, biod institution coordinates,
     # and in the sea, 0-0 coordinates, and more than +180 or less tan 180 in lon as well +90 or -90
     # latitude

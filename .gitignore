@@ -15,4 +15,8 @@ maxent.jar
 16kproyect.Rproj
 Alouatta.palliata
 Aotus.brumbacki
-AgedaModelado
+AgendaModelado
+R/fixing_biomod.R
+R/fixing_ensambles.R
+R/resolving_errors.R
+timespent2.txt

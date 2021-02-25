@@ -68,7 +68,8 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
     # model with the OR10 less minimun value
     best2 <- best1[which(best1$`Omission_rate_at_5%` == min(best1$`Omission_rate_at_5%`)), ]
   } else {
-    stop("any model met the test criterion")
+    message("any model met the test criterion")
+    return(NULL)
   }
   
   if (nrow(best2) != 0) {
@@ -134,7 +135,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   # writing final models in .tif extensions
   for (i in 1:nlayers(current_proj)) {
     raster::writeRaster(
-      x = current_proj,
+      x = current_proj[[i]],
       filename = paste0(
         folder.sp, "/Final_models_kuenm/current/",
         best3$Model[i], ".tif"
@@ -159,10 +160,13 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
       run = run1, project = proj.mod, G.var.dir = envF, ext.type = extrap
     )
     
+    # results in case of do.future = TRUE
     return(list(c_proj = current_proj, f_proj = NULL, best = best))
   }
   
-  return(list(c_proj = current_proj, f_proj = NULL, best = best))
+  # results in case of do.future = FALSE
+  
+  return(list(c_proj = current_proj, f_proj = NULL, best = best3))
 }
 
 #--------------------------

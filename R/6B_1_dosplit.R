@@ -53,8 +53,6 @@ dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat) {
   write.csv(x = occ_test, file = paste0(folder.sp, "/occurrences/occ_test_biomod.csv"), row.names = F)
 
   write.csv(x = occ_joint, file = paste0(folder.sp, "/occurrences/occ_joint_biomod.csv"), row.names = F)
-
-  return(list(occ_train = occ_train, occ_test = occ_test, occ_joint = occ_joint))
   
   #------------------------------------
   # tracking occurrences with id
@@ -81,4 +79,7 @@ dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat) {
   write.csv(x = occ_train_id, file = paste0(folder.sp, "/occurrences/occ_trainID.csv"), row.names = F)
   write.csv(x = occ_test_id, file = paste0(folder.sp, "/occurrences/occ_testID.csv"), row.names = F)
   
+  # Results
+  
+  return(list(occ_train = occ_train, occ_test = occ_test, occ_joint = occ_joint))
 }

@@ -16,10 +16,10 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
 
     occ.br <- plyr::ddply(occr, "bior", dplyr::mutate, biofreq = length(ID) / nrow(occr))
 
-    if (do.clean == TRUE){
+    if (do.clean == TRUE) {
       occ.br <- dplyr::filter(.data = occ.br, biofreq > 0.05) # MISSING let user choice
     }
-    
+
     # Create expression to filter the bio geographical with more than 5 % of data
     namreg <- as.expression(unique(occ.br$bior))
 
@@ -69,7 +69,7 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
 
     # C. intersecting biogeographic units and MCP to retrieve the composed M
 
-    M <- raster::intersect(bgBio, bgMCPbuf)
+    M <- intersectsp(bgBio, bgMCPbuf)
 
     # write shapefile
 
@@ -125,3 +125,109 @@ bior_extract <- function(RasPolygon, data., collon, collat) {
 
 # Create expression to filter the bio geographical with more than 5 % of data
 # namreg <- as.expression(names(vector_select))
+
+#-------------------------
+# force intersect of raster to check and try to buffer by zero distance to repair not valid
+# auto intersection
+
+intersectsp <- function(x, y) {
+  requireNamespace("rgeos")
+
+  prj <- x@proj4string
+  if (is.na(prj)) prj <- y@proj4string
+  x@proj4string <- CRS(as.character(NA))
+  y@proj4string <- CRS(as.character(NA))
+
+  # 	threshold <- get_RGEOS_polyThreshold()
+  # 	on.exit(set_RGEOS_polyThreshold(threshold))
+  # 	minarea <- min(apply(bbox(union(extent(x), extent(y))), 1, diff) / 1000000, 0.00001)
+  # 	set_RGEOS_polyThreshold(minarea)
+  # 	slivers <- get_RGEOS_dropSlivers()
+  # 	on.exit(set_RGEOS_dropSlivers(slivers))
+  # 	set_RGEOS_dropSlivers(TRUE)
+
+
+  x <- spChFIDs(x, as.character(1:length(x)))
+  y <- spChFIDs(y, as.character(1:length(y)))
+
+  subs <- rgeos::gIntersects(x, y, byid = TRUE)
+  if (sum(subs) == 0) {
+    warning("polygons do not intersect")
+    return(NULL)
+  }
+
+  xdata <- .hasSlot(x, "data")
+  ydata <- .hasSlot(y, "data")
+  dat <- NULL
+  if (xdata & ydata) {
+    nms <- .goodNames(c(colnames(x@data), colnames(y@data)))
+    colnames(x@data) <- xnames <- nms[1:ncol(x@data)]
+    colnames(y@data) <- ynames <- nms[(ncol(x@data) + 1):length(nms)]
+    dat <- cbind(x@data[NULL, , drop = FALSE], y@data[NULL, , drop = FALSE])
+  } else if (xdata) {
+    dat <- x@data[NULL, , drop = FALSE]
+    xnames <- colnames(dat)
+  } else if (ydata) {
+    dat <- y@data[NULL, , drop = FALSE]
+    ynames <- colnames(dat)
+  }
+
+  subsx <- apply(subs, 2, any)
+  subsy <- apply(subs, 1, any)
+
+  int <- rgeos::gIntersection(x[subsx, ], y[subsy, ], byid = TRUE, drop_lower_td = TRUE, 
+                              checkValidity = 2)
+  # 	if (inherits(int, "SpatialCollections")) {
+  # 		if (is.null(int@polyobj)) { # merely touching, no intersection
+  # 			#warning('polygons do not intersect')
+  # 			return(NULL)
+  # 		}
+  # 		int <- int@polyobj
+  # 	}
+  if (!inherits(int, "SpatialPolygons")) {
+    # warning('polygons do not intersect')
+    return(NULL)
+  }
+
+  if (!is.null(dat)) {
+    ids <- do.call(rbind, strsplit(row.names(int), " "))
+    rows <- 1:length(ids[, 1])
+    if (xdata) {
+      idsx <- match(ids[, 1], rownames(x@data))
+      dat[rows, xnames] <- x@data[idsx, ]
+    }
+    if (ydata) {
+      idsy <- match(ids[, 2], rownames(y@data))
+      dat[rows, ynames] <- y@data[idsy, ]
+    }
+    rownames(dat) <- 1:nrow(dat)
+    int <- spChFIDs(int, as.character(1:nrow(dat)))
+    int <- SpatialPolygonsDataFrame(int, dat)
+  }
+
+  if (length(int) > 0) {
+    w <- getOption("warn")
+    on.exit(options("warn" = w))
+    options("warn" = -1)
+
+    j <- rgeos::gIsValid(int, byid = TRUE, reason = FALSE)
+    if (!all(j)) {
+      bad <- which(!j)
+      for (i in bad) {
+        # it could be that a part of a polygon is a sliver, but that other parts are OK
+        a <- disaggregate(int[i, ])
+        if (length(a) > 1) {
+          jj <- which(rgeos::gIsValid(a, byid = TRUE, reason = FALSE))
+          a <- a[jj, ]
+          if (length(a) > 0) {
+            int@polygons[i] <- aggregate(a)@polygons
+            j[i] <- TRUE
+          }
+        }
+      }
+      int <- int[j, ]
+    }
+  }
+  int@proj4string <- prj
+  int
+}

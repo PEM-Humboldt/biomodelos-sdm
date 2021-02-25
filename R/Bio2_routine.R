@@ -48,7 +48,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   if (is.null(IQR_mtpl)) IQR_mtpl <- 5
   if (is.null(E)) E <- 5
   if (is.null(do_clean)) do_clean <- TRUE
-  if (is.null(uniq1k_method)) uniq1k_method <- "sq1km" # spthin
+  if (is.null(uniq1k_method)) uniq1k_method <- "sq1km" # spthin #MISSING user choose the grid
 
 
   #--------------------------------------
@@ -81,7 +81,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
 
-  folder_sp <- paste0(sp_name, ".", tipo)
+  folder_sp <- paste0(sp_name, tipo)
 
   dir.create(folder_sp, showWarnings = F)
 
@@ -112,7 +112,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   #--------------------------------------
   # 1. clean data
   #--------------------------------------
-
+  print("Cleaning data")
+  
   linesmsg1 <- tryCatch(
     exp = {
       occClean <- clean_rawocc(
@@ -163,7 +164,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   #--------------------------------------
   # 2. Unique occurrences to 1 km
   #--------------------------------------
-
+  print("Thining database to 1km")
+  
   linesmsg2 <- tryCatch(
     expr = {
       occ_1km <- do.uniq1km(
@@ -213,7 +215,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   #--------------------------------------
   # 3. Accesible Area.
   #--------------------------------------
-
+  print("Constructing accesible area - M")
+  
   linesmsg3 <- tryCatch(
     expr = {
       M_ <- M_area(
@@ -262,7 +265,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   #--------------------------------------
   # 4. Procesing environmental layers
   #--------------------------------------
-
+  print("Procesing environmental layers")
+  
   linesmsg4 <- tryCatch(
     expr = {
       envars <- process_env.current(
@@ -286,7 +290,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   #--------------------------------------
   # 5. Bias file by species
   #--------------------------------------
-
+  print("Procesing bias layer")
+  
   linesmsg5 <- tryCatch(
     expr = {
       BiasSp <- get_BiasSp(
@@ -314,13 +319,14 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
-
+  
   if (nrow(M_$occurrences) >= 5 & nrow(M_$occurrences) <= 25) {
 
     ##########
     # Path A # Jackknife, enmeval maxent
     ##########
-
+    print("Path A, calibrating and evaluating models")
+    
     linesmsg6.1 <- tryCatch(
       expr = {
         PathAMaxent <- do.enmeval(
@@ -347,7 +353,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     ##########
     # Path B # split in test and train, kuenm maxent, biomod GBM y ANN
     ##########
-
+    
+    print("Path B, calibrating and evaluating models")
+    
     # Split data
     linesmsg6.1 <- tryCatch(
       expr = {
@@ -413,7 +421,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   #--------------------------------------
   # 7. Ensembles
-
+  print("Ensembling models")
+  
   linesmsg7 <- tryCatch(
     expr = {
       ensemble <- do.ensemble(
@@ -429,9 +438,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       return(paste0("Ensemble of models: fail.\nError R: ", e))
     }
   )
-  rm(Bins, BinsDf, BinsDF, BinsRas, binT, data., dfspp, envars, listi)
-
-
+  
   #------- tracking file
   writeLines(text = linesmsg7, con = filelog, sep = "\n")
 
@@ -475,8 +482,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   erase <- c(
     paste0(folder_sp, "/F_variables"), # paste0(folder_sp,"models"),
-    # paste0(folder_sp,"proj_current_cal"),paste0(folder_sp,".BIOMOD_DATA"),
-    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/indEVA.csv")
+    paste0(folder_sp,"proj_current_cal"), #paste0(folder_sp,".BIOMOD_DATA"),
+    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/indEVA.csv"), 
+    paste0(folder_sp, "/BiasfileM.asc"), paste0(folder_sp, "/maxent.cache")
   )
   for (i in 1:length(erase)) {
     if (file.exists(erase[i])) {
@@ -492,3 +500,4 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   return(c("ok", sp_name))
 }
+

@@ -23,35 +23,41 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
   )
 
   dir.create(paste0(folder.sp, "/eval_results_biomod"))
-  save(current_train, file = paste0(folder.sp, "/eval_results_biomod/eval_models.RData"))
 
   #---------------------------
   # 3. Evaluation of calibrated models
   #---------------------------
 
-  # E = 5: MISSING write thresholds
+  # E = 5: MISSING threshold election by user
   eval1 <- do.GIndeva(
     data.splitted = data.splitted, predict = current_train$predictions, mask_points = Biasfile,
     foldersp = folder.sp
   )
 
   write.csv(eval1, paste0(folder.sp, "/eval_results_biomod/eval_models.csv"), row.names = F)
-
+  
   #---------------------------
   # 4. Selecting best models
   #---------------------------
 
   # selecting from the table the best biomod models
   # partial roc and significance
-  best1 <- eval1[which(eval1$rocptest >= 1 & eval1$pval_rocp <= 0.05), ]
-
+  best1 <- eval1[which(eval1$pval_rocp <= 0.05), ]
+  best1 <- best1[which(best1$rocptest >= 1), ]
+  
   # omission rate criterion
   if (nrow(best1) != 0) {
     # model with the OR10 less minimum value
-    best2 <- best1[which(best1$OR == min(best1$OR) & best1$pbinomial <= 0.05), ]
+    best2 <- best1[which(best1$pbinomial <= 0.05), ]
+    best2 <- best2[which(best2$OR == min(best2$OR)), ]
   } else {
     stop("any model met the test criterion")
   }
+  
+  if(nrow(best2) == 0){
+    message("any model met the test criterion")
+    return(NULL)
+  } 
 
   # write table of best models
   write.csv(best2, paste0(folder.sp, "/eval_results_biomod/best_models.csv"), row.names = F)
@@ -67,6 +73,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
   
   selected <- current_train$predictions[[index]]
   selected <- selected/1000 # from scale to 0-1000 to more traditional 0-1
+  
   # Biomod models have a long name, best to deal with shorter
   short_name <- gsub(paste0(sp.name, "._PA1_RUN"), "rep", x = best2$model.name)
 
@@ -79,7 +86,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
 
   for (i in 1:nlayers(selected)) {
     raster::writeRaster(
-      x = selected,
+      x = selected[[i]],
       filename = paste0(
         folder.sp, "/Final_models_biomod/current/",
         short_name[[i]], ".tif"
@@ -111,7 +118,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
 
     for (i in 1:nlayers(predictionsG)) {
       raster::writeRaster(
-        x = predictionsG,
+        x = predictionsG[[i]],
         filename = paste0(
           folder.sp, "/Final_models_biomod/current_G/",
           short_name[[i]], ".tif"
@@ -148,8 +155,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
     })
     
     dir.create(paste0(folder.sp, "/final_models_biomod/future"), showWarnings = FALSE)    
-    save(fut_bio_proj, file = paste0(folder.sp, "/final_models_biomod/future/future_proj.RData"))
-
+    
     predictionsF <- list()
 
     for (i in 1:length(fut_bio_proj)) {
@@ -173,9 +179,13 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
         )
       }
     }
-
+    
+    #results in case of do.future = TRUE
+      
     return(list(c_proj = selected, f_proj = fut_proj, best = best2))
   }
+  
+  # results in case of do.future = FALSE
   return(list(c_proj = selected, f_proj = NULL, best = best2))
 }
 
