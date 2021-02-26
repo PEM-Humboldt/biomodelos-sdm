@@ -20,7 +20,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   occtra <- paste0(folder.sp, "/occurrences/occ_train_kuenm.csv")
   M_var_dir <- env.Mdir
   out_dir <- paste0(folder.sp, "/", "candidate_models")
-  batch_cal <- "candidate_models"
+  batch_cal <- paste0(folder.sp, "candidate_models")
   biasarg <- kuenm.path.bias(bias.file = biasfile, foldersp = folder.sp)
   wait <- FALSE
   run <- TRUE
@@ -89,7 +89,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   #--------------------
   
   # preparing arguments for final models function Kuenm_ceval()
-  batch_fin <- "final_models"
+  batch_fin <- paste0(folder.sp, "final_models")
   rep_n <- 1
   rep_type <- "Bootstrap"
   jackknife <- FALSE
