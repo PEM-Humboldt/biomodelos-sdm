@@ -66,11 +66,24 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
       dat = occ., collon = col.lon, collat = col.lat,
       distMov = dist.Mov
     )
-
+    
     # C. intersecting biogeographic units and MCP to retrieve the composed M
-
-    M <- intersectsp(bgBio, bgMCPbuf)
-
+    
+    # some features cannot allow a normal intersection, so is imperative to fix the layer or work around, this is 
+    # a work around in which the self intersection is fixing (the first chunk)
+    M <- tryCatch(
+      exp = {intersectsp(bgBio, bgMCPbuf, valid = 2)
+            },
+      warning = function(w) {
+        print("non fixing self intersection") 
+        intersectsp(bgBio, bgMCPbuf, valid = 0)
+        },
+      error = function(error_message){
+        stop("imposible fixing self intersection")
+      }
+    )
+    
+    
     # write shapefile
 
     raster::shapefile(
@@ -130,7 +143,7 @@ bior_extract <- function(RasPolygon, data., collon, collat) {
 # force intersect of raster to check and try to buffer by zero distance to repair not valid
 # auto intersection
 
-intersectsp <- function(x, y) {
+intersectsp <- function(x, y, valid) {
   requireNamespace("rgeos")
 
   prj <- x@proj4string
@@ -176,7 +189,7 @@ intersectsp <- function(x, y) {
   subsy <- apply(subs, 1, any)
 
   int <- rgeos::gIntersection(x[subsx, ], y[subsy, ], byid = TRUE, drop_lower_td = TRUE, 
-                              checkValidity = 2)
+                              checkValidity = valid)
   # 	if (inherits(int, "SpatialCollections")) {
   # 		if (is.null(int@polyobj)) { # merely touching, no intersection
   # 			#warning('polygons do not intersect')
