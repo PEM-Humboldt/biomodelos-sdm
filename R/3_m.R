@@ -1,90 +1,20 @@
 M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.Mov,
-                   drop.out, do.clean) {
-  Polygon. <- sf::st_read(polygon.M)
+                   drop.out, MCPbuffer, polygon.select, pointsBuffer) {
 
-  if (drop.out == "freq") {
-    if (is.null(raster.M)) {
-      stop("Raster is necesary to compute biogeohraphical frequencies")
-    }
-    # reading bio-geographic data
-    Ras. <- raster::raster(raster.M)
+  # method 1: accessible area by buffer at points controlled by dist.Mov
 
-    # extract bio region data and joint it with occurrence dat aset
-    occr <- bior_extract(RasPolygon = Ras., data. = occ., collon = col.lon, collat = col.lat)
+  if (polygon.select == FALSE & MCPbuffer == FALSE & pointsBuffer == TRUE) {
+    coord <- occ.
 
-    # count and frequency for each bio geographic region
-
-    occ.br <- plyr::ddply(occr, "bior", dplyr::mutate, biofreq = length(ID) / nrow(occr))
-
-    if (do.clean == TRUE) {
-      occ.br <- dplyr::filter(.data = occ.br, biofreq > 0.05) # MISSING let user choice
-    }
-
-    # Create expression to filter the bio geographical with more than 5 % of data
-    namreg <- as.expression(unique(occ.br$bior))
-
-    # Filtering bioregions for M area
-    M <- Polygon. %>%
-      dplyr::filter(BIOME_NUM %in% c(namreg)) %>%
-      dplyr::select(BIOREG)
-
-    sf::write_sf(M, paste0(folder.sp, "/shape_M.shp"))
-
-    resul <- (list(shape_M = M, occurrences = subset(occ.br, select = -c(ID, bior, biofreq))))
-  }
-
-  if (drop.out == "IQR" | drop.out == "any") {
-
-    # A. Biogeographic units
-
-    crs_polygon <- st_crs(Polygon.)
-
-    # convert data to spatial object
-    coord <- occ. %>%
+    coord_sf <- coord %>%
       dplyr::select(col.lon, col.lat) %>%
-      st_as_sf(coords = c(col.lon, col.lat), crs = crs_polygon) %>%
-      st_transform(crs_polygon)
+      st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
+      st_transform(st_crs(Polygon.))
 
-    # buffer to every ocurrence
-    coord_buff <- st_buffer(coord, dist.Mov / 120)
-
-    coord_buff <- st_crop(coord_buff, Polygon.)
-
-    # intersecting coordinates with buffer and polgons from shapefile, the data is lost
-
-    tryCatch(
-      exp = {
-        bgBio <- Polygon.$geometry[coord_buff] %>% as_Spatial()
-      },
-      error = function(error_message) {
-        stop("points buffer outside polygon")
-      }
-    )
-    # B. Minimun Convex Polygonum (MCP) with a buffer distance associated to distbuf
-
-    bgMCPbuf <- do.MCP(
-      dat = occ., collon = col.lon, collat = col.lat,
-      distMov = dist.Mov
-    )
-    
-    # C. intersecting biogeographic units and MCP to retrieve the composed M
-    
-    # some features cannot allow a normal intersection, so is imperative to fix the layer or work around, this is 
-    # a work around in which the self intersection is fixing (the first chunk)
-    M <- tryCatch(
-      exp = {intersectsp(bgBio, bgMCPbuf, valid = 2)
-            },
-      warning = function(w) {
-        print("non fixing self intersection") 
-        intersectsp(bgBio, bgMCPbuf, valid = 0)
-        },
-      error = function(error_message){
-        stop("imposible fixing self intersection")
-      }
-    )
-    
-    
-    # write shapefile
+    # in case of buffer to every occurrence with dist.Mov
+    M <- st_buffer(coord_sf, dist.Mov / 120) %>%
+      st_union() %>%
+      as_Spatial()
 
     raster::shapefile(
       x = M,
@@ -92,10 +22,135 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
       overwrite = T
     )
 
-    resul <- (list(shape_M = M, occurrences = occ.))
+    return(result <- (list(shape_M = M, occurrences = coord)))
   }
-  return(resul)
+
+  # method 2: when you don't want to select your accesibe area trhough features from a bio geographical
+  # region, nor dropping outliers by bio geographical frequency in those features. It makes a Minimum
+  # convex polygon around the points with a buffer controlled by dist.Mov (in kilometers). It could use cleaned or not cleaned data.
+
+  if (polygon.select == FALSE & MCPbuffer == TRUE) {
+    M <- do.MCP(
+      dat = occ., collon = col.lon, collat = col.lat,
+      distMov = dist.Mov
+    )
+
+    coord <- occ.
+
+    raster::shapefile(
+      x = M,
+      filename = paste0(folder.sp, "/", "shape_M"),
+      overwrite = T
+    )
+
+    return(result <- (list(shape_M = M, occurrences = coord)))
+  }
+
+  # method 3: when you want to select your accessible area through features from a bio geographical
+  # region. You need the directory of the file polygon.M and depending of the sub method, a raster layer
+  # of it. Sub methods: A. selecting features by intersecting points with a buffer. This buffer
+  #                        ensures a full layer without spaces between features.
+  #                     B. selecting features by intersecting points without a buffer but
+  #                        excluding features with points in a frequency count less than 0.05
+  #                        (It is only possible if you use a raster layer of the bio geographical
+  #                         shape file to compute frequencies)
+  #
+
+  # bio geographical polygon selection
+  if (polygon.select == TRUE) {
+    if (is.null(polygon.M)) {
+      stop("You need a polygon shape file to select features")
+    }
+    Polygon. <- sf::st_read(polygon.M)
+
+    # convert occurrence data to spatial object
+    coord <- occ.
+
+    if (drop.out != "freq" & pointsBuffer == TRUE) {
+      # in case of buffer to every occurrence with dist.Mov
+
+      coord_sf <- coord %>%
+        dplyr::select(col.lon, col.lat) %>%
+        st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
+        st_transform(st_crs(Polygon.))
+
+      coord_buff <- st_buffer(coord_sf, dist.Mov / 120)
+
+      # cropping buffer with polygon extension to ensure parsimony
+      coord_buff <- st_crop(coord_sf, Polygon.)
+    
+    # intersecting coordinates with buffer and polygons from shape file, the data is lost
+
+    tryCatch(
+      exp = {
+        M <- Polygon.$geometry[coord_buff] %>% as_Spatial()
+      },
+      error = function(error_message) {
+        stop("points outside polygon")
+      }
+    )
+    }
+    if (drop.out == "freq") {
+      # sub method B (frequency activate)
+      if (is.null(raster.M)) {
+        stop("Raster is necesary to compute biogeohraphical frequencies")
+      }
+
+      # reading raster of biogeographical shape file to calculate frequencies
+      Ras. <- raster::raster(raster.M)
+
+      # extract bio region data and joint it with occurrence dat aset
+      occr <- bior_extract(RasPolygon = Ras., data. = occ., collon = col.lon, collat = col.lat)
+
+      # count and frequency for each bio geographic region
+
+      occ.br <- plyr::ddply(occr, "bior", dplyr::mutate, biofreq = length(ID) / nrow(occr))
+
+      # in case of cleaning from frequency table of biogeographical regions
+
+      occ.br <- dplyr::filter(.data = occ.br, biofreq > 0.05) # MISSING let user choice
+
+      # Create expression to filter the bio geographical with more than 5 % of data
+      namreg <- as.expression(unique(occ.br$bior))
+
+      coord <- subset(occ.br, select = -c(ID, bior, biofreq))
+
+      # Filtering bio regions for M area
+      M <- Polygon. %>%
+        dplyr::filter(BIOME_NUM %in% c(namreg)) %>%
+        dplyr::select(BIOREG) %>%
+        as(Class = "Spatial")
+    }
+    
+    if (MCPbuffer == TRUE) {
+      MCPbuf <- do.MCP(
+        dat = coord, collon = col.lon, collat = col.lat,
+        distMov = dist.Mov
+      )
+  
+      M <- tryCatch(
+        exp = {
+          intersectsp(x = M, y = MCPbuf, valid = 2)
+        },
+        error = function(error_message) {
+          stop("imposible fixing self intersection")
+        }
+      )
+    }
+    # write shape file either bio geographical regions selected (cleaning or not by frequencies) or
+    # biogeographical regions selected cutted with MCP
+    raster::shapefile(
+      x = M,
+      filename = paste0(folder.sp, "/", "shape_M"),
+      overwrite = T
+    )
+
+    return(result <- (list(shape_M = M, occurrences = coord)))
+  }
+
+  # in case of want a minimum convex polygon cutting the bio geographical features selected
 }
+
 
 #--------------------------
 ### Function to extract bioregion data and joint it with occurrence dataset
@@ -107,37 +162,6 @@ bior_extract <- function(RasPolygon, data., collon, collat) {
   as.factor <- data.2[4]
   return(data.2)
 }
-
-# In case of malfunction of ddply, mutate and filter in line 12 and 13
-
-# count and frequency for each bio geographic region
-# solution with base R
-# vector_freq <- c()
-
-# for (i in 1:length(unique(data_br$bior))) {
-#  index <- unique(data_br$bior)[i]
-#  count_i <- length(which(data_br$bior == index))
-#  count_all <- nrow(data_br)
-#  freq_bior <- count_i / count_all
-#  vector_freq[i] <- freq_bior
-# }
-
-# names(vector_freq) <- unique(data_br$bior)
-
-# which regions have a frequency greater than 5%
-# vector_select <- vector_freq[vector_freq > 0.05]
-
-# filter occurrences in each selected region
-# data_br2 <- data.frame()
-# for (i in 1:length(names(vector_select))) {
-#  select <- as.numeric(names(vector_select)[i])
-#  index <- which(data_br$bior == select)
-#  data_br2i <- data_br[index, c(1:3)]
-#  data_br2 <- rbind(data_br2, data_br2i)
-# }
-
-# Create expression to filter the bio geographical with more than 5 % of data
-# namreg <- as.expression(names(vector_select))
 
 #-------------------------
 # force intersect of raster to check and try to buffer by zero distance to repair not valid
@@ -188,8 +212,10 @@ intersectsp <- function(x, y, valid) {
   subsx <- apply(subs, 2, any)
   subsy <- apply(subs, 1, any)
 
-  int <- rgeos::gIntersection(x[subsx, ], y[subsy, ], byid = TRUE, drop_lower_td = TRUE, 
-                              checkValidity = valid)
+  int <- rgeos::gIntersection(x[subsx, ], y[subsy, ],
+    byid = TRUE, drop_lower_td = TRUE,
+    checkValidity = valid
+  )
   # 	if (inherits(int, "SpatialCollections")) {
   # 		if (is.null(int@polyobj)) { # merely touching, no intersection
   # 			#warning('polygons do not intersect')
