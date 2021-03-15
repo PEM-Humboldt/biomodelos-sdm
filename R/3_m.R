@@ -8,8 +8,8 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
 
     coord_sf <- coord %>%
       dplyr::select(col.lon, col.lat) %>%
-      st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
-      st_transform(st_crs(Polygon.))
+      st_as_sf(coords = c(col.lon, col.lat), crs = st_crs("EPSG:4326")) %>%
+      st_transform(st_crs("EPSG:4326"))
 
     # in case of buffer to every occurrence with dist.Mov
     M <- st_buffer(coord_sf, dist.Mov / 120) %>%
