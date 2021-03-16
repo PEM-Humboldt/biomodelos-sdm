@@ -118,7 +118,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
     run = run1, project = proj.mod, G.var.dir = G.var, ext.type = extrap
   )
   
-  current_proj <- list.files( path = paste0(mod_dir, "/"), pattern = ".asc",full.names = T, include.dirs = T, recursive = T)
+  current_proj <- list.files( path = paste0(mod_dir, "/"), pattern = ".asc$",full.names = T, include.dirs = T, recursive = T)
   current_proj <- raster::stack(current_proj)
   names(current_proj) <- best3$Model
   
