@@ -1,29 +1,11 @@
-# title: "Biomodelos 2 routine"
-# date: "1/02/2021"
-
-#--------------------------------------
-
-# occ = x, # Occurrence data at least must have species name, latitude, longitude, and date columns
-# drop_out = "IQR", # "freq", # "IQR"
-# polygon_M, # "Data/biogeographic_shp/wwf_ecoregions/wwf_terr_ecos.shp", # Spatial data to construct M composed, must be inside project file
-# raster_M = NULL, # "Data/biogeographic_shp/bior_colextent/bior.tif", #MISSING solo se "prende cuando drop out es freq"
-# proj_models = "M-M", # "M-G
-# area_G = NULL, # "Data/biogeographic_shp/areaG.tif", # MISSING solo se prende cuando projection es M-G, MISSING puede ser raster o shape
-# dist_MOV, # = 10, # Movement distance of the group
-# clim_vars, # = "worldclim", # Which climatic data use (Chelsa, worldclim, other "MISSING")
-# dir_clim = "Data/env_vars/", # Folder worldclim data,   "Data/present/chelsa/", inside folder project
-# dir_other = "Data/env_vars/other",
-# TGS_kernel, # = "bias_layer/primates.tif", # Where is the bias file, in case of do.bias active
-
-## Rutina
-
-Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models, area_G = NULL,
-                         dist_MOV, clim_vars, dir_clim, dir_other, TGS_kernel, col_sp = NULL, col_lat = NULL,
-                         col_lon = NULL, do_future = NULL, extension_vars = NULL, tipo = NULL, crs_proyect = NULL,
-                         beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, kept = NULL,
-                         IQR_mtpl = NULL, E = NULL, do_clean = NULL, uniq1k_method = NULL # date_period = NULL, event_date = NULL
+Bio2Mass_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models, area_G = NULL,
+                             dist_MOV, clim_vars, dir_clim, dir_other, TGS_kernel, col_sp = NULL, col_lat = NULL,
+                             col_lon = NULL, do_future = NULL, extension_vars = NULL, tipo = NULL, crs_proyect = NULL,
+                             beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, kept = NULL,
+                             IQR_mtpl = NULL, E = NULL, do_clean = NULL, uniq1k_method = NULL,
+                             MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL
 ) {
-
+  
   # ellipsis arguments
   if (is.null(col_sp)) col_sp <- "acceptedNameUsage" # Which is the species name column
   if (is.null(col_lat)) col_lat <- "decimalLatitude" # Which is the latitude coordinate name column
@@ -49,14 +31,16 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   if (is.null(E)) E <- 5
   if (is.null(do_clean)) do_clean <- TRUE
   if (is.null(uniq1k_method)) uniq1k_method <- "sq1km" # spthin #MISSING user choose the grid
-
-
+  if (is.null(MCP_buffer)) MCP_buffer <- TRUE
+  if (is.null(polygon_select)) polygon_select <- TRUE
+  if (is.null(points_Buffer)) points_Buffer <- TRUE
+  
   #--------------------------------------
   # 0. Setup
   #--------------------------------------
-
+  
   # 0.1 Calling individual functions
-
+  
   source("R/1_clean_rawocc.R")
   source("R/2_uniq1km.R")
   source("R/3_m.R") ## Overlaping occurrences, biogeographic units and Minimun Convex Polygon (MCP) by ENMeval: https://tinyurl.com/y3u3c6fj
@@ -70,34 +54,34 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   source("R/7_doensemble.R")
   source("R/give.msg.time.R")
   source("R/doDE.MCP.R")
-
+  
   # 0.2 Starting time
-
+  
   time1 <- Sys.time()
-
+  
   # 0.3 set and create species folder
-
+  
   # extract the name of the species
-
+  
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
-
+  
   folder_sp <- paste0(sp_name, tipo)
-
+  
   dir.create(folder_sp, showWarnings = F)
-
+  
   # 0.4 writing occurrences data withouth processing, aka raw occurrences.
-
+  
   dir.create(paste0(folder_sp, "/occurrences"), showWarnings = F)
-
+  
   occ$occ.ID <- 1:nrow(occ)
-
+  
   write.csv(occ, paste0(folder_sp, "/occurrences/occ_raw.csv"), row.names = F)
-
-
+  
+  
   # ----- tracking file
-
+  
   filelog <- file(paste0(folder_sp, "/log_file.txt"), "w")
-
+  
   linesmsg0 <- paste0(
     time1, "\n", "Species name: ", sp_name, "\n", "M shapefile: ", polygon_M, "\n",
     "Movement distance vector: ", dist_MOV, " km\n", # "Dates to filter: ", date_period,
@@ -106,9 +90,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     "Experimental type:", tipo, "\n", "Raw occurrences: ", nrow(occ),
     "\n", "Outliers manage by ", drop_out, "\nCleaning occurrences", do_clean
   )
-
+  
   writeLines(text = linesmsg0, con = filelog, sep = "\n")
-
+  
   #--------------------------------------
   # 1. clean data
   #--------------------------------------
@@ -129,17 +113,17 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       return(paste0("Clean occurrences: fail.\nError R: ", e))
     }
   )
-
+  
   #------- tracking file
   writeLines(
     text = linesmsg1,
     con = filelog, sep = "\n"
   )
-
+  
   ### -----------------------------
   # ask5occ
   ### -----------------------------
-
+  
   try(
     exp = {
       if (nrow(occClean) <= 5) {
@@ -160,7 +144,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       }
     }
   )
-
+  
   #--------------------------------------
   # 2. Unique occurrences to 1 km
   #--------------------------------------
@@ -180,15 +164,15 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       return(paste0("Dropping bias: fail.\nError R: ", e))
     }
   )
-
+  
   #------- tracking file
-
+  
   writeLines(text = linesmsg2, con = filelog, sep = "\n")
-
+  
   ### -----------------------------
   # ask5occ
   ### -----------------------------
-
+  
   try(
     exp = {
       if (nrow(occ_1km) <= 5) {
@@ -210,8 +194,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       }
     }
   )
-
-
+  
+  
   #--------------------------------------
   # 3. Accesible Area.
   #--------------------------------------
@@ -222,8 +206,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       M_ <- M_area(
         polygon.M = polygon_M, raster.M = raster_M, occ. = occ_1km, col.lon = col_lon,
         col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV, drop.out = drop_out,
-        do.clean = do_clean
+        MCPbuffer = MCP_buffer, polygon.select = polygon_select, pointsBuffer = points_Buffer
       )
+      
       write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
       paste("\nAccesible area: ok.")
     },
@@ -232,15 +217,15 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       return(paste0("\nAccesible area: fail.\nError R: ", e))
     }
   )
-
+  
   #------- tracking file
-
+  
   writeLines(text = linesmsg3, con = filelog, sep = "\n")
-
+  
   ### -----------------------------
   # ask5occ
   ### -----------------------------
-
+  
   try(
     exp = {
       if (nrow(M_$occurrences) <= 5) {
@@ -395,7 +380,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     )
     writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
 
-    # Biomod (A<NN, GBM)
+    # Biomod (ANN, GBM)
     linesmsg6.3 <- tryCatch(
       expr = {
         PathBOther <- do.biomod(
@@ -441,6 +426,40 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   
   #------- tracking file
   writeLines(text = linesmsg7, con = filelog, sep = "\n")
+
+  #--------------------------------------
+  # 8. Analisis MOP
+
+  # linesmsg8 <- tryCatch(
+  #  expr = {
+  #    if (do_future == TRUE) {
+  #      kuenm_mmop(
+  #        G.var.dir = paste0(folder_sp, "/F_variables"), is.swd = FALSE,
+  #        M.var.dir = paste0(folder_sp, "/M_variables"),
+  #        sets.var = c(rep(Set, 18), seq(1, 18, 1)),
+  #        out.mop = paste0(folder_sp, "/mop")
+  #      )
+  #    }
+  #    if (proj_models == "M-G") {
+  #      kuenm_mmop(
+  #        G.var.dir = paste0(folder_sp, "/G_variables"), is.swd = FALSE,
+  #        M.var.dir = paste0(folder_sp, "/M_variables"),
+  #        sets.var = "Set_1",
+  #        out.mop = paste0(folder_sp, "/mop")
+  #      )
+  #    }
+  #    paste("\nAnalisis MOP: ok.")
+  #  },
+  #  error = function(error_message) {
+  #    e1 <- conditionMessage(error_message)
+  #    return(paste("\nAnalisis MOP: fail.\nError R: ", e1))
+  #    close(filelog)
+  #  }
+  # )
+
+  # writeLines(text = paste(linesmsg6.1, con = filelog, sep = "\n"))
+
+
 
   #--------------------------------------
   # End

@@ -43,7 +43,8 @@ clean_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, #col.date, d
       }
     }
     rm(flags)
-    # fitting occurrences date with raster date
+
+    # Module for fitting occurrences date with raster date
 
     # dates <- occ.flaged[, col.date]
     # index.Date <- which(is.na(dates) | dates < date)
