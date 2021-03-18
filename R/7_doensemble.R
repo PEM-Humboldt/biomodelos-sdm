@@ -1,10 +1,12 @@
-do.ensemble <- function(respathA, respathB1, respathB2, do.future,
+do.ensemble <- function(reslist, do.future,
                         occ., threshold., col.lon, col.lat, folder.sp,
                         crs.proyect) {
 
+  length(reslist)
+  
   # ensemble from small samples maxent modeling if exist
   if (!is.null(respathA)) {
-    pathA_current <- respathA$c_proj
+    pathA_current <- raster("Coendou.vestitus/final_models_sdmtune/current/model_fc_q_reg_0.5_bias.tif")
     raster::crs(pathA_current) <- sp::CRS(crs.proyect)
     ensA <- currentEns_byAlg(
       ras.Stack = pathA_current, data. = occ., collon = col.lon, collat = col.lat,

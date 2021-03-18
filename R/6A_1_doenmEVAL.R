@@ -1,32 +1,55 @@
 do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, env.Fdir, do.future,
-                       folder.sp, col.lon, col.lat, proj.models, partitionMethod, crs.proyect) {
+                       folder.sp, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias) {
 
   #--------------------
   # 1. Formatting background and occurrences to enmeval package
   #--------------------
   
   # bias sample to create the background for modeling
-  if(nrow(bias.file) > 10000){
-  Sbg <- bias.file[
-    sample(
-      x = seq(1:nrow(bias.file)),
-      size = 10000,
-      replace = F,
-      prob = bias.file[, 3]
-    ),
-    1:2
-    ]
+  if(use.bias == TRUE){
+    if(nrow(bias.file) > 10000){
+      Sbg <- bias.file[
+        sample(
+          x = seq(1:nrow(bias.file)),
+          size = 10000,
+          replace = F,
+          prob = bias.file[, 3]
+        ),
+        1:2
+      ]
+    }else{
+      Sbg <- bias.file[
+        sample(
+          x = seq(1:nrow(bias.file)),
+          size = ceiling(nrow(bias.file)*0.3),
+          replace = F,
+          prob = bias.file[, 3]
+        ),
+        1:2
+      ]
+    }  
   }else{
-    Sbg <- bias.file[
-      sample(
-        x = seq(1:nrow(bias.file)),
-        size = ceiling(nrow(bias.file)*0.7),
-        replace = F,
-        prob = bias.file[, 3]
-      ),
-      1:2
-    ]
+    if(nrow(bias.file) > 10000){
+      Sbg <- bias.file[
+        sample(
+          x = seq(1:nrow(bias.file)),
+          size = 10000,
+          replace = F
+        ),
+        1:2
+      ]
+    }else{
+      Sbg <- bias.file[
+        sample(
+          x = seq(1:nrow(bias.file)),
+          size = ceiling(nrow(bias.file)*0.3),
+          replace = F
+        ),
+        1:2
+      ]
+    }
   }
+  
   
   # enmeval needs a data frame with longitude and latitude coordinates with these names and this
   # order
@@ -116,7 +139,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
     names(current_proj) <- best3$settings
     current_proj <- stack(current_proj)
   } else if (proj.models == "M-G") {
-    current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.M))
+    current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.G))
     names(current_proj) <- best3$settings
     current_proj <- stack(current_proj)
   }

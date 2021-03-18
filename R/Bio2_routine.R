@@ -21,9 +21,11 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
                          dist_MOV, clim_vars, dir_clim, dir_other, TGS_kernel, col_sp = NULL, col_lat = NULL,
                          col_lon = NULL, do_future = NULL, extension_vars = NULL, tipo = NULL, crs_proyect = NULL,
                          beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, kept = NULL,
-                         IQR_mtpl = NULL, E = NULL, do_clean = NULL, uniq1k_method = NULL # date_period = NULL, event_date = NULL
+                         IQR_mtpl = NULL, E = NULL, do_clean = NULL, uniq1k_method = NULL,
+                         MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, algos = NULL,
+                         use_bias = NULL, compute_G = NULL, dir_G = NULL
 ) {
-
+  
   # ellipsis arguments
   if (is.null(col_sp)) col_sp <- "acceptedNameUsage" # Which is the species name column
   if (is.null(col_lat)) col_lat <- "decimalLatitude" # Which is the latitude coordinate name column
@@ -31,7 +33,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   if (is.null(do_future)) do_future <- FALSE # MISSING kuenm modelling
   # if (is.null(date_period)) date_period <- "1970-01-01" # "From" date to limit chronologically occurrence data "year-month-day"
   # if (is.null(event_date)) event_date <- "eventDate"
-  if (is.null(extension_vars)) extension_vars <- "*.tif" # ?Solo aceptara tifs? como hacer para que lea solamente archivos que pueda usar raster
+  if (is.null(extension_vars)) extension_vars <- "*.tif$" # ?Solo aceptara tifs? como hacer para que lea solamente archivos que pueda usar raster
   if (is.null(tipo)) tipo <- "" # optional, in case of experiment (it is attached to folder sp name created)*
   if (is.null(crs_proyect)) crs_proyect <- "+init=epsg:4326"
   if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
@@ -47,57 +49,61 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   if (is.null(kept)) kept <- FALSE # kuenm argument to clean competitor models
   if (is.null(IQR_mtpl)) IQR_mtpl <- 5
   if (is.null(E)) E <- 5
-  if (is.null(do_clean)) do_clean <- TRUE
+  if (is.null(do_clean)) do_clean <- FALSE
   if (is.null(uniq1k_method)) uniq1k_method <- "sq1km" # spthin #MISSING user choose the grid
-
+  if (is.null(MCP_buffer)) MCP_buffer <- FALSE
+  if (is.null(polygon_select)) polygon_select <- FALSE
+  if (is.null(points_Buffer)) points_Buffer <- FALSE
+  if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
+  if (is.null(use_bias)) use_bias <- TRUE
+  if (is.null(compute_G)) compute_G <- FALSE
+  
+  
 
   #--------------------------------------
   # 0. Setup
   #--------------------------------------
-
+  
   # 0.1 Calling individual functions
-
+  
   source("R/1_clean_rawocc.R")
   source("R/2_uniq1km.R")
   source("R/3_m.R") ## Overlaping occurrences, biogeographic units and Minimun Convex Polygon (MCP) by ENMeval: https://tinyurl.com/y3u3c6fj
   source("R/4_process_env.R")
   source("R/5_Bias.R")
-  source("R/6A_1_doenmEVAL.R")
-  source("R/6B_1_dosplit.R")
-  source("R/6B_2_dokuenm.R")
-  source("R/6B_3_dobiomod.R")
+  source("R/6B_4_dosdmtune.R")
   source("R/6B_doindeva.R")
   source("R/7_doensemble.R")
   source("R/give.msg.time.R")
   source("R/doDE.MCP.R")
-
+  
   # 0.2 Starting time
-
+  
   time1 <- Sys.time()
-
+  
   # 0.3 set and create species folder
-
+  
   # extract the name of the species
-
+  
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
-
+  
   folder_sp <- paste0(sp_name, tipo)
-
+  
   dir.create(folder_sp, showWarnings = F)
-
+  
   # 0.4 writing occurrences data withouth processing, aka raw occurrences.
-
+  
   dir.create(paste0(folder_sp, "/occurrences"), showWarnings = F)
-
+  
   occ$occ.ID <- 1:nrow(occ)
-
+  
   write.csv(occ, paste0(folder_sp, "/occurrences/occ_raw.csv"), row.names = F)
-
-
+  
+  
   # ----- tracking file
-
+  
   filelog <- file(paste0(folder_sp, "/log_file.txt"), "w")
-
+  
   linesmsg0 <- paste0(
     time1, "\n", "Species name: ", sp_name, "\n", "M shapefile: ", polygon_M, "\n",
     "Movement distance vector: ", dist_MOV, " km\n", # "Dates to filter: ", date_period,
@@ -106,9 +112,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     "Experimental type:", tipo, "\n", "Raw occurrences: ", nrow(occ),
     "\n", "Outliers manage by ", drop_out, "\nCleaning occurrences", do_clean
   )
-
+  
   writeLines(text = linesmsg0, con = filelog, sep = "\n")
-
+  
   #--------------------------------------
   # 1. clean data
   #--------------------------------------
@@ -129,17 +135,17 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       return(paste0("Clean occurrences: fail.\nError R: ", e))
     }
   )
-
+  
   #------- tracking file
   writeLines(
     text = linesmsg1,
     con = filelog, sep = "\n"
   )
-
+  
   ### -----------------------------
   # ask5occ
   ### -----------------------------
-
+  
   try(
     exp = {
       if (nrow(occClean) <= 5) {
@@ -160,7 +166,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       }
     }
   )
-
+  
   #--------------------------------------
   # 2. Unique occurrences to 1 km
   #--------------------------------------
@@ -180,15 +186,15 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       return(paste0("Dropping bias: fail.\nError R: ", e))
     }
   )
-
+  
   #------- tracking file
-
+  
   writeLines(text = linesmsg2, con = filelog, sep = "\n")
-
+  
   ### -----------------------------
   # ask5occ
   ### -----------------------------
-
+  
   try(
     exp = {
       if (nrow(occ_1km) <= 5) {
@@ -210,8 +216,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       }
     }
   )
-
-
+  
+  
   #--------------------------------------
   # 3. Accesible Area.
   #--------------------------------------
@@ -222,8 +228,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       M_ <- M_area(
         polygon.M = polygon_M, raster.M = raster_M, occ. = occ_1km, col.lon = col_lon,
         col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV, drop.out = drop_out,
-        do.clean = do_clean
+        MCPbuffer = MCP_buffer, polygon.select = polygon_select, pointsBuffer = points_Buffer
       )
+      
       write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
       paste("\nAccesible area: ok.")
     },
@@ -232,15 +239,15 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       return(paste0("\nAccesible area: fail.\nError R: ", e))
     }
   )
-
+  
   #------- tracking file
-
+  
   writeLines(text = linesmsg3, con = filelog, sep = "\n")
-
+  
   ### -----------------------------
   # ask5occ
   ### -----------------------------
-
+  
   try(
     exp = {
       if (nrow(M_$occurrences) <= 5) {
@@ -261,7 +268,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       }
     }
   )
-
+  
   #--------------------------------------
   # 4. Procesing environmental layers
   #--------------------------------------
@@ -269,11 +276,18 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   
   linesmsg4 <- tryCatch(
     expr = {
+      
+      if (compute_G == TRUE){
+        env_G <- paste0(folder_sp, "/G_variables") 
+      }else{
+        env_G <- dir_G
+      } 
+      
       envars <- process_env.current(
         clim.dataset = clim_vars, clim.dir = dir_clim, extension = extension_vars,
         crs.proyect = crs_proyect, area.M = M_$shape_M, area.G = area_G,
         env.other = dir_other, folder.sp = folder_sp, dofuture = do_future,
-        proj.models = proj_models
+        proj.models = proj_models, compute.G = compute_G
       )
       paste("Processing environmental layers: ok.")
     },
@@ -290,133 +304,121 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   #--------------------------------------
   # 5. Bias file by species
   #--------------------------------------
-  print("Procesing bias layer")
   
-  linesmsg5 <- tryCatch(
-    expr = {
-      BiasSp <- get_BiasSp(
-        data. = M_$occurrences,
-        TGS.kernel = TGS_kernel,
-        shape.M = M_$shape_M,
-        env.M = envars$M,
-        ext = "*.asc",
-        folder.sp = folder_sp,
-        col.lon = col_lon,
-        col.lat = col_lat,
-        col.sp = col_sp
-      )
-      paste("Bias file development: ok")
-    },
-    error = function(error_message) {
-      e <- conditionMessage(error_message)
-      return(paste0("Bias file development: fail.\nError R: ", e))
-    }
-  )
-
-  #------- tracking file
-  writeLines(text = linesmsg5, con = filelog, sep = "\n")
-
+  print("Procesing bias layer")
+    
+    linesmsg5 <- tryCatch(
+      expr = {
+        BiasSp <- get_BiasSp(
+          data. = M_$occurrences,
+          TGS.kernel = TGS_kernel,
+          shape.M = M_$shape_M,
+          env.M = envars$M,
+          ext = "*.asc",
+          folder.sp = folder_sp,
+          col.lon = col_lon,
+          col.lat = col_lat,
+          col.sp = col_sp
+        )
+        paste("Bias file development: ok")
+      },
+      error = function(error_message) {
+        e <- conditionMessage(error_message)
+        return(paste0("Bias file development: fail.\nError R: ", e))
+      }
+    )
+  
+    #------- tracking file
+    writeLines(text = linesmsg5, con = filelog, sep = "\n")
+  
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
   
   if (nrow(M_$occurrences) >= 5 & nrow(M_$occurrences) <= 25) {
+    if(length(which(algos == "MAXENT"))!=0){
+      
+      ##########
+      # Path A # Jackknife, enmeval maxent
+      ##########
+      
+      print("Path A, calibrating and evaluating Maxent models")
+      
+      linesmsg6.1 <- tryCatch(
+        expr = {
+          PathAMaxent <- do.sdmtunes(
+            occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.class = fc_5.25,
+            env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = env_G,
+            env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
+            col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
+            use.bias = use_bias, crs.proyect = crs_proyect, dist.Mov = dist_MOV
+          )
+          paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
+        },
+        error = function(error_message) {
+          e1 <- conditionMessage(error_message)
+          return(paste0("\nPath A, number occ less or equal to 25 \nSmall samples Maxent modelling fail.\nError R: ", e1))
+        }
+      )
+      
+      writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
+    }
+  } 
+  
+  if (nrow(M_$occurrences) > 25) {
 
-    ##########
-    # Path A # Jackknife, enmeval maxent
-    ##########
-    print("Path A, calibrating and evaluating models")
+    if(length(which(algos == "MAXENT"))!=0){
+      ##########
+      # Path B # split in test and train, kuenm maxent, biomod GBM y ANN
+      ##########
+      
+      print("Path B, calibrating and evaluating models")
+      
+      linesmsg6.1 <- tryCatch(
+        expr = {
+          PathBMaxent <- do.sdmtunes(
+            occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_25, f.class = fc_25,
+            env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = env_G,
+            env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
+            col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
+            use.bias = use_bias, crs.proyect = crs_proyect, dist.Mov = dist_MOV
+          )
+          paste0("\nPath B, number occ greater than 25 \nLarge samples Maxent modelling: ok. Check Final models folder in the species directory folder.")
+        },
+        error = function(error_message) {
+          e1 <- conditionMessage(error_message)
+          return(paste0("\nPath B, number occ greater than 25 \n Large samples Maxent modelling: fail.\nError R: ", e1))
+        }
+      )
+      writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
+    }
     
-    linesmsg6.1 <- tryCatch(
-      expr = {
-        PathAMaxent <- do.enmeval(
-          occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.class = fc_5.25,
-          env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
-          env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
-          col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
-          crs.proyect = crs_proyect # block
-        )
-        paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
-      },
-      error = function(error_message) {
-        e1 <- conditionMessage(error_message)
-        return(paste0("\nPath A, number occ less or equal to 25 \nSmall samples Maxent modelling fail.\nError R: ", e1))
-      }
-    )
-
-    writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
-
-    PathBMaxent <- NULL
-    PathBOther <- NULL
-  } else if (nrow(M_$occurrences) > 25) {
-
-    ##########
-    # Path B # split in test and train, kuenm maxent, biomod GBM y ANN
-    ##########
+    algos2 <- algos[-which(algos == "MAXENT")]
     
-    print("Path B, calibrating and evaluating models")
-    
-    # Split data
-    linesmsg6.1 <- tryCatch(
-      expr = {
-        PathBOcc <- dosplit(
-          occ. = M_$occurrences, bias.file = BiasSp, folder.sp = folder_sp, col.lon = col_lon,
-          col.lat = col_lat
-        )
-        paste0("\nPath B, number occ greater than 25\nOcc splited: ok.")
-      },
-      error = function(error_message) {
-        e1 <- conditionMessage(error_message)
-        return(paste0("\nPath B, number occ greater than 25\nOcc splited: fail.\nError R: ", e1))
-      }
-    )
-    writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
-
-    # kuenm (Maxent)
-    linesmsg6.2 <- tryCatch(
-      expr = {
-        PathBMaxent <- do.kuenm(
-          occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
-          biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
-          maxent.path = getwd(), selection. = "OR_AICc", proj.models = proj_models,
-          do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
-          env.Gdir = paste0(folder_sp, "/G_variables"), env.Fdir = paste0(folder_sp, "/F_variables"),
-          crs.proyect = crs_proyect
-          # MISSING for Unix and macOs the automated input of biasfile, ready for windows
-        ) ####### MISSING
-        paste0(
-          "\nLarge samples Maxent modelling: ok. Check Final models folder in the species directory folder."
-        )
-      },
-      error = function(error_message) {
-        e2 <- conditionMessage(error_message)
-        return(paste0("\nKuenm modeling: fail\nError R:", e2))
-      }
-    )
-    writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
-
-    # Biomod (A<NN, GBM)
-    linesmsg6.3 <- tryCatch(
-      expr = {
-        PathBOther <- do.biomod(
-          data.splitted = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
-          Biasfile = BiasSp, env.Mdir = paste0(folder_sp, "/M_variables"),
-          env.Gdir = paste0(folder_sp, "/G_variables"),
-          env.Fdir = paste0(folder_sp, "/F_variables"), nrep.s = 10,
-          do.future = do_future, proj.models = proj_models, crs.proyect = crs_proyect
-        )
-        paste0(
-          "\nLarge samples Maxent modelling:: ok. Check Final_models_biomod folder for predictions."
-        )
-      },
-      errror = function(error_message) {
-        e3 <- conditionMessage(error_message)
-        return(paste0("\nBiomod modelling: fail.\nError R: ", e3))
-      }
-    )
-    writeLines(text = linesmsg6.3, con = filelog, sep = "\n")
-
-    PathAMaxent <- NULL
+    if(length(algos2) != 0){
+      # Biomod (ANNN, GBM)
+      
+      linesmsg6.2 <- tryCatch(
+        expr = {
+          PathBOther <- do.biomod(
+            data.splitted = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
+            Biasfile = BiasSp, env.Mdir = paste0(folder_sp, "/M_variables"),
+            env.Gdir = paste0(folder_sp, "/G_variables"),
+            env.Fdir = paste0(folder_sp, "/F_variables"), nrep.s = 10,
+            do.future = do_future, proj.models = proj_models, crs.proyect = crs_proyect, 
+            algorithms = algos2
+          )
+          paste0(
+            "\nLarge samples Maxent modelling:: ok. Check Final_models_biomod folder for predictions."
+          )
+        },
+        errror = function(error_message) {
+          e3 <- conditionMessage(error_message)
+          return(paste0("\nBiomod modelling: fail.\nError R: ", e3))
+        }
+      )
+      writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
+    }
   }
 
   #--------------------------------------
@@ -425,9 +427,13 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   
   linesmsg7 <- tryCatch(
     expr = {
+      res <- list()
+      if(exists("PathAMaxent")) res <- list(res, PathAMaxent )  
+      if(exists("PathBMaxent")) res <- list(res, PathBMaxent )      
+      if(exists("PathBOther")) res <- list(res, PathBOther )
+      
       ensemble <- do.ensemble(
-        respathA = PathAMaxent, respathB1 = PathBMaxent,
-        respathB2 = PathBOther, do.future = do_future,
+        reslist = res, do.future = do_future,
         occ. = M_$occurrences, threshold. = E, col.lon = col_lon,
         col.lat = col_lat, folder.sp = folder_sp, crs.proyect = crs_proyect
       )

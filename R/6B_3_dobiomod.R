@@ -1,6 +1,6 @@
 
 do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.Mdir, env.Gdir,
-                      env.Fdir, do.future, proj.models, crs.proyect) {
+                      env.Fdir, do.future, proj.models, crs.proyect, algorithms) {
 
   #--------------------------- 
   # 1. Create Pseudoabcence table
@@ -18,7 +18,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
 
   current_train <- biomod_fit(
     spat.data = bckgBst[["backgBst_spat"]], PA.data = bckgBst[["backgBst_logicDf"]],
-    foldersp = folder.sp, algos. = c("ANN", "GBM"), envM = env.M, split. = 90,
+    foldersp = folder.sp, algos. = algorithms, envM = env.M, split. = 90,
     type.mod = "current_cal", clamp = FALSE, nreps = nrep.s
   )
 
@@ -35,7 +35,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
   )
 
   write.csv(eval1, paste0(folder.sp, "/eval_results_biomod/eval_models.csv"), row.names = F)
-  
+
   #---------------------------
   # 4. Selecting best models
   #---------------------------
@@ -44,7 +44,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
   # partial roc and significance
   best1 <- eval1[which(eval1$pval_rocp <= 0.05), ]
   best1 <- best1[which(best1$rocptest >= 1), ]
-  
+
   # omission rate criterion
   if (nrow(best1) != 0) {
     # model with the OR10 less minimum value
@@ -53,11 +53,11 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
   } else {
     stop("any model met the test criterion")
   }
-  
-  if(nrow(best2) == 0){
+
+  if (nrow(best2) == 0) {
     message("any model met the test criterion")
     return(NULL)
-  } 
+  }
 
   # write table of best models
   write.csv(best2, paste0(folder.sp, "/eval_results_biomod/best_models.csv"), row.names = F)
@@ -70,10 +70,10 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
     a <- which(names(current_train$predictions) == best2$model.name[i])
     index[i] <- a
   }
-  
+
   selected <- current_train$predictions[[index]]
-  selected <- selected/1000 # from scale to 0-1000 to more traditional 0-1
-  
+  selected <- selected / 1000 # from scale to 0-1000 to more traditional 0-1
+
   # Biomod models have a long name, best to deal with shorter
   short_name <- gsub(paste0(sp.name, "._PA1_RUN"), "rep", x = best2$model.name)
 
@@ -110,7 +110,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
     # retrieve predictions
 
     predictionsG <- get_predictions(sp_modProjG)
-    predictionsG <- predictionsG/1000 # from scale to 0-1000 to more traditional 0-1
+    predictionsG <- predictionsG / 1000 # from scale to 0-1000 to more traditional 0-1
     raster::projection(predictionsG) <- sp::CRS(crs.proyect)
     names(predictionsG) <- short_name
 
@@ -153,9 +153,9 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
         clamping.mask = F, output.format = ".img", do.stack = FALSE
       )
     })
-    
-    dir.create(paste0(folder.sp, "/final_models_biomod/future"), showWarnings = FALSE)    
-    
+
+    dir.create(paste0(folder.sp, "/final_models_biomod/future"), showWarnings = FALSE)
+
     predictionsF <- list()
 
     for (i in 1:length(fut_bio_proj)) {
@@ -167,24 +167,24 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
     names(predictionsF) <- names(fut_bio_proj)
 
     for (i in 1:length(predictionsF)) {
-      brick <- predictionsF[[i]]/1000 # from scale to 0-1000 to more traditional 0-1
+      brick <- predictionsF[[i]] / 1000 # from scale to 0-1000 to more traditional 0-1
       raster::projection(brick) <- sp::CRS(crs.proyect)
-        for (a in 1:nlayers(brick)){
-          layer <- brick[[a]]
-          writeRaster(Ras, paste0(
+      for (a in 1:nlayers(brick)) {
+        layer <- brick[[a]]
+        writeRaster(Ras, paste0(
           folder.sp, "/final_models_biomod/future/",
           names(predictionsF[i]), ".", names(brick[[a]]), ".tif"
-          ),
+        ),
         overwrite = T
         )
       }
     }
-    
-    #results in case of do.future = TRUE
-      
+
+    # results in case of do.future = TRUE
+
     return(list(c_proj = selected, f_proj = fut_proj, best = best2))
   }
-  
+
   # results in case of do.future = FALSE
   return(list(c_proj = selected, f_proj = NULL, best = best2))
 }
@@ -223,11 +223,20 @@ dobackPAlist <- function(dat, BiasfilePo) {
   backgPres_logic <- c(rep(FALSE, nrow(BiasfilePo)), rep(TRUE, nrow(dat)))
 
   # 2.2 extract a sample of 10000 coordinates with replace and having in account the sample probability
-  
-  if(nrow(BiasfilePo) > 10000){
-    sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = 10000, replace = TRUE, prob = BiasfilePo[, 3])
-  }else{
-    sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = ceiling(nrow(BiasfilePo)*0.7), replace = TRUE, prob = BiasfilePo[, 3])  
+  if (usebias == TRUE) {
+    if (nrow(BiasfilePo) > 10000) {
+      sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = 10000, replace = TRUE, prob = BiasfilePo[, 3])
+    } else {
+      sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = ceiling(nrow(BiasfilePo) * 0.7), replace = TRUE, prob = BiasfilePo[, 3])
+    }
+  } else {
+    if (usebias == TRUE) {
+      if (nrow(BiasfilePo) > 10000) {
+        sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = 10000, replace = TRUE)
+      } else {
+        sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = ceiling(nrow(BiasfilePo) * 0.3), replace = TRUE)
+      }
+    }
   }
   # 2.3 activate each coordinate of the sample taken from the bias file, active = TRUE
 

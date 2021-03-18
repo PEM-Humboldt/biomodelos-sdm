@@ -1,11 +1,12 @@
 # environmental variables
 
 process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, area.M,
-                                env.other, folder.sp, dofuture, area.G, proj.models) {
+                                env.other, folder.sp, dofuture, area.G, proj.models,
+                                compute.G) {
   # extent of M or G to cut the variables
-  if (proj.models == "M-M") {
+  if (proj.models == "M-M" | compute.G == FALSE) {
     cropArea <- area.M
-  } else if (proj.models == "M-G") {
+  } else {
     # read G extent
     cropArea <- raster::raster(area.G)
   }
@@ -52,7 +53,7 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
   #---------------------
   # writing environmental layers
 
-  if (proj.models == "M-G") {
+  if (proj.models == "M-G" & compute.G == TRUE) {
 
     # area G
 
@@ -94,7 +95,7 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
   
   if(proj.models == "M-M"){
     env.Ras <- env_M
-  }else if(proj.models == "M-G"){
+  }else if(proj.models == "M-G" & compute.G == TRUE){
     env.Ras <- env_crop
   }
   
@@ -115,14 +116,14 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
       
   if (proj.models == "M-M") {
       return(list(M = env_M, G = NULL, Future = env_F))
-  } else if (proj.models == "M-G") {
+  } else if (proj.models == "M-G" & compute.G == TRUE) {
       return(list(M = env_M, G = env_crop, Future = env_F))
     }
   }
   
   # results do.future == FALSE
   
-  if (proj.models == "M-M") {
+  if (proj.models == "M-M"| compute.G == FALSE) {
     return(list(M = env_M, G = NULL))
   } else if (proj.models == "M-G") {
     return(list(M = env_M, G = env_crop))
