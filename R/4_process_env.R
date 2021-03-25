@@ -48,9 +48,9 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
 
   # masking environmental data to accesible area or M
 
-  env_M <- raster::mask(env_crop, area.M)
+  env_M <- env_crop %>% raster::crop(area.M) %>% raster::mask(area.M) 
 
-  #---------------------
+---------------------
   # writing environmental layers
 
   if (proj.models == "M-G" & compute.G == TRUE) {
