@@ -1,6 +1,20 @@
 do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias) {
 
+  
+  # reading environmental files if "M-M" it only reads M_variables from species folder or "M-G"
+  # in which in will be read G_variables folder, they are in .asc extension 
+  
+  # M reading
+  env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)
+  env.M <- raster::stack(env.Mfiles)
+  
+  # G reading
+  if (proj.models == "M-G") {
+    env.Gfiles <- list.files(env.Gdir, pattern = "*.asc", full.names = T, recursive = T)
+    env.G <- raster::stack(env.Gfiles)
+  }
+  
   #--------------------
   # 1. Formatting background and occurrences to enmeval package
   #--------------------
@@ -29,20 +43,21 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
       ]
     }  
   }else{
-    if(nrow(bias.file) > 10000){
-      Sbg <- bias.file[
+    M.points <- rasterToPoints(env.M[[1]])
+    if(nrow(M.points) > 10000){
+      Sbg <- M.points[
         sample(
-          x = seq(1:nrow(bias.file)),
+          x = seq(1:nrow(M.points)),
           size = 10000,
           replace = F
         ),
         1:2
       ]
     }else{
-      Sbg <- bias.file[
+      Sbg <- M.points[
         sample(
-          x = seq(1:nrow(bias.file)),
-          size = ceiling(nrow(bias.file)*0.3),
+          x = seq(1:nrow(M.points)),
+          size = ceiling(nrow(M.points)*0.3),
           replace = F
         ),
         1:2
@@ -56,20 +71,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   data. <- occ.[, c(col.lon, col.lat)]
   names(data.) <- c("longitude", "latitude")
   
-  # reading environmental files if "M-M" it only reads M_variables from species folder or "M-G"
-  # in which in will be read G_variables folder, they are in .asc extension 
-  
-  # M reading
-  env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)
-  env.M <- raster::stack(env.Mfiles)
-  
-  # G reading
-  if (proj.models == "M-G") {
-    env.Gfiles <- list.files(env.Gdir, pattern = "*.asc", full.names = T, recursive = T)
-    env.G <- raster::stack(env.Gfiles)
-  }
-  
-  #--------------------
+  #----------+----------
   # 2. calibrate and evaluate models
   #--------------------
   
@@ -139,7 +141,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
     names(current_proj) <- best3$settings
     current_proj <- stack(current_proj)
   } else if (proj.models == "M-G") {
-    current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.G))
+    current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.G, args=c("extrapolate=true","doclamp=true")))
     names(current_proj) <- best3$settings
     current_proj <- stack(current_proj)
   }
