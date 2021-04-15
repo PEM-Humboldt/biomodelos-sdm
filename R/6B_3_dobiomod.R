@@ -1,12 +1,11 @@
-
 do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.Mdir, env.Gdir,
-                      env.Fdir, do.future, proj.models, crs.proyect, algorithms) {
+                      env.Fdir, do.future, proj.models, crs.proyect, algorithms, use.bias) {
 
   #--------------------------- 
   # 1. Create Pseudoabcence table
   #---------------------------
 
-  bckgBst <- dobackPAlist(dat = data.splitted[["occ_train"]], BiasfilePo = Biasfile)
+  bckgBst <- dobackPAlist(dat = data.splitted[["occ_train"]], BiasfilePo = Biasfile, usebias = use.bias)
 
   #---------------------------
   # 2. Calibration models
@@ -98,7 +97,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
   # projection in case of projection to G
 
   if (proj.models == "M-G") {
-    env.Gfiles <- list.files(env.Gdir, pattern = "*.asc", full.names = T, recursive = T)
+    env.Gfiles <- list.files(paste0(env.Gdir, "/Set_1/G"), pattern = "*.asc", full.names = T, recursive = T)
     env.G <- raster::stack(env.Gfiles)
 
     sp_modProjG <- BIOMOD_Projection(
@@ -126,6 +125,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
         overwrite = T
       )
     }
+    selected <- predictionsG
   }
 
   #---------------------------
@@ -191,7 +191,7 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
 
 #-------------------------
 
-dobackPAlist <- function(dat, BiasfilePo) {
+dobackPAlist <- function(dat, BiasfilePo, usebias) {
 
   ## Pseudoabscence-background selection using bias file, n bootstrapped samples
 
@@ -229,19 +229,18 @@ dobackPAlist <- function(dat, BiasfilePo) {
     } else {
       sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = ceiling(nrow(BiasfilePo) * 0.7), replace = TRUE, prob = BiasfilePo[, 3])
     }
-  } else {
-    if (usebias == TRUE) {
-      if (nrow(BiasfilePo) > 10000) {
-        sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = 10000, replace = TRUE)
-      } else {
-        sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = ceiling(nrow(BiasfilePo) * 0.3), replace = TRUE)
-      }
+  } 
+  if (usebias == FALSE) {
+    if (nrow(BiasfilePo) > 10000) {
+      sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = 10000, replace = TRUE)
+    } else {
+      sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = ceiling(nrow(BiasfilePo) * 0.7), replace = TRUE)
     }
   }
+  
   # 2.3 activate each coordinate of the sample taken from the bias file, active = TRUE
 
   backgPres_logic[sBias] <- TRUE
-
 
   backgPres_logicdf <- data.frame(backgPres_logic)
 
@@ -252,7 +251,8 @@ dobackPAlist <- function(dat, BiasfilePo) {
 ############################################
 
 biomod_fit <- function(spat.data, PA.data, foldersp, algos., envM, split., type.mod, clamp, nreps) {
-
+# only for calibration, projection has its own 
+  
   # Formatting data for Biomod
 
   sp_data <- BIOMOD_FormatingData(spat.data,

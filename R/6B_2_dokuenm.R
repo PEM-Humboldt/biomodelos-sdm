@@ -1,7 +1,7 @@
 
 do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
                      folder.sp, biasfile, kept., proj.models, do.future, env.Mdir, env.Gdir,
-                     env.Fdir, crs.proyect) {
+                     env.Fdir, crs.proyect, use.bias, extrap) {
   
   #--------------------
   # 1. Formatting occurrences to Kuenm package
@@ -21,7 +21,13 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   M_var_dir <- env.Mdir
   out_dir <- paste0(folder.sp, "/", "candidate_models")
   batch_cal <- paste0(folder.sp, "candidate_models")
-  biasarg <- kuenm.path.bias(bias.file = biasfile, foldersp = folder.sp)
+  
+  if(use.bias == TRUE){
+    biasarg <- kuenm.path.bias(bias.file = biasfile, foldersp = folder.sp)
+  } else{
+    biasarg <- NULL
+  }
+
   wait <- FALSE
   run <- TRUE
   
@@ -96,7 +102,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   out_format <- "logistic"
   wait1 <- TRUE
   run1 <- TRUE
-  extrap <- "no_ext"
+  
   
   dir.create(paste0(folder.sp, "/final_models_kuenm"), showWarnings = FALSE)
   mod_dir <- paste0(folder.sp, "/final_models_kuenm/current")
@@ -118,9 +124,11 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
     run = run1, project = proj.mod, G.var.dir = G.var, ext.type = extrap
   )
   
-  current_proj <- list.files( path = paste0(mod_dir, "/"), pattern = ".asc$",full.names = T, include.dirs = T, recursive = T)
+  if ( proj.models == "M-M" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_kuenm/current/"), pattern = "M.asc$", full.names = T, include.dirs = T, recursive = T)
+  if ( proj.models == "M-G" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_kuenm/current/"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
   current_proj <- raster::stack(current_proj)
   names(current_proj) <- best3$Model
+  
   
   # Erasing .asc files in order to make small the size of species folders
   

@@ -23,7 +23,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
                          beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, kept = NULL,
                          IQR_mtpl = NULL, E = NULL, do_clean = NULL, uniq1k_method = NULL,
                          MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, algos = NULL,
-                         use_bias = NULL, compute_G = NULL, dir_G = NULL) {
+                         use_bias = NULL, compute_G = NULL, dir_G = NULL, mxnt.pckg = NULL, other.pckg = NULL,
+                         extrapo = NULL, predic = NULL) {
 
   # ellipsis arguments
   if (is.null(col_sp)) col_sp <- "acceptedNameUsage" # Which is the species name column
@@ -49,16 +50,18 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   if (is.null(IQR_mtpl)) IQR_mtpl <- 5
   if (is.null(E)) E <- 5
   if (is.null(do_clean)) do_clean <- FALSE
-  if (is.null(uniq1k_method)) uniq1k_method <- "sq1km" # spthin #MISSING user choose the grid
+  if (is.null(uniq1k_method)) uniq1k_method <- "sqkm" # "spthin" #MISSING user choose the grid
   if (is.null(MCP_buffer)) MCP_buffer <- FALSE
   if (is.null(polygon_select)) polygon_select <- FALSE
-  if (is.null(points_Buffer)) points_Buffer <- FALSE
+  if (is.null(points_Buffer)) points_Buffer <- TRUE
   if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
   if (is.null(use_bias)) use_bias <- TRUE
   if (is.null(compute_G)) compute_G <- TRUE
   if (is.null(dir_G)) dir_G <- NULL
-
-
+  if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
+  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
+  if (is.null(extrapo)) extrapo <- "ext_clam"
+  if (is.null(predic)) predic <- "kuenm"
 
   #--------------------------------------
   # 0. Setup
@@ -72,13 +75,16 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   source("R/4_process_env.R")
   source("R/5_Bias.R")
   source("R/6A_1_doenmEVAL.R")
+  source("R/6B_1_dosplit.R")
+  source("R/6B_2_dokuenm.R")
   source("R/6B_3_dobiomod.R")
   source("R/6B_doindeva.R")
   source("R/7_doensemble.R")
   source("R/give.msg.time.R")
   source("R/doDE.MCP.R")
-
+  
   # 0.2 Starting time
+  
 
   time1 <- Sys.time()
 
@@ -328,7 +334,11 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   #------- tracking file
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
-
+  
+  # cleaning environment space
+  rm(envars, occ_1km, occClean)
+  gc()
+  
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
@@ -349,18 +359,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = env_G,
             env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
-            use.bias = FALSE, crs.proyect = crs_proyect
+            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = "kuenm"
           )
-
-          print("Path A, ensembles")
-
-          currentEns_byAlg(
-            ras.Stack = PathAMaxent$c_proj, data. = M_$occurrences,
-            collon = col_lon, collat = col_lat, e = 10, algorithm = "maxent",
-            foldersp = folder_sp
-          )
-
-          paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling and ensembling: ok.")
+          paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
@@ -369,41 +370,94 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       )
 
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
+
+      print("Path A, ensembles")
+
+      linesmsg6.2 <- tryCatch(
+        expr = {
+          currentEns_byAlg(
+            ras.Stack = PathAMaxent$c_proj, data. = M_$occurrences,
+            collon = col_lon, collat = col_lat, e = 10, algorithm = "maxent",
+            foldersp = folder_sp
+          )
+          paste("\nEnsembles: ok.")
+        },
+        error = function(error_message) {
+          e1 <- conditionMessage(error_message)
+          return(paste0("\nEnsembles fail.\nError R: ", e1))
+        }
+      )
+
+
+
+      writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
     }
   }
 
   if (nrow(M_$occurrences) > 25) {
+    ##########
+    # Path B # split in test and train, kuenm maxent, biomod GBM y ANN
+    ##########
+
+    print("Path B, spliting data")
+
+    linesmsg6.1 <- tryCatch(
+      expr = {
+        PathBOcc <- dosplit(
+          occ. = M_$occurrences, bias.file = BiasSp, folder.sp = folder_sp, col.lon = col_lon,
+          col.lat = col_lat, use.bias = use_bias
+        )
+        paste0("\nPath B, number occ greater than 25\nOcc splited: ok.")
+      },
+      error = function(error_message) {
+        e1 <- conditionMessage(error_message)
+        return(paste0("\nPath B, number occ greater than 25\nOcc splited: fail.\nError R: ", e1))
+      }
+    )
+
+    writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
+
+
     if (length(which(algos == "MAXENT")) != 0) {
-      ##########
-      # Path B # split in test and train, kuenm maxent, biomod GBM y ANN
-      ##########
-
-      print("Path B, calibrating and evaluating models")
-
-      linesmsg6.1 <- tryCatch(
+      linesmsg6.2 <- tryCatch(
         expr = {
-          PathBMaxent <- do.enmeval(
-            occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_25, f.class = fc_25,
-            env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = env_G,
-            env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
-            col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
-            use.bias = use_bias, crs.proyect = crs_proyect
+          PathBMaxent <- do.kuenm(
+            occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
+            biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
+            maxent.path = getwd(), selection. = "OR_AICc", proj.models = proj_models,
+            do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
+            env.Gdir = env_G, env.Fdir = paste0(folder_sp, "/F_variables"),
+            crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo
+            # MISSING for Unix and macOs the automated input of biasfile, ready for windows
+          ) ####### MISSING
+          paste0(
+            "\nLarge samples Maxent modelling: ok. Check Final models folder in the species directory folder."
           )
+        },
+        error = function(error_message) {
+          e2 <- conditionMessage(error_message)
+          return(paste0("\nLarge samples maxent: fail\nError R:", e2))
+        }
+      )
 
+      writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
+
+      linesmsg6.3 <- tryCatch(
+        expr = {
           currentEns_byAlg(
             ras.Stack = PathBMaxent$c_proj, data. = M_$occurrences,
-            collon = col_lon, collat = col_lat, e = 10, algorithm = "maxent",
+            collon = col_lon, collat = col_lat, e = 5, algorithm = "maxent",
             foldersp = folder_sp
           )
 
-          paste0("\nPath B, number occ greater than 25 \nLarge samples Maxent modelling and ensembling: ok. Check Final models folder in the species directory folder.")
+          paste0("\nEnsembling: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
-          return(paste0("\nPath B, number occ greater than 25 \n Large samples Maxent modelling: fail.\nError R: ", e1))
+          return(paste0("\nEnsemblig: fail.\nError R: ", e1))
         }
       )
-      writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
+      writeLines(text = linesmsg6.3, con = filelog, sep = "\n")
     }
 
     algos2 <- algos[-which(algos == "MAXENT")]
@@ -411,7 +465,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     if (length(algos2) != 0) {
       # Biomod (ANNN, GBM)
 
-      linesmsg6.2 <- tryCatch(
+      linesmsg6.4 <- tryCatch(
         expr = {
           PathBOther <- do.biomod(
             data.splitted = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
@@ -419,24 +473,35 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
             env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/F_variables"), nrep.s = 10,
             do.future = do_future, proj.models = proj_models, crs.proyect = crs_proyect,
-            algorithms = algos2
+            algorithms = algos2, use.bias = use_bias
           )
-
-          for (i in 1:length(algos2)) {
-            pathBalgo_i <- PathBOther$c_proj[[grep(pattern = algos2[i], names(PathBOther$c_proj))]]
-            currentEns_byAlg(
-              ras.Stack = PathBOther$c_proj, data. = occ., collon = col.lon, collat = col.lat,
-              e = 5, algorithm = algos2[i], foldersp = folder.sp ############ MISSING let user choice e
-            )
-          }
-
           paste0(
-            "\nLarge samples Maxent modelling and ensembling: ok. Check Final_models_biomod folder for predictions."
+            "\nLarge samples other algorithms modelling: ok. Check Final_models_biomod folder for predictions."
           )
         },
         errror = function(error_message) {
           e3 <- conditionMessage(error_message)
           return(paste0("\nBiomod modelling and ensembling: fail.\nError R: ", e3))
+        }
+      )
+
+      linesmsg6.4 <- tryCatch(
+        expr = {
+          for (i in 1:length(algos2)) {
+            pathBalgo_i <- PathBOther$c_proj[[grep(pattern = algos2[i], names(PathBOther$c_proj))]]
+            currentEns_byAlg(
+              ras.Stack = pathBOther$c_proj, data. = M_$occurrences, collon = col_lon, collat = col_lat,
+              e = 5, algorithm = algos2[i], foldersp = folder_sp ############ MISSING let user choice e
+            )
+          }
+
+          paste0(
+            "\nEnsembling: ok. Check Final_models_biomod folder for predictions."
+          )
+        },
+        errror = function(error_message) {
+          e3 <- conditionMessage(error_message)
+          return(paste0("\nEnsembling: fail.\nError R: ", e3))
         }
       )
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
@@ -449,9 +514,14 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   erase <- c(
     paste0(folder_sp, "/F_variables"), paste0(folder_sp, "/G_variables"),
-    paste0(folder_sp, "proj_current_cal"), # paste0(folder_sp,".BIOMOD_DATA"),
-    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/indEVA.csv"),
-    paste0(folder_sp, "/BiasfileM.asc"), paste0(folder_sp, "/maxent.cache")
+    paste0(folder_sp, "/proj_current_cal"),
+    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/G_variables"), 
+    paste0(folder_sp, "/indEVA.csv"), paste0(folder_sp, "/proj_G_models"),
+    paste0(folder_sp, "/BiasfileM.asc"), paste0(folder_sp, "/maxent.cache"),
+    list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "biomod.csv", full.names = T),
+    list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "kuenm.csv", full.names = T),
+    list.files(path = paste0(folder_sp), pattern = ".out", full.names = T),
+    paste0(sp_name, "final_models.bat"), paste0(sp_name, "candidate_models.bat")   
   )
   for (i in 1:length(erase)) {
     if (file.exists(erase[i])) {

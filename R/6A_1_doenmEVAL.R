@@ -1,27 +1,30 @@
 do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, env.Fdir, do.future,
-                       folder.sp, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias) {
+                       folder.sp, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias,
+                       extrap, predic) {
 
-  
+  # MISSING user choose function to predict
+
   # reading environmental files if "M-M" it only reads M_variables from species folder or "M-G"
-  # in which in will be read G_variables folder, they are in .asc extension 
-  
+  # in which in will be read G_variables folder, they are in .asc extension
+
   # M reading
   env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)
   env.M <- raster::stack(env.Mfiles)
-  
+
   # G reading
-  if (proj.models == "M-G") {
-    env.Gfiles <- list.files(env.Gdir, pattern = "*.asc", full.names = T, recursive = T)
-    env.G <- raster::stack(env.Gfiles)
-  }
-  
+  #  if (proj.models == "M-G") {
+  #    env.Gfolders <- list.dirs(env.Gdir, full.names = T)
+  #    env.Gfiles <- list.files(env.Gdir, pattern = "*.asc", full.names = T, recursive = T)
+  #    env.G <- raster::stack(env.Gfiles)
+  #  }
+
   #--------------------
   # 1. Formatting background and occurrences to enmeval package
   #--------------------
-  
+
   # bias sample to create the background for modeling
-  if(use.bias == TRUE){
-    if(nrow(bias.file) > 10000){
+  if (use.bias == TRUE) {
+    if (nrow(bias.file) > 10000) {
       Sbg <- bias.file[
         sample(
           x = seq(1:nrow(bias.file)),
@@ -31,20 +34,20 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
         ),
         1:2
       ]
-    }else{
+    } else {
       Sbg <- bias.file[
         sample(
           x = seq(1:nrow(bias.file)),
-          size = ceiling(nrow(bias.file)*0.3),
+          size = ceiling(nrow(bias.file) * 0.3),
           replace = F,
           prob = bias.file[, 3]
         ),
         1:2
       ]
-    }  
-  }else{
+    }
+  } else {
     M.points <- rasterToPoints(env.M[[1]])
-    if(nrow(M.points) > 10000){
+    if (nrow(M.points) > 10000) {
       Sbg <- M.points[
         sample(
           x = seq(1:nrow(M.points)),
@@ -53,58 +56,58 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
         ),
         1:2
       ]
-    }else{
+    } else {
       Sbg <- M.points[
         sample(
           x = seq(1:nrow(M.points)),
-          size = ceiling(nrow(M.points)*0.3),
+          size = ceiling(nrow(M.points) * 0.3),
           replace = F
         ),
         1:2
       ]
     }
   }
-  
-  
+
+
   # enmeval needs a data frame with longitude and latitude coordinates with these names and this
   # order
   data. <- occ.[, c(col.lon, col.lat)]
   names(data.) <- c("longitude", "latitude")
-  
+
   #----------+----------
   # 2. calibrate and evaluate models
   #--------------------
-  
+
   # competitor models
   eval1 <- ENMevaluate(
     occ = data., env = env.M, bg.coords = Sbg, method = partitionMethod,
     RMvalues = beta.mult, fc = toupper(f.class), algorithm = "maxent.jar"
   )
-  
+
   dir.create(paste0(folder.sp, "/eval_results_enmeval"), showWarnings = FALSE)
-  
+
   # table of evaluation results
   eval_results <- eval1@results
   write.csv(eval_results, paste0(folder.sp, "/eval_results_enmeval/eval_models.csv"), row.names = F)
-  
+
   # writing all enmeval modelling objects
-  save(eval1, file = paste0(folder.sp, "/eval_results_enmeval/eval_models.RData") )
-  
+  save(eval1, file = paste0(folder.sp, "/eval_results_enmeval/eval_models.RData"))
+
   #--------------------
   # 3. select models made by enmeval: meet project evaluation criterion
   #--------------------
-  
+
   # selecting from the table the best enmeval models
   # AUC greater than 0.7
   best1 <- eval_results[which(eval_results$avg.test.AUC >= 0.7), ] %>% na.omit()
-  
+
   if (nrow(best1) != 0) {
     # model with the OR10 less minimun value
     best2 <- best1[which(best1$avg.test.or10pct == min(best1$avg.test.or10pct)), ]
   } else {
     stop("any model met the test criterion")
   }
-  
+
   if (nrow(best2) != 0) {
     if (nrow(best2) > 1) {
       # delta aic criterion
@@ -114,59 +117,114 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
       best3 <- best2
     }
   }
-  
+
   # select best models
   index_select <- as.numeric()
-  for(i in 1:nrow(best3)){
+  for (i in 1:nrow(best3)) {
     indexi <- which(eval_results$settings == best3$settings[i])
     index_select <- c(index_select, indexi)
   }
-  
+
   eval1_models <- eval1@models[index_select]
-  
-  #write best models data frame
-  write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
-  
+
+  # write best models data frame
+  write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/selected_models.csv"), row.names = F)
+
   # writing best modelling objects
-  save(eval1_models, file = paste0(folder.sp, "/eval_results_enmeval/best_models.RData"))  
-  
+  save(eval1_models, file = paste0(folder.sp, "/eval_results_enmeval/selected_models.RData"))
+
+  # best models table kuenm style
+  if (predic == "kuenm") {
+    best_kuenm_style <- data.frame(Model = paste0("M_", best3$rm, "_F_", tolower(best3$features), "_Set_1"))
+    write.csv(best_kuenm_style, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
+  }
+
   #--------------------
   # 4. current predictions
   #--------------------
-  
-  # predicting current raster layers of best models
-  if (proj.models == "M-M") {
-    # filter best models and predict them in M
-    current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.M))
-    names(current_proj) <- best3$settings
-    current_proj <- stack(current_proj)
-  } else if (proj.models == "M-G") {
-    current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.G, args=c("extrapolate=true","doclamp=true")))
-    names(current_proj) <- best3$settings
-    current_proj <- stack(current_proj)
-  }
-  
-  # write current M or G prediction layers
-  
+
   dir.create(paste0(folder.sp, "/final_models_enmeval"), showWarnings = F)
   dir.create(paste0(folder.sp, "/final_models_enmeval/current"), showWarnings = F)
   
-  for (i in 1:nlayers(current_proj)) {
-    Ras <- current_proj[[i]]
-    raster::crs(Ras) <- sp::CRS(crs.proyect)
-    writeRaster(Ras, paste0(
-      folder.sp, "/final_models_enmeval/current/",
-      names(current_proj[[i]]), ".tif"
-    ),
-    format = "GTiff",
-    overwrite = T
-    )
+  if (use.bias == TRUE) {
+    biasfile <- "BiasfileM.asc"
+    biasarg <- kuenm.path.bias(bias.file = biasfile, foldersp = folder.sp)
+  } else {
+    biasarg <- NULL
   }
-  
+
+
+  # predicting current raster layers of best models
+
+  if (proj.models == "M-M") {
+    if (predic == "dismo") {
+      # filter best models and predict them in M
+      current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.M))
+      names(current_proj) <- best3$settings
+      current_proj <- stack(current_proj)
+    }
+    if (predic == "kuenm") {
+      kuenm.occ(occ.[, -c(1, 2)], spname = folder.sp, foldersp = folder.sp, occname = "occ_joint_kuenm")
+      kuenm::kuenm_mod(
+        occ.joint = paste0(folder.sp, "/occurrences/occ_joint_kuenm.csv"),
+        M.var.dir = env.Mdir, out.eval = paste0(folder.sp, "/eval_results_enmeval"),
+        batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
+        jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
+        max.memory = 2000, out.format = "logistic",
+        project = FALSE, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
+        write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
+      )
+    }
+  }
+
+  if (proj.models == "M-G") {
+    if (predic == "dismo") {
+      current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.G, args = c("extrapolate=true", "doclamp=true")))
+      names(current_proj) <- best3$settings
+      current_proj <- stack(current_proj)
+    }
+    if (predic == "kuenm") {
+      kuenm.occ(occ.[, -c(1, 2)], spname = folder.sp, foldersp = folder.sp, occname = "occ_joint_kuenm")
+      kuenm::kuenm_mod(
+        occ.joint = paste0(folder.sp, "/occurrences/occ_joint_kuenm.csv"),
+        M.var.dir = env.Mdir, out.eval = paste0(folder.sp, "/eval_results_enmeval"),
+        batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
+        jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval/current"),
+        max.memory = 2000, out.format = "logistic",
+        project = TRUE, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
+        write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
+      )
+    }
+  }
+
+  # write current M or G prediction layers
+  if (predic == "dismo") {
+    for (i in 1:nlayers(current_proj)) {
+      Ras <- current_proj[[i]]
+      raster::crs(Ras) <- sp::CRS(crs.proyect)
+      writeRaster(Ras, paste0(
+        folder.sp, "/final_models_enmeval/current/",
+        names(current_proj[[i]]), ".tif"
+      ),
+      format = "GTiff",
+      overwrite = T
+      )
+    }
+  }
+
+  if (predic == "kuenm") {
+    if ( proj.models == "M-M" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_enmeval/current/"), pattern = "M.asc$", full.names = T, include.dirs = T, recursive = T)
+    if ( proj.models == "M-G" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_enmeval/current/"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
+
+    current_proj <- raster::stack(current_proj)
+    names(current_proj) <- best3$settings
+  }
+
+
   #--------------------
   # 5. future predictions
   #--------------------
-  
+
   # prediction future
   if (do.future == TRUE) {
     env.Ffolder <- list.dirs(env.Fdir, full.names = T, recursive = F)
@@ -179,18 +237,18 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
     })
     envFdata <- dplyr::bind_rows(env.Fdata)
     envFRas <- lapply(env.FlistRas, raster::stack)
-    names(envFRas) <- apply( envFdata[ , c(1:3) ] , 1 , paste0 , collapse = "_" )
-    
+    names(envFRas) <- apply(envFdata[, c(1:3)], 1, paste0, collapse = "_")
+
     fut_proj <- list()
-    for(i in 1:length(envFRas)){
+    for (i in 1:length(envFRas)) {
       fut_proj[[i]] <- lapply(eval1_models, function(x) dismo::predict(x, envFRas[[i]]))
       names(fut_proj[[i]]) <- best3$settings
     }
     names(fut_proj) <- names(envFRas)
-    fut_proj2 <- unlist(fut_proj)  
-    
+    fut_proj2 <- unlist(fut_proj)
+
     dir.create(paste0(folder.sp, "/final_models_enmeval/future"))
-    
+
     for (i in 1:length(fut_proj2)) {
       writeRaster(fut_proj2[[i]], paste0(
         folder.sp, "/final_models_enmeval/future/",
@@ -200,11 +258,11 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
       overwrite = T
       )
     }
-    
+
     # results in case of do.future = TRUE
     return(list(c_proj = current_proj, f_proj = fut_proj, best = best3))
   }
-  
+
   # results in case of do.future = FALSE
   return(list(c_proj = current_proj, f_proj = NULL, best = best3))
 }
