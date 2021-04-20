@@ -93,7 +93,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   # extract the name of the species
 
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
-
+  
   folder_sp <- paste0(sp_name, tipo)
 
   dir.create(folder_sp, showWarnings = F)
@@ -183,7 +183,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     expr = {
       occ_1km <- do.uniq1km(
         occ. = occClean, col.lon = col_lon, col.lat = col_lat, sp.col = col_sp,
-        sp.name = sp_name, uniq1k.method = uniq1k_method
+        sp.name = sp_name, uniq1k.method = uniq1k_method, uniqDist = 1
       )
       write.csv(occ_1km, paste0(folder_sp, "/occurrences/occ_1km.csv"), row.names = F)
       paste("Occurrences 1 km : ok.\nNumber of occurrences 'unique by pixel': ", nrow(occ_1km))
@@ -377,7 +377,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
         expr = {
           currentEns_byAlg(
             ras.Stack = PathAMaxent$c_proj, data. = M_$occurrences,
-            collon = col_lon, collat = col_lat, e = 10, algorithm = "maxent",
+            collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
             foldersp = folder_sp
           )
           paste("\nEnsembles: ok.")
@@ -446,7 +446,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
         expr = {
           currentEns_byAlg(
             ras.Stack = PathBMaxent$c_proj, data. = M_$occurrences,
-            collon = col_lon, collat = col_lat, e = 5, algorithm = "maxent",
+            collon = col_lon, collat = col_lat, e = 5, algorithm = "MAXENT",
             foldersp = folder_sp
           )
 
@@ -463,7 +463,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
     algos2 <- algos[-which(algos == "MAXENT")]
 
     if (length(algos2) != 0) {
-      # Biomod (ANNN, GBM)
+      # Biomod (ANN, GBM)
 
       linesmsg6.4 <- tryCatch(
         expr = {
@@ -485,14 +485,19 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
         }
       )
 
-      linesmsg6.4 <- tryCatch(
+      writeLines(text = linesmsg6.4, con = filelog, sep = "\n")
+      
+      linesmsg6.5 <- tryCatch(
         expr = {
           for (i in 1:length(algos2)) {
-            pathBalgo_i <- PathBOther$c_proj[[grep(pattern = algos2[i], names(PathBOther$c_proj))]]
-            currentEns_byAlg(
-              ras.Stack = pathBOther$c_proj, data. = M_$occurrences, collon = col_lon, collat = col_lat,
-              e = 5, algorithm = algos2[i], foldersp = folder_sp ############ MISSING let user choice e
-            )
+            layersalgo_i <- grep(pattern = algos2[i], names(PathBOther$c_proj))
+            if(length(layersalgo_i) != 0){
+              projBalgo_i <- PathBOther$c_proj[[layersalgo_i]]
+              currentEns_byAlg(
+                ras.Stack = projBalgo_i, data. = M_$occurrences, collon = col_lon, collat = col_lat,
+                e = 5, algorithm = algos2[i], foldersp = folder_sp ############ MISSING let user choice e
+              )
+            }
           }
 
           paste0(
@@ -504,7 +509,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
           return(paste0("\nEnsembling: fail.\nError R: ", e3))
         }
       )
-      writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
+      writeLines(text = linesmsg6.5, con = filelog, sep = "\n")
     }
   }
 

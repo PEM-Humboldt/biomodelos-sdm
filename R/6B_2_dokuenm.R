@@ -124,7 +124,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
     run = run1, project = proj.mod, G.var.dir = G.var, ext.type = extrap
   )
   
-  if ( proj.models == "M-M" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_kuenm/current/"), pattern = "M.asc$", full.names = T, include.dirs = T, recursive = T)
+  if ( proj.models == "M-M" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_kuenm/current/"), pattern = paste0(folder.sp, ".asc$"), full.names = T, include.dirs = T, recursive = T)
   if ( proj.models == "M-G" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_kuenm/current/"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
   current_proj <- raster::stack(current_proj)
   names(current_proj) <- best3$Model
