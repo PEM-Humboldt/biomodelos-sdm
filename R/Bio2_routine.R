@@ -17,14 +17,50 @@
 
 ## Rutina
 
-Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models, area_G = NULL,
-                         dist_MOV, clim_vars, dir_clim, dir_other, TGS_kernel, col_sp = NULL, col_lat = NULL,
+Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL, #missing arguments lines here
+                         dist_MOV = NULL, clim_vars, dir_clim, dir_other, TGS_kernel = NULL, col_sp = NULL, col_lat = NULL,
                          col_lon = NULL, do_future = NULL, extension_vars = NULL, tipo = NULL, crs_proyect = NULL,
                          beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, kept = NULL,
                          IQR_mtpl = NULL, E = NULL, do_clean = NULL, uniq1k_method = NULL,
                          MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, algos = NULL,
                          use_bias = NULL, compute_G = NULL, dir_G = NULL, mxnt.pckg = NULL, other.pckg = NULL,
-                         extrapo = NULL, predic = NULL) {
+                         extrapo = NULL, predic = NULL, dist_uniq = NULL) {
+
+  # Missing arguments
+
+  if (!exists("occ")) {
+    stop("Provide an occurrence data base as a data.frame at least with species name,
+        longitud and latitud. You can use arguments col_sp, col_lat and col_lon 
+        to provide the column names of each one.")
+  } else {
+    if (!is.data.frame(occ)) stop("The data base provided need to be a data.frame object")
+  }    
+
+  if (!exists("drop_out")) {
+    stop("Provide a way to dropping out 'outliers' records in the data.base")
+  } else {
+    if (drop_out != "any") {
+      if (drop_out != "freq") {
+        if (drop_out != "IQR") {
+          stop("Provide a valid method for dropping out 'outliers' either 'any', 'freq' or 'IQR'. For more details, refer to general documentation and vigenettes")
+        }
+      }else{
+        if(is.null(raster_M)) stop("Provide a rasterize layer (readable by the raster package) of a shapefile to select frequencies (path non an object)")
+      }
+    }
+  }
+  
+  if(exists("polygon_select")){
+    if(isTRUE(polygon_select)){
+      if(is.null(polygon_M)) stop("Provide a shapefile ('.shp') to select polygons from in polygon_M argument (path non an object)")
+    }
+  }
+
+#  if(exists("proj_models")){
+#    if(proj_models == "M-G"){
+#      
+#    }
+#  }
 
   # ellipsis arguments
   if (is.null(col_sp)) col_sp <- "acceptedNameUsage" # Which is the species name column
@@ -33,7 +69,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   if (is.null(do_future)) do_future <- FALSE # MISSING kuenm modelling
   # if (is.null(date_period)) date_period <- "1970-01-01" # "From" date to limit chronologically occurrence data "year-month-day"
   # if (is.null(event_date)) event_date <- "eventDate"
-  if (is.null(extension_vars)) extension_vars <- "*.tif$" # ?Solo aceptara tifs? como hacer para que lea solamente archivos que pueda usar raster
+  if (is.null(extension_vars)) extension_vars <- "*.tif$" #### ?Solo aceptara tifs? como hacer para que lea solamente archivos que pueda usar raster
   if (is.null(tipo)) tipo <- "" # optional, in case of experiment (it is attached to folder sp name created)*
   if (is.null(crs_proyect)) crs_proyect <- "+init=epsg:4326"
   if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
@@ -61,7 +97,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
   if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
   if (is.null(extrapo)) extrapo <- "ext_clam"
-  if (is.null(predic)) predic <- "kuenm"
+  if (is.null(predic)) predic <- "kuenm" # dismo #missing maxnet
+  if (is.null(dist_uniq)) dist_uniq <- 2
 
   #--------------------------------------
   # 0. Setup
@@ -82,9 +119,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   source("R/7_doensemble.R")
   source("R/give.msg.time.R")
   source("R/doDE.MCP.R")
-  
+
   # 0.2 Starting time
-  
+
 
   time1 <- Sys.time()
 
@@ -93,7 +130,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   # extract the name of the species
 
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
-  
+
   folder_sp <- paste0(sp_name, tipo)
 
   dir.create(folder_sp, showWarnings = F)
@@ -177,16 +214,16 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   #--------------------------------------
   # 2. Unique occurrences to 1 km
   #--------------------------------------
-  print("Thining database to 1km")
+  print(paste0("Thining database to ", dist_uniq, "km, using  ", uniq1k_method))
 
   linesmsg2 <- tryCatch(
     expr = {
-      occ_1km <- do.uniq1km(
+      occ_thin <- do.uniq1km(
         occ. = occClean, col.lon = col_lon, col.lat = col_lat, sp.col = col_sp,
-        sp.name = sp_name, uniq1k.method = uniq1k_method, uniqDist = 1
+        sp.name = sp_name, uniq1k.method = uniq1k_method, uniqDist = dist_uniq
       )
-      write.csv(occ_1km, paste0(folder_sp, "/occurrences/occ_1km.csv"), row.names = F)
-      paste("Occurrences 1 km : ok.\nNumber of occurrences 'unique by pixel': ", nrow(occ_1km))
+      write.csv(occ_thin, paste0(folder_sp, "/occurrences/occ_thin.csv"), row.names = F)
+      paste("Occurrences thining : ok.\nNumber of occurrences 'unique by pixel': ", nrow(occ_thin))
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
@@ -204,9 +241,9 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   try(
     exp = {
-      if (nrow(occ_1km) <= 5) {
+      if (nrow(occ_thin) <= 5) {
         do.DE.MCP(
-          occ. = occ_1km, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp,
+          occ. = occ_thin, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp,
           dist.Mov = dist_MOV
         )
         linestime <- give.msg.time(time.1 = time1)
@@ -233,7 +270,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   linesmsg3 <- tryCatch(
     expr = {
       M_ <- M_area(
-        polygon.M = polygon_M, raster.M = raster_M, occ. = occ_1km, col.lon = col_lon,
+        polygon.M = polygon_M, raster.M = raster_M, occ. = occ_thin, col.lon = col_lon,
         col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV, drop.out = drop_out,
         MCPbuffer = MCP_buffer, polygon.select = polygon_select, pointsBuffer = points_Buffer
       )
@@ -334,11 +371,11 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
 
   #------- tracking file
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
-  
+
   # cleaning environment space
   rm(envars, occ_1km, occClean)
   gc()
-  
+
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
@@ -486,12 +523,12 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
       )
 
       writeLines(text = linesmsg6.4, con = filelog, sep = "\n")
-      
+
       linesmsg6.5 <- tryCatch(
         expr = {
           for (i in 1:length(algos2)) {
             layersalgo_i <- grep(pattern = algos2[i], names(PathBOther$c_proj))
-            if(length(layersalgo_i) != 0){
+            if (length(layersalgo_i) != 0) {
               projBalgo_i <- PathBOther$c_proj[[layersalgo_i]]
               currentEns_byAlg(
                 ras.Stack = projBalgo_i, data. = M_$occurrences, collon = col_lon, collat = col_lat,
@@ -520,13 +557,14 @@ Bio2_routine <- function(occ, drop_out, polygon_M, raster_M = NULL, proj_models,
   erase <- c(
     paste0(folder_sp, "/F_variables"), paste0(folder_sp, "/G_variables"),
     paste0(folder_sp, "/proj_current_cal"),
-    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/G_variables"), 
+    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/G_variables"),
     paste0(folder_sp, "/indEVA.csv"), paste0(folder_sp, "/proj_G_models"),
     paste0(folder_sp, "/BiasfileM.asc"), paste0(folder_sp, "/maxent.cache"),
     list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "biomod.csv", full.names = T),
     list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "kuenm.csv", full.names = T),
     list.files(path = paste0(folder_sp), pattern = ".out", full.names = T),
-    paste0(sp_name, "final_models.bat"), paste0(sp_name, "candidate_models.bat")   
+    paste0(sp_name, "final_models.bat"), paste0(sp_name, "candidate_models.bat"),
+    "spatial_thin_log.txt"
   )
   for (i in 1:length(erase)) {
     if (file.exists(erase[i])) {

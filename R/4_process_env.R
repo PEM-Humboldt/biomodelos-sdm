@@ -52,8 +52,7 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
 
   env_M <- raster::crop(env_crop, area.M)
   env_M <- raster::mask(env_M, area.M)
-#  env_M <- raster::mask(env_crop, area.M)
-  
+
   #---------------------
     # writing environmental layers
 
@@ -171,7 +170,7 @@ process_env.future <- function(climdataset, climdir, extension, crsproyect, G, e
   # number of folders nested in each path
   quan_dir_nested <- lapply(strings_dir, length) %>% unlist()
 
-  # last level of nesting is where the variables are stores
+  # last level of nesting is where the variables are stored
   max_dir <- max(quan_dir_nested)
   index_vars <- which(quan_dir_nested == max_dir)
 
@@ -195,10 +194,14 @@ process_env.future <- function(climdataset, climdir, extension, crsproyect, G, e
     clim_F_merge <- raster::stack(clim_fut_files)
 
     # reduce future climatic extent to current ennvironmental raster
-    clim_F <- raster::crop(clim_F_merge, envRas)
-    clim_F <- projectRaster(clim_F, envRas)
-    clim_F <- raster::mask(clim_F, envRas)
-
+    clim_F <- raster::crop(clim_F_merge, envRas[[1]])
+    a <- projectRaster(clim_F, env.Ras[[1]], method = "bilinear")
+    
+    writeRaster(a[[1]], "a.tif")
+    
+    clim_F <- raster::mask(clim_F, envRas[[1]])
+    
+    
     # Are there other files?
 
     other_F <- list.files(
