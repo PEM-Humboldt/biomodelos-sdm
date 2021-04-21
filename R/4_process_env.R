@@ -1,11 +1,12 @@
 # environmental variables
 
 process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, area.M,
-                                env.other, folder.sp, dofuture, area.G, proj.models) {
+                                env.other, folder.sp, dofuture, area.G, proj.models,
+                                compute.G) {
   # extent of M or G to cut the variables
-  if (proj.models == "M-M") {
+  if (proj.models == "M-M" | compute.G == FALSE) {
     cropArea <- area.M
-  } else if (proj.models == "M-G") {
+  } else {
     # read G extent
     cropArea <- raster::raster(area.G)
   }
@@ -45,34 +46,51 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
     names_ras <- names(env_crop)
   }
 
+  raster::res(env_crop) <- res(clim_merge)
+  
   # masking environmental data to accesible area or M
 
-  env_M <- raster::mask(env_crop, area.M)
+  env_M <- raster::crop(env_crop, area.M)
+  env_M <- raster::mask(env_M, area.M)
 
   #---------------------
-  # writing environmental layers
+    # writing environmental layers
 
-  if (proj.models == "M-G") {
+    if (proj.models == "M-G") {
+      if (compute.G == TRUE) {
 
-    # area G
+        # area G
 
-    # set G folder
+        # set G folder
 
-    dir.create(paste0(folder.sp, "/G_variables"), showWarnings = F)
-    dir.create(paste0(folder.sp, "/G_variables/Set_1"), showWarnings = F)
+        dir.create(paste0(folder.sp, "/G_variables"), showWarnings = F)
+        dir.create(paste0(folder.sp, "/G_variables/Set_1"), showWarnings = F)
+        dir.create(paste0(folder.sp, "/G_variables/Set_1/M"), showWarnings = F)
+        dir.create(paste0(folder.sp, "/G_variables/Set_1/G"), showWarnings = F)
 
-    # write G area, Maxent needs ".asc" files
+        # write G area, Maxent needs ".asc" files
 
-    for (i in 1:nlayers(env_crop)) {
-      raster::writeRaster(
-        x = env_crop[[i]],
-        filename = paste0(
-          folder.sp, "/G_variables/Set_1/", names(env_crop[[i]]), ".asc"
-        ),
-        overwrite = T
-      )
+        for (i in 1:nlayers(env_crop)) {
+          raster::writeRaster(
+            x = env_crop[[i]],
+            filename = paste0(
+              folder.sp, "/G_variables/Set_1/G/", names(env_crop[[i]]), ".asc"
+            ),
+            overwrite = T, NAflag = -9999
+          )
+        }
+        for (i in 1:nlayers(env_M)) {
+          raster::writeRaster(
+            x = env_M[[i]],
+            filename = paste0(
+              folder.sp, "/G_variables/Set_1/M/", names(env_M[[i]]), ".asc"
+            ),
+            overwrite = T, NAflag = -9999
+          )
+        }
+      }
     }
-  }
+
   # area M
 
   # set M folder
@@ -88,16 +106,16 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
       filename = paste0(
         folder.sp, "/M_variables/Set_1/", names(env_M[[i]]), ".asc"
       ),
-      overwrite = T
+      overwrite = T, NAflag = -9999
     )
   }
-  
-  if(proj.models == "M-M"){
+
+  if (proj.models == "M-M" | compute.G == FALSE) {
     env.Ras <- env_M
-  }else if(proj.models == "M-G"){
+  } else {
     env.Ras <- env_crop
   }
-  
+
   if (dofuture == TRUE) {
     env_F <- process_env.future(
       climdataset = clim.dataset,
@@ -110,28 +128,28 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
       foldersp = folder.sp,
       names.ras = names_ras
     )
-  
-  # results do.future == TRUE
-      
-  if (proj.models == "M-M") {
+
+    # results do.future == TRUE
+
+    if (proj.models == "M-M" | compute.G == FALSE) {
       return(list(M = env_M, G = NULL, Future = env_F))
-  } else if (proj.models == "M-G") {
+    } else {
       return(list(M = env_M, G = env_crop, Future = env_F))
     }
   }
-  
+
   # results do.future == FALSE
-  
-  if (proj.models == "M-M") {
+
+  if (proj.models == "M-M" | compute.G == FALSE) {
     return(list(M = env_M, G = NULL))
-  } else if (proj.models == "M-G") {
+  } else {
     return(list(M = env_M, G = env_crop))
   }
 }
 
 #-------------------------
 process_env.future <- function(climdataset, climdir, extension, crsproyect, G, envother,
-                               foldersp, M, projMod, names.ras,envRas = env.Ras) {
+                               foldersp, M, projMod, names.ras, envRas = env.Ras) {
 
   # future climatic folders/ directories
   fut_dir <- list.dirs(
@@ -152,7 +170,7 @@ process_env.future <- function(climdataset, climdir, extension, crsproyect, G, e
   # number of folders nested in each path
   quan_dir_nested <- lapply(strings_dir, length) %>% unlist()
 
-  # last level of nesting is where the variables are stores
+  # last level of nesting is where the variables are stored
   max_dir <- max(quan_dir_nested)
   index_vars <- which(quan_dir_nested == max_dir)
 
@@ -176,10 +194,14 @@ process_env.future <- function(climdataset, climdir, extension, crsproyect, G, e
     clim_F_merge <- raster::stack(clim_fut_files)
 
     # reduce future climatic extent to current ennvironmental raster
-      clim_F <- raster::crop(clim_F_merge, envRas)
-      clim_F <- projectRaster(clim_F, envRas)
-      clim_F <- raster::mask(clim_F, envRas)
-  
+    clim_F <- raster::crop(clim_F_merge, envRas[[1]])
+    a <- projectRaster(clim_F, env.Ras[[1]], method = "bilinear")
+    
+    writeRaster(a[[1]], "a.tif")
+    
+    clim_F <- raster::mask(clim_F, envRas[[1]])
+    
+    
     # Are there other files?
 
     other_F <- list.files(
@@ -203,17 +225,21 @@ process_env.future <- function(climdataset, climdir, extension, crsproyect, G, e
     }
 
     # set folders
-    dir.create(paste0(foldersp, "/F_variables"), showWarnings = F)
-    dir.create(paste0(foldersp, "/F_variables/Set_", set_), showWarnings = F)
+    dir.create(paste0(foldersp, "/G_variables"), showWarnings = F)
+    dir.create(paste0(foldersp, "/G_variables/Set_1"))
+    dir.create(paste0(foldersp, "/G_variables/Set_1/F_", set_), showWarnings = F)
 
-    write.csv(cbind(model, year, concentration), paste0(foldersp, "/F_variables/Set_", set_, "/data.csv"), row.names = F)
+    # writing information of future scenaries
+    write.csv(cbind(model, year, concentration), paste0(foldersp, "/G_variables/Set_1/F_", set_, "/data.csv"), row.names = F)
+    
+    # writing future layers
     for (a in 1:nlayers(env_F)) {
       raster::writeRaster(
         x = env_F[[a]],
         filename = paste0(
-          foldersp, "/F_variables/Set_", set_, "/", names(env_F[[a]]), ".asc"
+          foldersp, "/G_variables/Set_1/F_", set_, "/", names(env_F[[a]]), ".asc"
         ),
-        overwrite = T
+        overwrite = T, NAflag = -9999
       )
     }
   }

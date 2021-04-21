@@ -3,30 +3,54 @@
 # cell was calculated through the calculated range of a semivariogram. The range specifies from
 # what distance a spatial data base reduces its autocorrelation.
 
-dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat) {
+dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias) {
   
-  # bias sample to create the background for modeling
-  if(nrow(bias.file) > 10000){
-    Sbg <- bias.file[
-      sample(
-        x = seq(1:nrow(bias.file)),
-        size = 10000,
-        replace = F,
-        prob = bias.file[, 3]
-      ),
-      1:2
-    ]
+    # bias sample to create the background for modeling
+  if(use.bias == TRUE){
+    if(nrow(bias.file) > 10000){
+      Sbg <- bias.file[
+        sample(
+          x = seq(1:nrow(bias.file)),
+          size = 10000,
+          replace = F,
+          prob = bias.file[, 3]
+        ),
+        1:2
+      ]
+    }else{
+      Sbg <- bias.file[
+        sample(
+          x = seq(1:nrow(bias.file)),
+          size = ceiling(nrow(bias.file)*0.3),
+          replace = F,
+          prob = bias.file[, 3]
+        ),
+        1:2
+      ]
+    }  
   }else{
-    Sbg <- bias.file[
-      sample(
-        x = seq(1:nrow(bias.file)),
-        size = nrow(bias.file)*0.7,
-        replace = F,
-        prob = bias.file[, 3]
-      ),
-      1:2
-    ]
+    M.points <- rasterToPoints(env.M[[1]])
+    if(nrow(M.points) > 10000){
+      Sbg <- M.points[
+        sample(
+          x = seq(1:nrow(M.points)),
+          size = 10000,
+          replace = F
+        ),
+        1:2
+      ]
+    }else{
+      Sbg <- M.points[
+        sample(
+          x = seq(1:nrow(M.points)),
+          size = ceiling(nrow(M.points)*0.3),
+          replace = F
+        ),
+        1:2
+      ]
+    }
   }
+  
   
   # enmeval way to split needs a data frame with longitude and latitude coordinates with these names and this
   # order

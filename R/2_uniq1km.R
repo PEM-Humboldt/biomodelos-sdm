@@ -1,14 +1,14 @@
-do.uniq1km <- function(occ., col.lon, col.lat, sp.col, sp.name, uniq1k.method) {
+do.uniq1km <- function(occ., col.lon, col.lat, sp.col, sp.name, uniq1k.method, uniqDist) {
   
-  if (uniq1k.method == "sq1km") {
+  if (uniq1k.method == "sqkm") {
     dropUniq <- clean_dup(
-      data = occ., longitude = col.lon, latitude = col.lat, threshold = 1 / 120 #missing let user choice
+      data = occ., longitude = col.lon, latitude = col.lat, threshold = uniqDist / 120 #missing let user choice
     )
   }
 
   if (uniq1k.method == "spthin") {
     thinned <- spThin::thin(
-      loc.data = occ., lat.col = col.lat, long.col = col.lon, spec.col = sp.col, thin.par = 1,
+      loc.data = occ., lat.col = col.lat, long.col = col.lon, spec.col = sp.col, thin.par = uniqDist,
       reps = 20, verbose = TRUE, locs.thinned.list.return = TRUE, write.files = FALSE
       # thin.par parameter should be setting according to species natural history
     )

@@ -15,7 +15,7 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
     M <- st_buffer(coord_sf, dist.Mov / 120) %>%
       st_union() %>%
       as_Spatial()
-
+    
     raster::shapefile(
       x = M,
       filename = paste0(folder.sp, "/", "shape_M"),
@@ -66,30 +66,42 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
     # convert occurrence data to spatial object
     coord <- occ.
 
-    if (drop.out != "freq" & pointsBuffer == TRUE) {
+    if (drop.out != "freq") {
       # in case of buffer to every occurrence with dist.Mov
 
       coord_sf <- coord %>%
         dplyr::select(col.lon, col.lat) %>%
         st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
         st_transform(st_crs(Polygon.))
-
-      coord_buff <- st_buffer(coord_sf, dist.Mov / 120)
-
-      # cropping buffer with polygon extension to ensure parsimony
-      coord_buff <- st_crop(coord_sf, Polygon.)
-    
-    # intersecting coordinates with buffer and polygons from shape file, the data is lost
-
-    tryCatch(
-      exp = {
-        M <- Polygon.$geometry[coord_buff] %>% as_Spatial()
-      },
-      error = function(error_message) {
-        stop("points outside polygon")
+      
+      if(pointsBuffer == TRUE){
+        coord_buff <- st_buffer(coord_sf, dist.Mov / 120)
+        
+        # cropping buffer with polygon extension to ensure parsimony
+        coord_buff <- st_crop(coord_buff, Polygon.)
+        
+        # intersecting coordinates with buffer and polygons from shape file, the data is lost
+ 
+        tryCatch(
+          exp = {
+            M <- Polygon.$geometry[coord_buff] %>% as_Spatial()
+            },
+            error = function(error_message) {
+              stop("points outside polygon")
+            }
+         )
+      }else{
+        tryCatch(
+          exp = {
+            M <- Polygon.$geometry[coord_sf] %>% as_Spatial()
+          },
+          error = function(error_message) {
+            stop("points outside polygon")
+          }
+        )
       }
-    )
     }
+    
     if (drop.out == "freq") {
       # sub method B (frequency activate)
       if (is.null(raster.M)) {

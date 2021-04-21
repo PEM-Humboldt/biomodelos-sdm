@@ -1,10 +1,12 @@
-do.ensemble <- function(respathA, respathB1, respathB2, do.future,
+do.ensemble <- function(reslist, do.future,
                         occ., threshold., col.lon, col.lat, folder.sp,
                         crs.proyect) {
 
+  length(reslist)
+  
   # ensemble from small samples maxent modeling if exist
   if (!is.null(respathA)) {
-    pathA_current <- respathA$c_proj
+    pathA_current <- raster("Coendou.vestitus/final_models_sdmtune/current/model_fc_q_reg_0.5_bias.tif")
     raster::crs(pathA_current) <- sp::CRS(crs.proyect)
     ensA <- currentEns_byAlg(
       ras.Stack = pathA_current, data. = occ., collon = col.lon, collat = col.lat,
@@ -78,8 +80,8 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         # stacking results of ensembles
         Resensembles <- stack(Ras.med, Ras.devstd, Ras.cv, Ras.sum)
         names(Resensembles) <- c(
-          paste0(foldersp, algorithm, "_med"), paste0(foldersp, algorithm, "_devstd"),
-          paste0(foldersp, algorithm, "_CV"), paste0(foldersp, algorithm, "_sum")
+          paste0(foldersp, "_", algorithm), paste0(foldersp, "_devstd_", algorithm),
+          paste0(foldersp, "_CV_", algorithm), paste0(foldersp, "_sum", algorithm)
         )
 
         # writing ensemble
@@ -109,7 +111,7 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       # thresholds
 
       biomodelos.thresh <- c(e, 1, 10, 20, 30)
-      names(biomodelos.thresh) <- c("E", "MTP", "TTP", "20TP", "30TP")
+      names(biomodelos.thresh) <- c("E", "0", "10", "20", "30")
 
       # converting to binary the median ensemble for each biomodelos threshold
       Bins <- list()
@@ -150,7 +152,7 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         BinsRas <- raster::stack(BinsRas, Ras)
       }
 
-      names(BinsRas) <- paste0(foldersp, algorithm, "_Bin", names(biomodelos.thresh))
+      names(BinsRas) <- paste0(foldersp, "_", names(biomodelos.thresh), "_", algorithm)
 
       for (i in 1:nlayers(BinsRas)) {
         writeRaster(BinsRas[[i]], paste0(
