@@ -169,7 +169,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
         occ.joint = paste0(folder.sp, "/occurrences/occ_joint_kuenm.csv"),
         M.var.dir = env.Mdir, out.eval = paste0(folder.sp, "/eval_results_enmeval"),
         batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
-        jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
+        jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval/current"),
         max.memory = 2000, out.format = "logistic",
         project = FALSE, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
         write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
@@ -213,7 +213,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   }
 
   if (predic == "kuenm") {
-    if ( proj.models == "M-M" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_enmeval/current/"), pattern = "M.asc$", full.names = T, include.dirs = T, recursive = T)
+    if ( proj.models == "M-M" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_enmeval/current/"), pattern = paste0(folder.sp, ".asc$"), full.names = T, include.dirs = T, recursive = T)
     if ( proj.models == "M-G" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_enmeval/current/"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
 
     current_proj <- raster::stack(current_proj)

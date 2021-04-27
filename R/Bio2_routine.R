@@ -98,7 +98,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
   if (is.null(extrapo)) extrapo <- "ext_clam"
   if (is.null(predic)) predic <- "kuenm" # dismo #missing maxnet
-  if (is.null(dist_uniq)) dist_uniq <- 2
+  if (is.null(dist_uniq)) dist_uniq <- 1
 
   #--------------------------------------
   # 0. Setup
@@ -373,7 +373,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
 
   # cleaning environment space
-  rm(envars, occ_1km, occClean)
+  rm(envars, occ_thin, occClean)
   gc()
 
   #--------------------------------------
