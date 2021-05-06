@@ -1,19 +1,20 @@
 do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.Mdir, env.Gdir,
                       env.Fdir, do.future, proj.models, crs.proyect, algorithms, use.bias) {
 
+  # reading environmental M files
+  env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)
+  env.M <- raster::stack(env.Mfiles)
+  
+  
   #--------------------------- 
   # 1. Create Pseudoabcence table
   #---------------------------
 
-  bckgBst <- dobackPAlist(dat = data.splitted[["occ_train"]], BiasfilePo = Biasfile, usebias = use.bias)
+  bckgBst <- dobackPAlist(dat = data.splitted[["occ_train"]], BiasfilePo = Biasfile, usebias = use.bias, env.MRas = env.M[[1]])
 
   #---------------------------
   # 2. Calibration models
   #---------------------------
-
-  # reading environmental M files
-  env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)
-  env.M <- raster::stack(env.Mfiles)
 
   current_train <- biomod_fit(
     spat.data = bckgBst[["backgBst_spat"]], PA.data = bckgBst[["backgBst_logicDf"]],
@@ -27,10 +28,16 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
   # 3. Evaluation of calibrated models
   #---------------------------
 
+  if(use.bias == TRUE){
+    mask.points <- Biasfile
+  }else{
+    mask.points <- env.M[[1]]
+  }
+  
   # E = 5: MISSING threshold election by user
   eval1 <- do.GIndeva(
-    data.splitted = data.splitted, predict = current_train$predictions, mask_points = Biasfile,
-    foldersp = folder.sp
+    data.splitted = data.splitted, predict = current_train$predictions, mask_points = mask.points,
+    foldersp = folder.sp, usebias = use.bias
   )
 
   write.csv(eval1, paste0(folder.sp, "/eval_results_biomod/eval_models.csv"), row.names = F)
@@ -191,23 +198,30 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
 
 #-------------------------
 
-dobackPAlist <- function(dat, BiasfilePo, usebias) {
+dobackPAlist <- function(dat, BiasfilePo, usebias, env.MRas) {
 
   ## Pseudoabscence-background selection using bias file, n bootstrapped samples
-
-  BSpo <- BiasfilePo %>%
-    data.frame() %>%
-    dplyr::rename(longitude = lon, latitude = lat)
-  BSpo <- BSpo[, c(1:2)]
-
-
+  
+  if(usebias == TRUE){
+    BSpo <- BiasfilePo %>%
+      data.frame() %>%
+      dplyr::rename(longitude = lon, latitude = lat)
+    BSpo <- BSpo[, c(1:2)]  
+  }else{
+    BSpo <- env.MRas %>% 
+      raster::rasterToPoints() %>% 
+      data.frame() %>% 
+      dplyr::rename(longitude = x, latitude = y)
+    BSpo <- BSpo[, c(1:2)]
+  }
+  
   # 1.1 Coordinates from bias file (pseudoabscence-background) and training data sets are taken.
 
   backgPres_coord <- rbind(BSpo, dat)
 
   # 1.2 Give them category of pseudoabscence-background (NA) and presence (1) to each coordinate.
 
-  backgPres_data <- c(rep(NA, nrow(BiasfilePo)), rep(1, nrow(dat))) %>% data.frame()
+  backgPres_data <- c(rep(NA, nrow(BSpo)), rep(1, nrow(dat))) %>% data.frame()
 
   # 1.3. Biomod accept better when we work in a sp object. Use the coordinates and data.
 
@@ -220,7 +234,7 @@ dobackPAlist <- function(dat, BiasfilePo, usebias) {
   # 2.1 logic template, it is composed with FALSE info (inactive coordinate). Those will be activate
   # in the next lines
 
-  backgPres_logic <- c(rep(FALSE, nrow(BiasfilePo)), rep(TRUE, nrow(dat)))
+  backgPres_logic <- c(rep(FALSE, nrow(BSpo)), rep(TRUE, nrow(dat)))
 
   # 2.2 extract a sample of 10000 coordinates with replace and having in account the sample probability
   if (usebias == TRUE) {
@@ -231,10 +245,10 @@ dobackPAlist <- function(dat, BiasfilePo, usebias) {
     }
   } 
   if (usebias == FALSE) {
-    if (nrow(BiasfilePo) > 10000) {
-      sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = 10000, replace = TRUE)
+    if (nrow(BSpo) > 10000) {
+      sBias <- sample(x = seq(1:nrow(BSpo)), size = 10000, replace = TRUE)
     } else {
-      sBias <- sample(x = seq(1:nrow(BiasfilePo)), size = ceiling(nrow(BiasfilePo) * 0.7), replace = TRUE)
+      sBias <- sample(x = seq(1:nrow(BSpo)), size = ceiling(nrow(BiasfilePo) * 0.7), replace = TRUE)
     }
   }
   
