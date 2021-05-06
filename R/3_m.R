@@ -11,11 +11,11 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
       st_as_sf(coords = c(col.lon, col.lat), crs = st_crs("EPSG:4326")) %>%
       st_transform(st_crs("EPSG:4326"))
 
-    # in case of buffer to every occurrence with dist.Mov
+    # buffer to every occurrence with dist.Mov
     M <- st_buffer(coord_sf, dist.Mov / 120) %>%
       st_union() %>%
       as_Spatial()
-    
+
     raster::shapefile(
       x = M,
       filename = paste0(folder.sp, "/", "shape_M"),
@@ -25,7 +25,7 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
     return(result <- (list(shape_M = M, occurrences = coord)))
   }
 
-  # method 2: when you don't want to select your accesibe area trhough features from a bio geographical
+  # method 2: when you don't want to select your accesible area through features from a bio geographical
   # region, nor dropping outliers by bio geographical frequency in those features. It makes a Minimum
   # convex polygon around the points with a buffer controlled by dist.Mov (in kilometers). It could use cleaned or not cleaned data.
 
@@ -57,6 +57,7 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
   #
 
   # bio geographical polygon selection
+
   if (polygon.select == TRUE) {
     if (is.null(polygon.M)) {
       stop("You need a polygon shape file to select features")
@@ -73,24 +74,24 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
         dplyr::select(col.lon, col.lat) %>%
         st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
         st_transform(st_crs(Polygon.))
-      
-      if(pointsBuffer == TRUE){
+
+      if (pointsBuffer == TRUE) {
         coord_buff <- st_buffer(coord_sf, dist.Mov / 120)
-        
+
         # cropping buffer with polygon extension to ensure parsimony
         coord_buff <- st_crop(coord_buff, Polygon.)
-        
+
         # intersecting coordinates with buffer and polygons from shape file, the data is lost
- 
+
         tryCatch(
           exp = {
             M <- Polygon.$geometry[coord_buff] %>% as_Spatial()
-            },
-            error = function(error_message) {
-              stop("points outside polygon")
-            }
-         )
-      }else{
+          },
+          error = function(error_message) {
+            stop("points outside polygon")
+          }
+        )
+      } else {
         tryCatch(
           exp = {
             M <- Polygon.$geometry[coord_sf] %>% as_Spatial()
@@ -101,7 +102,7 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
         )
       }
     }
-    
+
     if (drop.out == "freq") {
       # sub method B (frequency activate)
       if (is.null(raster.M)) {
@@ -133,13 +134,12 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
         dplyr::select(BIOREG) %>%
         as(Class = "Spatial")
     }
-    
     if (MCPbuffer == TRUE) {
       MCPbuf <- do.MCP(
         dat = coord, collon = col.lon, collat = col.lat,
         distMov = dist.Mov
       )
-  
+
       M <- tryCatch(
         exp = {
           intersectsp(x = M, y = MCPbuf, valid = 2)
@@ -149,6 +149,32 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
         }
       )
     }
+
+
+    if (pointsBuffer == TRUE) { # CHANGE TO A FUNCTION
+
+      coord_buff <- coord %>%
+        dplyr::select(col.lon, col.lat) %>%
+        st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
+        st_transform(st_crs(Polygon.)) %>%
+        st_buffer(dist.Mov / 120) %>%
+        st_crop(Polygon.) %>%
+        st_union() %>%
+        as_Spatial()
+
+      # intersecting coordinates with buffer and polygons from shape file, the data is lost
+
+      tryCatch(
+        exp = {
+          M <- intersectsp(x = M, y = coord_buff, valid = 2)
+        },
+        error = function(error_message) {
+          stop("points outside polygon")
+        }
+      )
+    }
+
+
     # write shape file either bio geographical regions selected (cleaning or not by frequencies) or
     # biogeographical regions selected cutted with MCP
     raster::shapefile(
@@ -159,8 +185,6 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
 
     return(result <- (list(shape_M = M, occurrences = coord)))
   }
-
-  # in case of want a minimum convex polygon cutting the bio geographical features selected
 }
 
 
@@ -176,7 +200,7 @@ bior_extract <- function(RasPolygon, data., collon, collat) {
 }
 
 #-------------------------
-# force intersect of raster to check and try to buffer by zero distance to repair not valid
+# force intersect of spatial objects to check and try to buffer by zero distance to repair not valid
 # auto intersection
 
 intersectsp <- function(x, y, valid) {

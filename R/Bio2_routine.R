@@ -24,7 +24,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
                          IQR_mtpl = NULL, E = NULL, do_clean = NULL, uniq1k_method = NULL,
                          MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, algos = NULL,
                          use_bias = NULL, compute_G = NULL, dir_G = NULL, mxnt.pckg = NULL, other.pckg = NULL,
-                         extrapo = NULL, predic = NULL, dist_uniq = NULL) {
+                         extrapo = NULL, predic = NULL, dist_uniq = NULL, compute_F = NULL, dir_F = NULL) {
 
   # Missing arguments
 
@@ -93,7 +93,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
   if (is.null(use_bias)) use_bias <- TRUE
   if (is.null(compute_G)) compute_G <- TRUE
-  if (is.null(dir_G)) dir_G <- NULL
+  if (is.null(compute_F)) compute_F <- TRUE
   if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
   if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
   if (is.null(extrapo)) extrapo <- "ext_clam"
@@ -131,7 +131,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
 
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
 
-  folder_sp <- paste0(sp_name, tipo)
+  folder_sp <- paste0(sp_name, ".", tipo)
 
   dir.create(folder_sp, showWarnings = F)
 
@@ -158,7 +158,12 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   )
 
   writeLines(text = linesmsg0, con = filelog, sep = "\n")
-
+  
+  # Raster setup
+  
+  dir.create (paste0(folder_sp,"/Temp"), showWarnings = FALSE)
+  rasterOptions(tmpdir = paste0(folder_sp, "/Temp"))
+  
   #--------------------------------------
   # 1. clean data
   #--------------------------------------
@@ -172,7 +177,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
       )
       # col.date = event_date, date = date_period,
       write.csv(occClean, paste0(folder_sp, "/occurrences/occ_cleanCoord.csv"), row.names = F)
-      paste0("\nClean occurrences: yes\nNumber of cleaning occurrences: ", nrow(occClean))
+      paste0("\nClean occurrences: ", as.character(do_clean),"\nNumber of cleaning occurrences: ", nrow(occClean))
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
@@ -318,13 +323,14 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   #--------------------------------------
   print("Processing environmental layers")
 
-  linesmsg4 <- tryCatch(
+  linesmsg4 <- tryCatch( # missing at copy, use a vector of names instead of numbers to select what layers to copy
     expr = {
       envars <- process_env.current(
         clim.dataset = clim_vars, clim.dir = dir_clim, extension = extension_vars,
         crs.proyect = crs_proyect, area.M = M_$shape_M, area.G = area_G,
         env.other = dir_other, folder.sp = folder_sp, dofuture = do_future,
-        proj.models = proj_models, compute.G = compute_G
+        proj.models = proj_models, compute.G = FALSE, compute.F = FALSE,
+        dir.G = dir_G, dir.F = dir_F
       )
       paste("Processing environmental layers: ok.")
     },
@@ -333,12 +339,6 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
       return(paste0("Processing environmental layers: fail.\nError R: ", e))
     }
   )
-
-  if (compute_G == TRUE) {
-    env_G <- paste0(folder_sp, "/G_variables")
-  } else {
-    env_G <- dir_G
-  }
 
   #------- tracking file
 
@@ -360,6 +360,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
         )
         paste("Bias file development: ok")
       } else {
+        BiasSp <- NULL
         paste("Bias file NO developed")
       }
     },
@@ -372,14 +373,10 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   #------- tracking file
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
 
-  # cleaning environment space
-  rm(envars, occ_thin, occClean)
-  gc()
-
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
-
+  
   if (nrow(M_$occurrences) >= 5 & nrow(M_$occurrences) <= 25) {
     if (length(which(algos == "MAXENT")) != 0) {
 
@@ -393,17 +390,17 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
         expr = {
           PathAMaxent <- do.enmeval(
             occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.class = fc_5.25,
-            env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = env_G,
-            env.Fdir = paste0(folder_sp, "/F_variables"), do.future = do_future, folder.sp = folder_sp,
+            env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
+            env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
-            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = "kuenm"
+            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic
           )
           paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
           return(paste0("\nPath A, number occ less or equal to 25 \nSmall samples Maxent modelling fail.\nError R: ", e1))
-        }
+        } ## MISSING FIXING DISMO PREDIC
       )
 
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
@@ -415,17 +412,29 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
           currentEns_byAlg(
             ras.Stack = PathAMaxent$c_proj, data. = M_$occurrences,
             collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
-            foldersp = folder_sp
+            foldersp = folder_sp, tim = "current", esc.nm = ""
           )
-          paste("\nEnsembles: ok.")
+          
+          paste("\nEnsembles current: ok.")
+          
+          if(do_future == TRUE){
+            layersF <- futAuxiliar(PathAMaxent$f_proj)
+          
+          for(f in 1:length(layersF)){
+            currentEns_byAlg(
+              ras.Stack = layersF[[f]], data. = M_$occurrences,
+              collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
+              foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]) )
+            }  
+            paste("\nEnsembles future: ok.")
+          }
+
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
           return(paste0("\nEnsembles fail.\nError R: ", e1))
         }
       )
-
-
 
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
     }
@@ -442,7 +451,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
       expr = {
         PathBOcc <- dosplit(
           occ. = M_$occurrences, bias.file = BiasSp, folder.sp = folder_sp, col.lon = col_lon,
-          col.lat = col_lat, use.bias = use_bias
+          col.lat = col_lat, use.bias = use_bias, env.M = envars$M
         )
         paste0("\nPath B, number occ greater than 25\nOcc splited: ok.")
       },
@@ -454,7 +463,6 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
 
     writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
 
-
     if (length(which(algos == "MAXENT")) != 0) {
       linesmsg6.2 <- tryCatch(
         expr = {
@@ -463,7 +471,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
             biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
             maxent.path = getwd(), selection. = "OR_AICc", proj.models = proj_models,
             do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
-            env.Gdir = env_G, env.Fdir = paste0(folder_sp, "/F_variables"),
+            env.Gdir = paste0(folder_sp, "/G_variables"),
             crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo
             # MISSING for Unix and macOs the automated input of biasfile, ready for windows
           ) ####### MISSING
@@ -484,10 +492,23 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
           currentEns_byAlg(
             ras.Stack = PathBMaxent$c_proj, data. = M_$occurrences,
             collon = col_lon, collat = col_lat, e = 5, algorithm = "MAXENT",
-            foldersp = folder_sp
+            foldersp = folder_sp, tim = "current", esc.nm = ""
           )
 
-          paste0("\nEnsembling: ok.")
+          paste("\nEnsembles current: ok.")
+          
+          if(do_future == TRUE){
+            layersF <- futAuxiliar(PathBMaxent$f_proj)
+            
+            for(f in 1:length(layersF)){
+              currentEns_byAlg(
+                ras.Stack = layersF[[f]], data. = M_$occurrences,
+                collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
+                foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]) )
+            }  
+            paste("\nEnsembles future: ok.")
+          }
+          
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
@@ -497,18 +518,21 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
       writeLines(text = linesmsg6.3, con = filelog, sep = "\n")
     }
 
-    algos2 <- algos[-which(algos == "MAXENT")]
-
+    
+    # more algorithms than Maxent?
+    
+    algos2 <- algos[which(algos != "MAXENT")]
+    
     if (length(algos2) != 0) {
       # Biomod (ANN, GBM)
+      print("Path B, calibrating other algorithms than Maxent")
 
       linesmsg6.4 <- tryCatch(
         expr = {
           PathBOther <- do.biomod(
             data.splitted = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
             Biasfile = BiasSp, env.Mdir = paste0(folder_sp, "/M_variables"),
-            env.Gdir = paste0(folder_sp, "/G_variables"),
-            env.Fdir = paste0(folder_sp, "/F_variables"), nrep.s = 10,
+            env.Gdir = paste0(folder_sp, "/G_variables"), nrep.s = 10,
             do.future = do_future, proj.models = proj_models, crs.proyect = crs_proyect,
             algorithms = algos2, use.bias = use_bias
           )
@@ -557,21 +581,25 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   erase <- c(
     paste0(folder_sp, "/F_variables"), paste0(folder_sp, "/G_variables"),
     paste0(folder_sp, "/proj_current_cal"),
-    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/G_variables"),
-    paste0(folder_sp, "/indEVA.csv"), paste0(folder_sp, "/proj_G_models"),
-    paste0(folder_sp, "/BiasfileM.asc"), paste0(folder_sp, "/maxent.cache"),
+    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/indEVA.csv"), 
+    paste0(folder_sp, "/proj_G_models"), paste0(folder_sp, "/BiasfileM.asc"), 
+    paste0(folder_sp, "/maxent.cache"),
     list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "biomod.csv", full.names = T),
     list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "kuenm.csv", full.names = T),
     list.files(path = paste0(folder_sp), pattern = ".out", full.names = T),
-    paste0(sp_name, "final_models.bat"), paste0(sp_name, "candidate_models.bat"),
-    "spatial_thin_log.txt"
+    paste0(sp_name,"/", "final_models.bat"), paste0(sp_name, "candidate_models.bat"),
+    "spatial_thin_log.txt", paste0(folder_sp, "/Temp"),
+    list.files(path = paste0(folder_sp), pattern = ".asc$", full.names = T)
+    
   )
   for (i in 1:length(erase)) {
     if (file.exists(erase[i])) {
       unlink(erase[i], recursive = T, force = T)
     }
   }
-
+  
+  # time taken to execute
+  
   linestime <- give.msg.time(time.1 = time1)
 
   writeLines(linestime, filelog)

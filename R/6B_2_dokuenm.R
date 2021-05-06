@@ -1,7 +1,7 @@
 
 do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
                      folder.sp, biasfile, kept., proj.models, do.future, env.Mdir, env.Gdir,
-                     env.Fdir, crs.proyect, use.bias, extrap) {
+                     crs.proyect, use.bias, extrap) {
   
   #--------------------
   # 1. Formatting occurrences to Kuenm package
@@ -105,7 +105,8 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   
   
   dir.create(paste0(folder.sp, "/final_models_kuenm"), showWarnings = FALSE)
-  mod_dir <- paste0(folder.sp, "/final_models_kuenm/current")
+  
+  mod_dir <- paste0(folder.sp, "/final_models_kuenm/")
   
   if (proj.models == "M-M") {
     proj.mod <- FALSE
@@ -124,52 +125,77 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
     run = run1, project = proj.mod, G.var.dir = G.var, ext.type = extrap
   )
   
-  if ( proj.models == "M-M" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_kuenm/current/"), pattern = paste0(folder.sp, ".asc$"), full.names = T, include.dirs = T, recursive = T)
-  if ( proj.models == "M-G" ) current_proj <- list.files(path = paste0(folder.sp, "/final_models_kuenm/current/"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
-  current_proj <- raster::stack(current_proj)
-  names(current_proj) <- best3$Model
-  
-  
-  # Erasing .asc files in order to make small the size of species folders
-  
-  #erase.asc <- list.dirs(paste0(folder.sp, "/final_models_kuenm/current/"), full.names = T, recursive = F)
-  
-  #for (i in 1:length(erase.asc)) {
-  #  if (file.exists(erase.asc[i])) {
-  #    unlink(erase.asc[i], recursive = T, force = T)
-  #  }
-  #}
-  
-  # writing final models in .tif extensions
-  for (i in 1:nlayers(current_proj)) {
-    raster::writeRaster(
-      x = current_proj[[i]],
-      filename = paste0(
-        folder.sp, "/Final_models_kuenm/current/",
-        best3$Model[i], ".tif"
+  if (predic == "kuenm") {
+    if ( proj.models == "M-M" ) current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(folder.sp, ".asc$"), full.names = T, include.dirs = T, recursive = T)
+    if ( proj.models == "M-G" ) current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
+    
+    current_proj <- raster::stack(current_proj_files)
+    names(current_proj) <- best3$settings
+    
+    for (i in 1:nlayers(current_proj)) {
+      fileNm <- unlist(strsplit(x = current_proj_files[i], split = "/"))
+      
+      Ras <- current_proj[[i]]
+      raster::crs(Ras) <- sp::CRS(crs.proyect)
+      writeRaster(Ras, paste0(
+        folder.sp, "/final_models_kuenm/", fileNm[3], "/", unlist(strsplit(fileNm[4], ".asc$")),
+        ".tif"
       ),
+      format = "GTiff",
       overwrite = T
-    )
+      )
+    }
   }
+  
+  
   
   
   #--------------------
   # 6. future predictions
   #--------------------
+  if(do.future == TRUE){
   
-  if (do.future == TRUE) {
-    envF <- paste0(env.Fdir, "/")
-    proj.mod <- TRUE
-    mod_dirF <- paste0(folder.sp, "/final_models_kuenm/future")
-    kuenm::kuenm_mod(
-      occ.joint = occjoint, M.var.dir = M_var_dir, out.eval = out_eval, batch = batch_fin, 
-      rep.n = rep_n, rep.type = rep_type, jackknife = jackknife, out.dir = mod_dirF, 
-      out.format = out_format, maxent.path = maxent.path, args = biasarg, wait = wait1,
-      run = run1, project = proj.mod, G.var.dir = envF, ext.type = extrap
-    )
+    env.folder <- list.dirs(paste0(folder.sp, "/final_models_kuenm"), full.names = T, recursive = F)
+    env.folderNm <- list.dirs(paste0(folder.sp, "/final_models_kuenm"), full.names = F, recursive = F)
     
-    # results in case of do.future = TRUE
-    return(list(c_proj = current_proj, f_proj = NULL, best = best))
+    fut_proj_list <- list()
+    
+    for(i in 1:length(env.folder)){
+        
+        # folder of layers of each model
+        env.listFolder <- list.files(env.folder[i], pattern = ".asc$", full.names = T, recursive = T, include.dirs = F)
+        # no future asc files
+        noFRas <- c(grep("*_M.asc$", env.listFolder), grep("*_G.asc$", env.listFolder), grep(paste0(folder.sp, "asc$"), env.listFolder))
+        # removing no future files
+        env.FlistRas <- env.listFolder[-noFRas]
+        fut_proj <- raster::stack(env.FlistRas)
+        
+        # change asc files for tif
+        # first search into folder model, read files and create stack, write the layers in tif
+        
+        for (a in 1:nlayers(fut_proj)) {
+          
+          #getting a vector with name of model and layer
+          fileNm2 <- unlist(strsplit(x = env.FlistRas[a], split = "/"))
+          
+          Ras <- fut_proj[[a]]
+          raster::crs(Ras) <- sp::CRS(crs.proyect)
+          writeRaster(Ras, paste0(
+            folder.sp, "/final_models_kuenm/", fileNm2[3], "/", unlist(strsplit(fileNm2[4], ".asc$")),
+            ".tif"
+          ),
+          format = "GTiff",
+          overwrite = T
+          )
+        }        
+        
+        fut_proj_list[[i]] <- fut_proj
+      }      
+      names(fut_proj_list) <- env.folderNm
+      
+      # results in case of do.future = FALSE
+      
+      return(list(c_proj = current_proj, f_proj = fut_proj_list, best = best3))    
   }
   
   # results in case of do.future = FALSE

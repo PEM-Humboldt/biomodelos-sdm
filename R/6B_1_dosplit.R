@@ -3,7 +3,7 @@
 # cell was calculated through the calculated range of a semivariogram. The range specifies from
 # what distance a spatial data base reduces its autocorrelation.
 
-dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias) {
+dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias, env.M) {
   
     # bias sample to create the background for modeling
   if(use.bias == TRUE){

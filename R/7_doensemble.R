@@ -1,60 +1,5 @@
-do.ensemble <- function(reslist, do.future,
-                        occ., threshold., col.lon, col.lat, folder.sp,
-                        crs.proyect) {
 
-  length(reslist)
-  
-  # ensemble from small samples maxent modeling if exist
-  if (!is.null(respathA)) {
-    pathA_current <- raster("Coendou.vestitus/final_models_sdmtune/current/model_fc_q_reg_0.5_bias.tif")
-    raster::crs(pathA_current) <- sp::CRS(crs.proyect)
-    ensA <- currentEns_byAlg(
-      ras.Stack = pathA_current, data. = occ., collon = col.lon, collat = col.lat,
-      e = 10, algorithm = "mxnt", foldersp = folder.sp # MISSING let user choice e
-    ) ########################
-  }
-
-  # ensemble from large samples maxent modeling  if exist
-  if (!is.null(respathB1)) {
-    pathB1_current <- respathB1$c_proj
-    raster::crs(pathB1_current) <- sp::CRS(crs.proyect)
-    ensB1 <- currentEns_byAlg(
-      ras.Stack = pathB1_current, data. = occ., collon = col.lon, collat = col.lat,
-      e = 5, algorithm = "mxnt", foldersp = folder.sp # MISSING let user choice e
-    )
-  }
-
-  # ensemble from large samples other algorithms modeling  if exist
-  if (!is.null(respathB2)) {
-    pathB2_current <- respathB2$c_proj
-    raster::crs(pathB2_current) <- sp::CRS(crs.proyect)
-
-    # MISSING let the user specify the algorithms used in biomod, it could be solve using a
-    # flag name of maxent (mxnt) in the raster names (in kuenm or enmeval) to change the ensemble algorithm to
-    # use the name to know what algorith was used
-    # Temporal solution:
-
-    pathB2GBM <- pathB2_current[[grep(pattern = "GBM", names(pathB2_current))]]
-    ensB2GBM <- currentEns_byAlg(
-      ras.Stack = pathB2GBM, data. = occ., collon = col.lon, collat = col.lat,
-      e = 5, algorithm = "GBM", foldersp = folder.sp ############ MISSING let user choice e
-    )
-
-    pathB2ANN <- pathB2_current[[grep(pattern = "ANN", names(pathB2_current))]]
-    ensB2ANN <- currentEns_byAlg(
-      ras.Stack = pathB2ANN, data. = occ., collon = col.lon, collat = col.lat,
-      e = 5, algorithm = "ANN", foldersp = folder.sp ############ MISSING let user choice e
-    )
-  }
-
-  # if(do.future == T){
-  #
-  # }
-}
-
-#--------------------------
-
-currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, foldersp) {
+currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, foldersp, tim, esc.nm) {
   if (is.null(ras.Stack)) {
     message("any model")
   } else {
@@ -63,8 +8,8 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
     } else {
       # folder to save ensembles
       dir.create(paste0(foldersp, "/ensembles"), showWarnings = FALSE)
-      dir.create(paste0(foldersp, "/ensembles/current"), showWarnings = F)
-      dir.create(paste0(foldersp, "/ensembles/current", "/", algorithm), showWarnings = F)
+      dir.create(paste0(foldersp, "/ensembles/", tim), showWarnings = F)
+      dir.create(paste0(foldersp, "/ensembles/", tim, "/", algorithm), showWarnings = F)
       # branch for algorithms with more than one best model
 
       if (nlayers(ras.Stack) > 1) {
@@ -72,6 +17,7 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         # 1. Logistic ensembles by algorithm
 
         # taking statistics from logistic stack
+        
         Ras.med <- raster::calc(x = ras.Stack, median)
         Ras.devstd <- raster::calc(x = ras.Stack, sd)
         Ras.cv <- raster::calc(x = ras.Stack, CV)
@@ -80,14 +26,14 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         # stacking results of ensembles
         Resensembles <- stack(Ras.med, Ras.devstd, Ras.cv, Ras.sum)
         names(Resensembles) <- c(
-          paste0(foldersp, "_", algorithm), paste0(foldersp, "_devstd_", algorithm),
-          paste0(foldersp, "_CV_", algorithm), paste0(foldersp, "_sum", algorithm)
+          paste0(foldersp, "_",esc.nm, "_",algorithm), paste0(foldersp, "_devstd_",esc.nm, "_", algorithm),
+          paste0(foldersp, "_CV_",esc.nm, "_", algorithm), paste0(foldersp, "_sum",esc.nm,"_", algorithm)
         )
 
         # writing ensemble
         for (i in 1:raster::nlayers(Resensembles)) {
           writeRaster(Resensembles[[i]], paste0(
-            foldersp, "/ensembles/current", "/", algorithm, "/",
+            foldersp, "/ensembles/", tim, "/", algorithm, "/",
             names(Resensembles[[i]]), ".tif"
           ),
           format = "GTiff",
@@ -97,10 +43,10 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       } else {
         # pseudo-result of ensemble 1 model (median), to conserve parsimony
         Ras.med <- ras.Stack
-        names(Ras.med) <- paste0(foldersp, algorithm, "_med")
+        names(Ras.med) <- paste0(foldersp, esc.nm, "_", algorithm)
         # writing pseudo median
         writeRaster(Ras.med, paste0(
-          foldersp, "/ensembles/current", "/", algorithm, "/",
+          foldersp, "/ensembles/", tim, "/", algorithm, "/",
           names(Ras.med), ".tif"
         ),
         format = "GTiff",
@@ -138,8 +84,8 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       names(BinsDf) <- names(biomodelos.thresh)
 
       write.csv(BinsDf, paste0(
-        foldersp, "/ensembles/current/", algorithm, "/",
-        "binValues.csv"
+        foldersp, "/ensembles/", tim, "/", algorithm, "/",
+        "binValues", esc.nm, "_", algorithm, ".csv"
       ),
       row.names = F
       )
@@ -152,11 +98,11 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         BinsRas <- raster::stack(BinsRas, Ras)
       }
 
-      names(BinsRas) <- paste0(foldersp, "_", names(biomodelos.thresh), "_", algorithm)
+      names(BinsRas) <- paste0(foldersp, "_", names(biomodelos.thresh), "_", esc.nm, "_", algorithm)
 
       for (i in 1:nlayers(BinsRas)) {
         writeRaster(BinsRas[[i]], paste0(
-          foldersp, "/ensembles/current/", algorithm, "/",
+          foldersp, "/ensembles/", tim, "/", algorithm, "/",
           names(BinsRas[[i]]), ".tif"
         ),
         format = "GTiff",
@@ -195,4 +141,29 @@ do.bin <- function(Ras, dat, lon, lat, thresh) {
   names(binT) <- names(thresh)
 
   return(list(binT, TValue))
+}
+#------------------------------------------
+futAuxiliar <- function(fut.list.ras){
+  listras.lenght <- length(fut.list.ras)
+  layers.lenght <- nlayers(fut.list.ras[[1]]) #example of layers lenght
+  
+  list.layersFEsc <- list()
+  nm_vector <- as.numeric() 
+  
+  for(c in 1:layers.lenght){
+    layersbyEscenario <- raster::stack()
+    
+    for(d in 1:listras.lenght){
+      
+      stackc <- fut.list.ras[[d]]
+      rasc <- stackc[[c]] 
+      nms <- unlist(strsplit(names(rasc), "\\."))[3]
+      nm_vector[c] <- nms
+      layersbyEscenario <- raster::stack(layersbyEscenario, rasc)  
+    }
+    
+    list.layersFEsc[[c]] <- layersbyEscenario
+  }
+  names(list.layersFEsc) <- nm_vector
+  return(list.ras = list.layersFEsc)
 }
