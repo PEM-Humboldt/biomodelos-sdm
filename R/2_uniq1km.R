@@ -18,9 +18,10 @@ do.uniq1km <- function(occ., col.lon, col.lat, sp.col, sp.name, uniq1k.method, u
     
     lonlatThinned <- paste0(thindf$Longitude, thindf$Latitude)
     
-    lonlatnothinned <- paste0(occ.$decimalLongitude, occ.$decimalLatitude)
+    lonlatnothinned <- paste0(occ.[ , col.lon], occ.[ , col.lat])
     
     indexV <- as.numeric()
+    
     for(i in 1:length(lonlatThinned)){
       val1 <- which(lonlatThinned[i] == lonlatnothinned)
       indexV[i] <- val1

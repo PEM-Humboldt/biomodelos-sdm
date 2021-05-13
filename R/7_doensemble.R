@@ -1,5 +1,5 @@
 
-currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, foldersp, tim, esc.nm) {
+currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, foldersp, tim, esc.nm, crs.proyect) {
   if (is.null(ras.Stack)) {
     message("any model")
   } else {
@@ -17,40 +17,57 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         # 1. Logistic ensembles by algorithm
 
         # taking statistics from logistic stack
-        
-        Ras.med <- raster::calc(x = ras.Stack, median)
-        Ras.devstd <- raster::calc(x = ras.Stack, sd)
-        Ras.cv <- raster::calc(x = ras.Stack, CV)
-        Ras.sum <- raster::calc(x = ras.Stack, sum)
 
-        # stacking results of ensembles
-        Resensembles <- stack(Ras.med, Ras.devstd, Ras.cv, Ras.sum)
-        names(Resensembles) <- c(
-          paste0(foldersp, "_",esc.nm, "_",algorithm), paste0(foldersp, "_devstd_",esc.nm, "_", algorithm),
-          paste0(foldersp, "_CV_",esc.nm, "_", algorithm), paste0(foldersp, "_sum",esc.nm,"_", algorithm)
-        )
+        Ras.med <- raster::calc(x = ras.Stack, median)
+        if (tim == "current") {
+          Ras.devstd <- raster::calc(x = ras.Stack, sd)
+          Ras.cv <- raster::calc(x = ras.Stack, CV)
+          Ras.sum <- raster::calc(x = ras.Stack, sum)
+
+          # stacking results of ensembles
+          Resensembles <- stack(Ras.med, Ras.devstd, Ras.cv, Ras.sum)
+          names(Resensembles) <- c(
+            paste0(foldersp, "_", esc.nm, "_", algorithm), paste0(foldersp, "_devstd_", esc.nm, "_", algorithm),
+            paste0(foldersp, "_CV_", esc.nm, "_", algorithm), paste0(foldersp, "_sum", esc.nm, "_", algorithm)
+          )
+        } else {
+          Resensembles <- Ras.med
+          names(Resensembles) <- c(
+            paste0(foldersp, "_", esc.nm, "_", algorithm)
+          )
+        }
 
         # writing ensemble
         for (i in 1:raster::nlayers(Resensembles)) {
-          writeRaster(Resensembles[[i]], paste0(
+          RasResen.i <- Resensembles[[i]]
+          raster::crs(RasResen.i) <- sp::CRS(crs.proyect)
+          writeRaster(RasResen.i, paste0(
             foldersp, "/ensembles/", tim, "/", algorithm, "/",
             names(Resensembles[[i]]), ".tif"
           ),
           format = "GTiff",
-          overwrite = T
+          overwrite = T,
+          NAflag = -9999,
+          datatype = "FLT4S",
+          options = "COMPRESS=LZW"
           )
         }
       } else {
         # pseudo-result of ensemble 1 model (median), to conserve parsimony
         Ras.med <- ras.Stack
         names(Ras.med) <- paste0(foldersp, esc.nm, "_", algorithm)
+        raster::crs(Ras.med) <- sp::CRS(crs.proyect)
+        lyer.01 <- rasterToPoints(Ras.med)
         # writing pseudo median
         writeRaster(Ras.med, paste0(
           foldersp, "/ensembles/", tim, "/", algorithm, "/",
           names(Ras.med), ".tif"
         ),
         format = "GTiff",
-        overwrite = T
+        overwrite = T,
+        NAflag = -9999,
+        datatype = "FLT4S",
+        options = "COMPRESS=LZW"
         )
       }
 
@@ -101,12 +118,17 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       names(BinsRas) <- paste0(foldersp, "_", names(biomodelos.thresh), "_", esc.nm, "_", algorithm)
 
       for (i in 1:nlayers(BinsRas)) {
-        writeRaster(BinsRas[[i]], paste0(
+        BinsRas.i <- BinsRas[[i]]
+        raster::crs(BinsRas.i) <- sp::CRS(crs.proyect)
+        writeRaster(BinsRas.i, paste0(
           foldersp, "/ensembles/", tim, "/", algorithm, "/",
           names(BinsRas[[i]]), ".tif"
         ),
         format = "GTiff",
-        overwrite = T
+        overwrite = T,
+        datatype = "INT2S",
+        NAflag = -9999,
+        options = "COMPRESS=LZW"
         )
       }
     }
@@ -143,25 +165,24 @@ do.bin <- function(Ras, dat, lon, lat, thresh) {
   return(list(binT, TValue))
 }
 #------------------------------------------
-futAuxiliar <- function(fut.list.ras){
+futAuxiliar <- function(fut.list.ras) {
   listras.lenght <- length(fut.list.ras)
-  layers.lenght <- nlayers(fut.list.ras[[1]]) #example of layers lenght
-  
+  layers.lenght <- nlayers(fut.list.ras[[1]]) # example of layers lenght
+
   list.layersFEsc <- list()
-  nm_vector <- as.numeric() 
-  
-  for(c in 1:layers.lenght){
+  nm_vector <- as.numeric()
+
+  for (c in 1:layers.lenght) {
     layersbyEscenario <- raster::stack()
-    
-    for(d in 1:listras.lenght){
-      
+
+    for (d in 1:listras.lenght) {
       stackc <- fut.list.ras[[d]]
-      rasc <- stackc[[c]] 
-      nms <- unlist(strsplit(names(rasc), "\\."))[3]
-      nm_vector[c] <- nms
-      layersbyEscenario <- raster::stack(layersbyEscenario, rasc)  
+      rasc <- stackc[[c]]
+      nms <- unlist(regmatches(x = names(rasc), regexpr("_", names(rasc)), invert = TRUE))[2]
+      nm_vector[c] <- paste0("_", nms)
+      layersbyEscenario <- raster::stack(layersbyEscenario, rasc)
     }
-    
+
     list.layersFEsc[[c]] <- layersbyEscenario
   }
   names(list.layersFEsc) <- nm_vector

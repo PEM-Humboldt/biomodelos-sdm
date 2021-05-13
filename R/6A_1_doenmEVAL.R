@@ -1,6 +1,6 @@
 do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias,
-                       extrap, predic) {
+                       extrap, predic, write.intfiles) {
 
   # MISSING user choose function to predict
 
@@ -12,10 +12,10 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   env.M <- raster::stack(env.Mfiles)
 
   # G reading
-    if (proj.models == "M-G") {
-      env.Gfiles <- list.files(paste0(env.Gdir, "/Set_1/G/"), pattern = "*.asc$", full.names = T, recursive = F)
-      env.G <- raster::stack(env.Gfiles)
-    }
+  if (proj.models == "M-G") {
+    env.Gfiles <- list.files(paste0(env.Gdir, "/Set_1/G/"), pattern = "*.asc$", full.names = T, recursive = F)
+    env.G <- raster::stack(env.Gfiles)
+  }
 
   #--------------------
   # 1. Formatting background and occurrences to enmeval package
@@ -143,15 +143,14 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   #--------------------
 
   dir.create(paste0(folder.sp, "/final_models_enmeval"), showWarnings = F)
-  
+
   if (use.bias == TRUE) {
     biasfile <- "BiasfileM.asc"
     biasarg <- kuenm.path.bias(bias.file = biasfile, foldersp = folder.sp)
   } else {
     biasarg <- NULL
   }
-
-
+  
   # predicting current raster layers of best models
 
   if (proj.models == "M-M") {
@@ -162,6 +161,11 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
       current_proj <- stack(current_proj)
     }
     if (predic == "kuenm") {
+      if(do.future == TRUE){
+        proj <- TRUE
+      }else{
+          proj <- FALSE
+          }
       kuenm.occ(occ.[, -c(1, 2)], spname = folder.sp, foldersp = folder.sp, occname = "occ_joint_kuenm")
       kuenm::kuenm_mod(
         occ.joint = paste0(folder.sp, "/occurrences/occ_joint_kuenm.csv"),
@@ -169,13 +173,14 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
         batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
         max.memory = 2000, out.format = "logistic",
-        project = FALSE, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
+        project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
         write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
       )
     }
   }
 
-  if (proj.models == "M-G") { #FAILING NOW
+  if (proj.models == "M-G") {
+    proj <- TRUE
     if (predic == "dismo" & extrap == "ext_clam") {
       current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.G))
       names(current_proj) <- best3$settings
@@ -189,7 +194,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
         batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
         max.memory = 2000, out.format = "logistic",
-        project = TRUE, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
+        project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
         write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
       )
     }
@@ -197,44 +202,62 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
 
   # write current M or G prediction layers using dismo or maxnet
   if (predic == "dismo") {
-    if(proj.models == "M-G") folwrite <- "G"
-    if(proj.models == "M-M") folwrite <- "M"
-    
-    for (i in 1:nlayers(current_proj)) {
-      dir.create(paste0(folder.sp, "/final_models_enmeval/", names(current_proj[[i]])))
-      Ras <- current_proj[[i]]
-      raster::crs(Ras) <- sp::CRS(crs.proyect)
-      writeRaster(Ras, paste0(
-        folder.sp, "/final_models_enmeval/", names(current_proj[[i]]), "/",
-        folder.sp, folwrite, ".tif"
-      ),
-      format = "GTiff",
-      overwrite = T
-      )
+    if (proj.models == "M-G") folwrite <- "G"
+    if (proj.models == "M-M") folwrite <- "M"
+
+    if (write.intfiles == TRUE) {
+      for (i in 1:nlayers(current_proj)) {
+        dir.create(paste0(folder.sp, "/final_models_enmeval/", names(current_proj[[i]])))
+        Ras <- current_proj[[i]]
+        raster::crs(Ras) <- sp::CRS(crs.proyect)
+
+        writeRaster(Ras, paste0(
+          folder.sp, "/final_models_enmeval/", names(current_proj[[i]]), "/",
+          folder.sp, folwrite, ".tif"
+        ),
+        format = "GTiff",
+        overwrite = T,
+        NAflag = -9999,
+        datatype = "FLT4S",
+        options = "COMPRESS=LZW"
+        )
+      }
     }
   }
-  
+
   # searching and changing extension of raster layers from asc to tif
 
   if (predic == "kuenm") {
-    if ( proj.models == "M-M" ) current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(folder.sp, ".asc$"), full.names = T, include.dirs = T, recursive = T)
-    if ( proj.models == "M-G" ) current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_enmeval"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
-    
+    if (proj.models == "M-M"){
+      if(proj == TRUE){
+        current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(folder.sp, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
+      }else{
+        current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(".asc$"), full.names = T, include.dirs = T, recursive = T)
+      }
+    } 
+      
+  if (proj.models == "M-G") current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_enmeval"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
+
     current_proj <- raster::stack(current_proj_files)
     names(current_proj) <- best3$settings
-    
-    for (i in 1:nlayers(current_proj)) {
-      fileNm <- unlist(strsplit(x = current_proj_files[i], split = "/"))
-      
-      Ras <- current_proj[[i]]
-      raster::crs(Ras) <- sp::CRS(crs.proyect)
-      writeRaster(Ras, paste0(
-        folder.sp, "/final_models_enmeval/", fileNm[3], "/", unlist(strsplit(fileNm[4], ".asc$")),
-        ".tif"
-      ),
-      format = "GTiff",
-      overwrite = T
-      )
+
+    if (write.intfiles == TRUE) {
+      for (i in 1:nlayers(current_proj)) {
+        fileNm <- unlist(strsplit(x = current_proj_files[i], split = "/"))
+
+        Ras <- current_proj[[i]]
+        raster::crs(Ras) <- sp::CRS(crs.proyect)
+
+        writeRaster(Ras, paste0(
+          folder.sp, "/final_models_enmeval/", fileNm[3], "/", unlist(strsplit(fileNm[4], ".asc$")),
+          ".tif"
+        ),
+        format = "GTiff",
+        NAflag = -9999,
+        datatype = "FLT4S",
+        options = "COMPRESS=LZW"
+        )
+      }
     }
   }
 
@@ -246,9 +269,8 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   if (do.future == TRUE) {
     env.folder <- list.dirs(paste0(folder.sp, "/final_models_enmeval"), full.names = T, recursive = F)
     env.folderNm <- list.dirs(paste0(folder.sp, "/final_models_enmeval"), full.names = F, recursive = F)
-    
-    if(predic == "dismo" & extrap == "ext_clam"){
-      
+
+    if (predic == "dismo" & extrap == "ext_clam") {
       env.FlistRas <- lapply(env.Ffolder, function(x) {
         list.files(x, pattern = "*.asc", all.files = T, full.names = T)
       })
@@ -259,7 +281,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
       envFdata <- dplyr::bind_rows(env.Fdata)
       envFRas <- lapply(env.FlistRas, raster::stack)
       names(envFRas) <- apply(envFdata[, c(1:3)], 1, paste0, collapse = "_")
-      
+
       fut_proj <- list()
       for (i in 1:length(envFRas)) {
         fut_proj[[i]] <- lapply(eval1_models, function(x) dismo::predict(x, envFRas[[i]]))
@@ -267,25 +289,29 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
       }
       names(fut_proj) <- names(envFRas)
       fut_proj2 <- unlist(fut_proj)
-      
+
       dir.create(paste0(folder.sp, "/final_models_enmeval/future"))
-      
-      for (i in 1:length(fut_proj2)) {
-        writeRaster(fut_proj2[[i]], paste0(
-          folder.sp, "/final_models_enmeval/future/",
-          names(fut_proj2[i]), ".tif"
-        ),
-        format = "GTiff",
-        overwrite = T
-        )
+
+      if (write.intfiles == TRUE) {
+        for (i in 1:length(fut_proj2)) {
+          writeRaster(fut_proj2[[i]], paste0(
+            folder.sp, "/final_models_enmeval/future/",
+            names(fut_proj2[i]), ".tif"
+          ),
+          format = "GTiff",
+          overwrite = T,
+          NAflag = -9999,
+          datatype = "FLT4S",
+          options = "COMPRESS=LZW"
+          )
+        }
       }
     }
-    
-    if(predic == "kuenm"){
-      
+
+    if (predic == "kuenm") {
       fut_proj_list <- list()
-      for(i in 1:length(env.folder)){
-        
+      for (i in 1:length(env.folder)) {
+
         # folder of layers of each model
         env.listFolder <- list.files(env.folder[i], pattern = ".asc$", full.names = T, recursive = T, include.dirs = F)
         # no future asc files
@@ -293,31 +319,35 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
         # removing no future files
         env.FlistRas <- env.listFolder[-noFRas]
         fut_proj <- raster::stack(env.FlistRas)
-        
+
         # change asc files for tif
         # first search into folder model, read files and create stack, write the layers in tif
-        
-        for (a in 1:nlayers(fut_proj)) {
-          
-          #getting a vector with name of model and layer
-          fileNm2 <- unlist(strsplit(x = env.FlistRas[a], split = "/"))
-          
-          Ras <- fut_proj[[a]]
-          raster::crs(Ras) <- sp::CRS(crs.proyect)
-          writeRaster(Ras, paste0(
-            folder.sp, "/final_models_enmeval/", fileNm2[3], "/", unlist(strsplit(fileNm2[4], ".asc$")),
-            ".tif"
-          ),
-          format = "GTiff",
-          overwrite = T
-          )
-        }        
-        
-       fut_proj_list[[i]] <- fut_proj
-      }      
+        if (write.intfiles == TRUE) {
+          for (a in 1:nlayers(fut_proj)) {
+
+            # getting a vector with name of model and layer
+            fileNm2 <- unlist(strsplit(x = env.FlistRas[a], split = "/"))
+
+            Ras <- fut_proj[[a]]
+            raster::crs(Ras) <- sp::CRS(crs.proyect)
+            writeRaster(Ras, paste0(
+              folder.sp, "/final_models_enmeval/", fileNm2[3], "/", unlist(strsplit(fileNm2[4], ".asc$")),
+              ".tif"
+            ),
+            format = "GTiff",
+            overwrite = T,
+            NAflag = -9999,
+            datatype = "FLT4S",
+            options = "COMPRESS=LZW"
+            )
+          }
+        }
+
+        fut_proj_list[[i]] <- fut_proj
+      }
       names(fut_proj_list) <- env.folderNm
     }
-    
+
 
     # results in case of do.future = TRUE
     return(list(c_proj = current_proj, f_proj = fut_proj_list, best = best3))

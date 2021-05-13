@@ -97,7 +97,10 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
         folder.sp, "/Final_models_biomod/current/",
         short_name[[i]], ".tif"
       ),
-      overwrite = T
+      overwrite = T,
+      NAflag = -9999, 
+      datatype = "FLT4S", 
+      options="COMPRESS=LZW"
     )
   }
 
@@ -129,7 +132,10 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
           folder.sp, "/Final_models_biomod/current_G/",
           short_name[[i]], ".tif"
         ),
-        overwrite = T
+        overwrite = T,
+        NAflag = -9999, 
+        datatype = "FLT4S", 
+        options="COMPRESS=LZW"
       )
     }
     selected <- predictionsG
@@ -182,7 +188,10 @@ do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.M
           folder.sp, "/final_models_biomod/future/",
           names(predictionsF[i]), ".", names(brick[[a]]), ".tif"
         ),
-        overwrite = T
+        overwrite = T,
+        NAflag = -9999, 
+        datatype = "FLT4S", 
+        options="COMPRESS=LZW"
         )
       }
     }

@@ -83,7 +83,7 @@ dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias, env.
   
   lonlatTrain <- paste0(occ_train$longitude, occ_train$latitude)
   lonlatTest <- paste0(occ_test$longitude, occ_test$latitude)
-  lonlatocc <- paste0(occ.$decimalLongitude, occ.$decimalLatitude)
+  lonlatocc <- paste0(occ.[ , col.lon], occ.[ , col.lat])
   
   indexTrain <- as.numeric()
   for(i in 1:length(lonlatTrain)){

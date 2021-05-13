@@ -32,7 +32,12 @@ get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G, folder.sp
   BiasfileM <- raster::projectRaster(BiasfileM, env.M)
   #BiasfileM[BiasfileM <= 0] <- 0.000009
   
-  raster::writeRaster(BiasfileM, paste0(folder.sp, "/BiasfileM.asc"), overwrite = T)
+  raster::writeRaster(BiasfileM, paste0(folder.sp, "/BiasfileM.asc"),
+                      overwrite = T,
+                      NAflag = -9999,
+                      datatype = "FLT4S", 
+                      options="COMPRESS=LZW"
+                      )
   
 #  if(proj.models == "M-G"){
 #    # Bias in G

@@ -17,14 +17,17 @@
 
 ## Rutina
 
-Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL, #missing arguments lines here
-                         dist_MOV = NULL, clim_vars, dir_clim, dir_other, TGS_kernel = NULL, col_sp = NULL, col_lat = NULL,
-                         col_lon = NULL, do_future = NULL, extension_vars = NULL, tipo = NULL, crs_proyect = NULL,
-                         beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, kept = NULL,
-                         IQR_mtpl = NULL, E = NULL, do_clean = NULL, uniq1k_method = NULL,
-                         MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, algos = NULL,
-                         use_bias = NULL, compute_G = NULL, dir_G = NULL, mxnt.pckg = NULL, other.pckg = NULL,
-                         extrapo = NULL, predic = NULL, dist_uniq = NULL, compute_F = NULL, dir_F = NULL) {
+Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL, 
+                         drop_out, IQR_mtpl = NULL, clim_vars, dir_clim, dir_other,
+                         extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,  
+                         MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, polygon_M = NULL, 
+                         raster_M = NULL, dist_MOV = NULL, proj_models, area_G = NULL, compute_G = NULL, 
+                         dir_G = NULL, use_bias = NULL, TGS_kernel = NULL, algos = NULL, 
+                         beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL,
+                         extrapo = NULL, predic = NULL, do_future = NULL, crs_proyect = NULL,
+                         tipo = NULL, kept = NULL, E = NULL, mxnt.pckg = NULL, other.pckg = NULL,
+                         compute_F = NULL, dir_F = NULL, keep_files = NULL, write_intfiles = NULL
+                         ) {
 
   # Missing arguments
 
@@ -99,6 +102,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   if (is.null(extrapo)) extrapo <- "ext_clam"
   if (is.null(predic)) predic <- "kuenm" # dismo #missing maxnet
   if (is.null(dist_uniq)) dist_uniq <- 1
+  if (is.null(keep_files)) keep_files <- "essential"
+  if (is.null(write_intfiles)) write_intfiles <- FALSE
 
   #--------------------------------------
   # 0. Setup
@@ -121,7 +126,6 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   source("R/doDE.MCP.R")
 
   # 0.2 Starting time
-
 
   time1 <- Sys.time()
 
@@ -217,7 +221,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   )
 
   #--------------------------------------
-  # 2. Unique occurrences to 1 km
+  # 2. Unique occurrences to x km
   #--------------------------------------
   print(paste0("Thining database to ", dist_uniq, "km, using  ", uniq1k_method))
 
@@ -228,7 +232,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
         sp.name = sp_name, uniq1k.method = uniq1k_method, uniqDist = dist_uniq
       )
       write.csv(occ_thin, paste0(folder_sp, "/occurrences/occ_thin.csv"), row.names = F)
-      paste("Occurrences thining : ok.\nNumber of occurrences 'unique by pixel': ", nrow(occ_thin))
+      paste(paste0("Thining database to ", dist_uniq, "km, using  ", uniq1k_method), "\nOccurrences thining : ok.\nNumber of occurrences 'unique': ", nrow(occ_thin))
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
@@ -329,7 +333,7 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
         clim.dataset = clim_vars, clim.dir = dir_clim, extension = extension_vars,
         crs.proyect = crs_proyect, area.M = M_$shape_M, area.G = area_G,
         env.other = dir_other, folder.sp = folder_sp, dofuture = do_future,
-        proj.models = proj_models, compute.G = FALSE, compute.F = FALSE,
+        proj.models = proj_models, compute.G = compute_G, compute.F = compute_G,
         dir.G = dir_G, dir.F = dir_F
       )
       paste("Processing environmental layers: ok.")
@@ -393,7 +397,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
-            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic
+            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic,
+            write.intfiles = write_intfiles
           )
           paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
         },
@@ -409,14 +414,13 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
 
       linesmsg6.2 <- tryCatch(
         expr = {
-          currentEns_byAlg(
+          enscurr <- currentEns_byAlg(
             ras.Stack = PathAMaxent$c_proj, data. = M_$occurrences,
             collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
-            foldersp = folder_sp, tim = "current", esc.nm = ""
+            foldersp = folder_sp, tim = "current", esc.nm = "", crs.proyect = crs_proyect
           )
           
-          paste("\nEnsembles current: ok.")
-          
+
           if(do_future == TRUE){
             layersF <- futAuxiliar(PathAMaxent$f_proj)
           
@@ -424,11 +428,12 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
             currentEns_byAlg(
               ras.Stack = layersF[[f]], data. = M_$occurrences,
               collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
-              foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]) )
+              foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
+              crs.proyect = crs_proyect
+              )
             }  
-            paste("\nEnsembles future: ok.")
           }
-
+          paste("\nEnsembles: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
@@ -472,7 +477,8 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
             maxent.path = getwd(), selection. = "OR_AICc", proj.models = proj_models,
             do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
             env.Gdir = paste0(folder_sp, "/G_variables"),
-            crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo
+            crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo, 
+            write.intfiles = write_intfiles
             # MISSING for Unix and macOs the automated input of biasfile, ready for windows
           ) ####### MISSING
           paste0(
@@ -492,23 +498,24 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
           currentEns_byAlg(
             ras.Stack = PathBMaxent$c_proj, data. = M_$occurrences,
             collon = col_lon, collat = col_lat, e = 5, algorithm = "MAXENT",
-            foldersp = folder_sp, tim = "current", esc.nm = ""
+            foldersp = folder_sp, tim = "current", esc.nm = "",
+            crs.proyect = crs_proyect
           )
 
-          paste("\nEnsembles current: ok.")
-          
           if(do_future == TRUE){
-            layersF <- futAuxiliar(PathBMaxent$f_proj)
+            layersF <- futAuxiliar(fut.list.ras = PathBMaxent$f_proj)
             
             for(f in 1:length(layersF)){
               currentEns_byAlg(
                 ras.Stack = layersF[[f]], data. = M_$occurrences,
-                collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
-                foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]) )
+                collon = col_lon, collat = col_lat, e = 5, algorithm = "MAXENT",
+                foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
+                crs.proyect = crs_proyect
+                )
             }  
-            paste("\nEnsembles future: ok.")
           }
           
+          paste("\nEnsembles current: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
@@ -577,21 +584,34 @@ Bio2_routine <- function(occ, drop_out, polygon_M = NULL, raster_M = NULL, proj_
   #--------------------------------------
   # End
   #--------------------------------------
-
-  erase <- c(
-    paste0(folder_sp, "/F_variables"), paste0(folder_sp, "/G_variables"),
-    paste0(folder_sp, "/proj_current_cal"),
-    paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/indEVA.csv"), 
-    paste0(folder_sp, "/proj_G_models"), paste0(folder_sp, "/BiasfileM.asc"), 
-    paste0(folder_sp, "/maxent.cache"),
-    list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "biomod.csv", full.names = T),
-    list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "kuenm.csv", full.names = T),
-    list.files(path = paste0(folder_sp), pattern = ".out", full.names = T),
-    paste0(sp_name,"/", "final_models.bat"), paste0(sp_name, "candidate_models.bat"),
-    "spatial_thin_log.txt", paste0(folder_sp, "/Temp"),
-    list.files(path = paste0(folder_sp), pattern = ".asc$", full.names = T)
-    
-  )
+  
+  if(keep_files == "all"){
+    erase <- ""
+  }
+  
+  if(keep_files == "essential" | keep_files == "none"){
+    erase <- c(
+      paste0(folder_sp, "/F_variables"), paste0(folder_sp, "/G_variables"),
+      paste0(folder_sp, "/proj_current_cal"),
+      paste0(folder_sp, "/M_variables"), paste0(folder_sp, "/indEVA.csv"), 
+      paste0(folder_sp, "/proj_G_models"), paste0(folder_sp, "/BiasfileM.asc"), 
+      paste0(folder_sp, "/maxent.cache"),
+      list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "biomod.csv", full.names = T),
+      list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "kuenm.csv", full.names = T),
+      list.files(path = paste0(folder_sp), pattern = ".out", full.names = T),
+      paste0(folder_sp, "/", "final_models.bat"), paste0(folder_sp, ",", "candidate_models.bat"),
+      "spatial_thin_log.txt", paste0(folder_sp, "/Temp"),
+      list.files(path = paste0(folder_sp,"/"), pattern = ".asc$", full.names = T, recursive = T)
+    )
+    if(keep_files == "none"){
+      folders.inside <- list.dirs(path = paste0(folder_sp, "/"), full.names = T, recursive = F)
+      erase2 <- c(
+       folders.inside[grep(folders.inside, pattern = "final_")], folders.inside[grep(folders.inside, pattern = "eval_")]
+      )
+      erase <- c(erase, erase2)
+    }
+  }
+  
   for (i in 1:length(erase)) {
     if (file.exists(erase[i])) {
       unlink(erase[i], recursive = T, force = T)
