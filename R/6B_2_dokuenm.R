@@ -135,7 +135,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
 
   
   if (proj.models == "M-M"){
-    if(proj == TRUE){
+    if(proj.mod == TRUE){
       current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(folder.sp, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
     }else{
       current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(folder.sp, "asc$"), full.names = T, include.dirs = T, recursive = T)

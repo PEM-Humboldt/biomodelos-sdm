@@ -133,7 +133,31 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
         dplyr::filter(BIOME_NUM %in% c(namreg)) %>%
         dplyr::select(BIOREG) %>%
         as(Class = "Spatial")
+    
+      if (pointsBuffer == TRUE) { # CHANGE TO A FUNCTION
+        
+        coord_buff <- coord %>%
+          dplyr::select(col.lon, col.lat) %>%
+          st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
+          st_transform(st_crs(Polygon.)) %>%
+          st_buffer(dist.Mov / 120) %>%
+          st_crop(Polygon.) %>%
+          st_union() %>%
+          as_Spatial()
+        
+        # intersecting coordinates with buffer and polygons from shape file, the data is lost
+        
+        tryCatch(
+          exp = {
+            M <- intersectsp(x = M, y = coord_buff, valid = 2)
+          },
+          error = function(error_message) {
+            stop("points outside polygon")
+          }
+        )
+      }  
     }
+    
     if (MCPbuffer == TRUE) {
       MCPbuf <- do.MCP(
         dat = coord, collon = col.lon, collat = col.lat,
@@ -146,30 +170,6 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
         },
         error = function(error_message) {
           stop("imposible fixing self intersection")
-        }
-      )
-    }
-
-
-    if (pointsBuffer == TRUE) { # CHANGE TO A FUNCTION
-
-      coord_buff <- coord %>%
-        dplyr::select(col.lon, col.lat) %>%
-        st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
-        st_transform(st_crs(Polygon.)) %>%
-        st_buffer(dist.Mov / 120) %>%
-        st_crop(Polygon.) %>%
-        st_union() %>%
-        as_Spatial()
-
-      # intersecting coordinates with buffer and polygons from shape file, the data is lost
-
-      tryCatch(
-        exp = {
-          M <- intersectsp(x = M, y = coord_buff, valid = 2)
-        },
-        error = function(error_message) {
-          stop("points outside polygon")
         }
       )
     }
