@@ -9,7 +9,6 @@ clean_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, #col.date, d
     sppcol = spp.col,
     collon = col.lon,
     collat = col.lat
-#    coldate = col.date
   )
 
   if (do.clean == TRUE) {

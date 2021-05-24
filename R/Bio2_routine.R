@@ -74,7 +74,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   # if (is.null(event_date)) event_date <- "eventDate"
   if (is.null(extension_vars)) extension_vars <- "*.tif$" #### ?Solo aceptara tifs? como hacer para que lea solamente archivos que pueda usar raster
   if (is.null(tipo)) tipo <- "" # optional, in case of experiment (it is attached to folder sp name created)*
-  if (is.null(crs_proyect)) crs_proyect <- "+init=epsg:4326"
+  if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
   if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
   if (is.null(fc_5.25)) fc_5.25 <- c("l", "q", "lq") # solo minusculas
   if (is.null(beta_25)) beta_25 <- seq(1, 6, 1)
@@ -97,8 +97,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   if (is.null(use_bias)) use_bias <- TRUE
   if (is.null(compute_G)) compute_G <- TRUE
   if (is.null(compute_F)) compute_F <- TRUE
-  if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
-  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
+#  if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
+#  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
   if (is.null(extrapo)) extrapo <- "ext_clam"
   if (is.null(predic)) predic <- "kuenm" # dismo #missing maxnet
   if (is.null(dist_uniq)) dist_uniq <- 1
@@ -134,9 +134,13 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   # extract the name of the species
 
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
-
-  folder_sp <- paste0(sp_name, ".", tipo)
-
+  
+  if(tipo != ""){
+    folder_sp <- paste0(sp_name, ".", tipo)
+  }else{
+    folder_sp <- sp_name
+  }
+  
   dir.create(folder_sp, showWarnings = F)
 
   # 0.4 writing occurrences data withouth processing, aka raw occurrences.
@@ -153,16 +157,51 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   filelog <- file(paste0(folder_sp, "/log_file.txt"), "w")
 
   linesmsg0 <- paste0(
-    time1, "\n", "Species name: ", sp_name, "\n", "M shapefile: ", polygon_M, "\n",
-    "Movement distance vector: ", dist_MOV, " km\n", # "Dates to filter: ", date_period,
-    "\n", "Projecting models from ", proj_models,
-    "\n", "Climatic variables: ", clim_vars, "\n",
-    "Experimental type:", tipo, "\n", "Raw occurrences: ", nrow(occ),
-    "\n", "Outliers manage by ", drop_out, "\nCleaning occurrences", do_clean
+    time1, "\n", 
+    "Species name: ", sp_name, "\n",
+    "Number of raw occurrences ", nrow(occ), "\n",
+    "Experimental type:", tipo, "\n",
+    "\n",
+    "Cleaning occurrences (Clean coordinates)", do_clean, "\n",
+    "Outliers manage by ", drop_out, "\n",  
+    "Method for unique records ", uniq1k_method, "\n", 
+    "Distance used for unique records ", dist_uniq, " km", "\n",
+    "\n",
+    "Accesible area constructed with:", "Buffer points ", points_Buffer, 
+    ", Minimun convex poligon ", MCP_buffer, ", Selecting polygons ", polygon_select, "\n",
+    "Polygon shapefile for accesible area: ", polygon_M, "\n",    
+    "Movement distance vector (buffer depends on this vector): ", dist_MOV, " km", "\n",
+    "\n",
+    "Projections", "\n",    
+    "Projecting models from ", proj_models,"\n",
+    "Projecting to future ", do_future, "\n",  
+    "CRS projecting ", crs_proyect, "\n",
+    "\n",    
+    "Climatic variables: ", clim_vars, "\n",
+    "G extent path", area_G, "\n",
+    "Computing G Variables ", compute_G, "\n",
+    "Computing F Variables ", compute_F, "\n",
+    "\n",
+    "Algorithms used ", algos, "\n",
+    "Bias layer used ", use_bias, "\n",
+    "Path of bias layer", "bias_layer/aves_set16.tif", "\n",
+    "\n",
+    "Maxent detailed", "\n",
+    "Maxent beta multiplier occurrences less than 25 ", paste0(beta_5.25, collapse = ","), "\n",
+    "Maxent beta multiplier occurrences greater than 25 ", paste0(beta_25, collapse = ","), "\n",
+    "Maxent feature classes occurrences less than 25 ", paste0(fc_5.25, collapse = ","), "\n",
+    "Maxent feature classes occurrences greater than 25 ", paste0(fc_25, collapse = ","), "\n", 
+    "Maxent prediction settings ", extrapo, "\n",
+    "Maxent prediction function ", predic, "\n",
+    "\n",
+    "Final data", "\n",
+    "Store files ", keep_files, "\n",
+    "Store intermediate ASC files ", write_intfiles, "\n",
+    "#############################################################################", "\n"
   )
 
   writeLines(text = linesmsg0, con = filelog, sep = "\n")
-  
+
   # Raster setup
   
   dir.create (paste0(folder_sp,"/Temp"), showWarnings = FALSE)
@@ -181,7 +220,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
       # col.date = event_date, date = date_period,
       write.csv(occClean, paste0(folder_sp, "/occurrences/occ_cleanCoord.csv"), row.names = F)
-      paste0("\nClean occurrences: ", as.character(do_clean),"\nNumber of cleaning occurrences: ", nrow(occClean))
+      paste0("Handling occurrences", "\n", 
+             "Clean occurrences (Clean coordinates): ", as.character(do_clean),"\n", 
+             "Number of not duplicated occurrences: ", nrow(occClean), "\n")
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
@@ -209,8 +250,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         #------- tracking file
         writeLines(
           text = paste(paste0(
-            "\nNot enough occurrences. Distribution estimated by rasterize a MCP.
-             \nStop"
+            "Not enough occurrences. Distribution estimated by rasterize a MCP,", "\n",
+             "Stop", "\n"
           ), linestime),
           con = filelog, sep = "\n"
         )
@@ -232,7 +273,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         sp.name = sp_name, uniq1k.method = uniq1k_method, uniqDist = dist_uniq
       )
       write.csv(occ_thin, paste0(folder_sp, "/occurrences/occ_thin.csv"), row.names = F)
-      paste(paste0("Thining database to ", dist_uniq, "km, using  ", uniq1k_method), "\nOccurrences thining : ok.\nNumber of occurrences 'unique': ", nrow(occ_thin))
+      paste0("Unique occurrences to ", dist_uniq, "km, using  ", uniq1k_method, "\n",
+             "Unique occurrences: ok.", "\n",
+             "Number of unique occurrences: ", nrow(occ_thin), "\n")
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
@@ -259,8 +302,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         #------- tracking file
         writeLines(
           text = paste(paste0(
-            "\nNot enough occurrences. Distribution estimated by rasterize a MCP.
-             \nStop"
+            "Not enough occurrences. Distribution estimated by rasterize a MCP", "\n",
+             "Stop"
           ), linestime),
           con = filelog, sep = "\n"
         )
@@ -285,7 +328,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
 
       write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
-      paste("\nAccesible area: ok.")
+      paste("Accesible area: ok.", "\n")
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
@@ -336,7 +379,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         proj.models = proj_models, compute.G = compute_G, compute.F = compute_G,
         dir.G = dir_G, dir.F = dir_F
       )
-      paste("Processing environmental layers: ok.")
+      paste0("Processing environmental layers: ok.", "\n",
+             "Path of climatic variables used ", dir_clim, "\n",
+             "Path of other variables used ", dir_other, "\n",
+             "Variables used ", paste0(envars$layernames, collapse = ","))
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
@@ -362,10 +408,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
           ext = "*.asc", folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat,
           col.sp = col_sp
         )
-        paste("Bias file development: ok")
+        paste("Bias file development: ok", "\n")
       } else {
         BiasSp <- NULL
-        paste("Bias file NO developed")
+        paste("Bias file NO developed", "\n")
       }
     },
     error = function(error_message) {

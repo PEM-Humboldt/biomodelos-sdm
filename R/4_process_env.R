@@ -3,7 +3,7 @@
 process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, area.M,
                                 env.other, folder.sp, dofuture, area.G, proj.models,
                                 compute.G, compute.F, dir.G, dir.F) {
-  
+
   # extent of M or G to cut the variables
   if (proj.models == "M-M" | compute.G == FALSE) {
     cropArea <- area.M
@@ -170,9 +170,9 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
   # results do.future == FALSE
 
   if (proj.models == "M-M" | compute.G == FALSE) {
-    return(list(M = env_M, G = NULL))
+    return(list(M = env_M, G = NULL, layernames = names(env_M)))
   } else {
-    return(list(M = env_M, G = env_crop))
+    return(list(M = env_M, G = env_crop, layernames = names(env_M)))
   }
 }
 
@@ -330,8 +330,6 @@ process_env.future <- function(climdataset, climdir, extension, crsproyect, G, e
       }
     }
   }
-
-
 
   return("ok")
 }
