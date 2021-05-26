@@ -181,7 +181,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
       # folder of layers of each model
       env.listFolder <- list.files(env.folder[i], pattern = ".asc$", full.names = T, recursive = T, include.dirs = F)
       # no future asc files
-      noFRas <- c(grep("*_M.asc$", env.listFolder), grep("*_G.asc$", env.listFolder), grep(paste0(folder.sp, "asc$"), env.listFolder))
+      noFRas <- c(grep("*_M.asc$", env.listFolder), grep("*_G.asc$", env.listFolder), grep(paste0(folder.sp, ".asc$"), env.listFolder))
       # removing no future files
       env.FlistRas <- env.listFolder[-noFRas]
       fut_proj <- raster::stack(env.FlistRas)

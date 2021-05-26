@@ -161,9 +161,9 @@ process_env.current <- function(clim.dataset, clim.dir, extension, crs.proyect, 
     # results do.future == TRUE
 
     if (proj.models == "M-M" | compute.G == FALSE) {
-      return(list(M = env_M, G = NULL, Future = env_F))
+      return(list(M = env_M, G = NULL, Future = env_F, layernames = names(env_M)))
     } else {
-      return(list(M = env_M, G = env_crop, Future = env_F))
+      return(list(M = env_M, G = env_crop, Future = env_F, layernames = names(env_M)))
     }
   }
 

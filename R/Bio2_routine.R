@@ -376,7 +376,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         clim.dataset = clim_vars, clim.dir = dir_clim, extension = extension_vars,
         crs.proyect = crs_proyect, area.M = M_$shape_M, area.G = area_G,
         env.other = dir_other, folder.sp = folder_sp, dofuture = do_future,
-        proj.models = proj_models, compute.G = compute_G, compute.F = compute_G,
+        proj.models = proj_models, compute.G = compute_G, compute.F = compute_F,
         dir.G = dir_G, dir.F = dir_F
       )
       paste0("Processing environmental layers: ok.", "\n",
@@ -466,10 +466,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             foldersp = folder_sp, tim = "current", esc.nm = "", crs.proyect = crs_proyect
           )
           
-
           if(do_future == TRUE){
             layersF <- futAuxiliar(PathAMaxent$f_proj)
-          
+            
           for(f in 1:length(layersF)){
             currentEns_byAlg(
               ras.Stack = layersF[[f]], data. = M_$occurrences,
