@@ -1,6 +1,6 @@
 
-currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, foldersp, tim, esc.nm, crs.proyect, extent.ensembles) {
-  
+currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, foldersp,
+                             tim, esc.nm, crs.proyect, extent.ensembles, transf.biomo.ext) {
   if (is.null(ras.Stack)) {
     message("any model")
   } else {
@@ -11,43 +11,47 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       dir.create(paste0(foldersp, "/ensembles"), showWarnings = FALSE)
       dir.create(paste0(foldersp, "/ensembles/", tim), showWarnings = F)
       dir.create(paste0(foldersp, "/ensembles/", tim, "/", algorithm), showWarnings = F)
-      
+
       # species name with hyphen not dot
-      sp_hyphen <-  gsub(foldersp, pattern = "\\.", replacement = "_")
-      
-      # 
-      if(tim == "current"){
+      sp_hyphen <- gsub(foldersp, pattern = "\\.", replacement = "_")
+
+      #
+      if (tim == "current") {
         esc.nm <- "_"
-      }else{
+      } else {
         esc.nm <- paste0("_", esc.nm, "_")
       }
-      
-      
-      # comparing extent with "biomodelos" extent
-      biomodelos.ext <- c(-83, -60, -14, 13)
-      equ.ext <- equal.extent(a = ras.Stack, b = biomodelos.ext , limit = 0.005)
-      
-      if(equ.ext == TRUE){
-        extent(ras.Stack) <- extent(biomodelos.ext)
-      }else{
-        dir.create(paste0(foldersp, "/Temp/extent.transf"))
-        for(i in 1:nlayers(ras.Stack)){
-          writeRaster(ras.Stack[[i]], paste0(foldersp, "/Temp/extent.transf/", names(ras.Stack[[i]]), ".tif"), overwrite=TRUE)
-        }
-        ras.list <- list.files(paste0(foldersp, "/Temp/extent.transf/"), pattern = ".tif$", full.names = T)
-        if(length(ras.list) == 1){
-          ras.Stack <- raster::raster(ras.list)
-        }else{
-          ras.Stack <- raster::stack(ras.list)
-        }
-        ras.Stack <- extend(ras.Stack, biomodelos.ext)
-        extent(ras.Stack) <- extent(biomodelos.ext)
-        
-        for (i in 1:length(ras.list)) {
-          unlink(ras.list[i], recursive = T, force = T)
+
+
+      # comparing extent with "biomodelos" extent}
+
+      if (transf.biomo.ext == TRUE) {
+        biomodelos.ext <- c(-83, -60, -14, 13)
+        equ.ext <- equal.extent(a = ras.Stack, b = biomodelos.ext, limit = 0.005)
+
+        if (equ.ext == TRUE) {
+          extent(ras.Stack) <- extent(biomodelos.ext)
+        } else {
+          dir.create(paste0(foldersp, "/Temp/extent.transf"))
+          for (i in 1:nlayers(ras.Stack)) {
+            writeRaster(ras.Stack[[i]], paste0(foldersp, "/Temp/extent.transf/", names(ras.Stack[[i]]), ".tif"), overwrite = TRUE)
           }
+          ras.list <- list.files(paste0(foldersp, "/Temp/extent.transf/"), pattern = ".tif$", full.names = T)
+          if (length(ras.list) == 1) {
+            ras.Stack <- raster::raster(ras.list)
+          } else {
+            ras.Stack <- raster::stack(ras.list)
+          }
+          ras.Stack <- extend(ras.Stack, biomodelos.ext)
+          extent(ras.Stack) <- extent(biomodelos.ext)
+
+          for (i in 1:length(ras.list)) {
+            unlink(ras.list[i], recursive = T, force = T)
+          }
+        }
       }
-      
+
+
       # branch for algorithms with more than one best model
       if (nlayers(ras.Stack) > 1) {
 
@@ -56,7 +60,7 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         # taking statistics from logistic stack
 
         Ras.med <- raster::calc(x = ras.Stack, median)
-        
+
         if (tim == "current") {
           Ras.devstd <- raster::calc(x = ras.Stack, sd)
           Ras.cv <- raster::calc(x = ras.Stack, CV)
@@ -66,7 +70,7 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
           Resensembles <- stack(Ras.med, Ras.devstd, Ras.cv, Ras.sum)
           names(Resensembles) <- c(
             paste0(sp_hyphen, esc.nm, algorithm), paste0(sp_hyphen, "_devstd", esc.nm, algorithm),
-            paste0(sp_hyphen, "_CV", esc.nm,  algorithm), paste0(sp_hyphen, "_sum", esc.nm, algorithm)
+            paste0(sp_hyphen, "_CV", esc.nm, algorithm), paste0(sp_hyphen, "_sum", esc.nm, algorithm)
           )
         } else {
           Resensembles <- Ras.med
@@ -152,8 +156,8 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         Ras <- listi[[1]]
         BinsRas <- raster::stack(BinsRas, Ras)
       }
-      
-      names(BinsRas) <- paste0(sp_hyphen, esc.nm, names(biomodelos.thresh), "_", algorithm)  
+
+      names(BinsRas) <- paste0(sp_hyphen, esc.nm, names(biomodelos.thresh), "_", algorithm)
 
       for (i in 1:nlayers(BinsRas)) {
         BinsRas.i <- BinsRas[[i]]
@@ -232,25 +236,24 @@ futAuxiliar <- function(fut.list.ras) {
 #-----------------------------------------
 # auxiliary compare extent
 
-equal.extent <- function(a, b, limit){ # a must be  a raster and b a vector extent
-  
+equal.extent <- function(a, b, limit) { # a must be  a raster and b a vector extent
+
   # extents
   ext.a <- extent(a)
   ext.b <- extent(b)
-  
+
   # differences between extents
   diff.ext <- matrix(ext.a) - matrix(ext.b)
   diff.abs <- abs(diff.ext)
   # limit to decide if the extents are different, 0.005 grades
   diff.limit <- diff.abs > limit
-  
+
   # how many rows are upper of extent limit, if there are more than one use extend
-  
-  if(length(which(diff.limit == T)) != 0){
+
+  if (length(which(diff.limit == T)) != 0) {
     result <- FALSE
-  }else{
+  } else {
     result <- TRUE
   }
   return(result)
 }
-
