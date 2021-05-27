@@ -652,7 +652,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "biomod.csv", full.names = T),
       list.files(path = paste0(folder_sp, "/occurrences/"), pattern = "kuenm.csv", full.names = T),
       list.files(path = paste0(folder_sp), pattern = ".out", full.names = T),
-      paste0(folder_sp, "/", "final_models.bat"), paste0(folder_sp, ",", "candidate_models.bat"),
+      paste0(folder_sp, "/", "final_models.bat"), paste0(folder_sp, "/", "candidate_models.bat"),
       "spatial_thin_log.txt", paste0(folder_sp, "/Temp"),
       list.files(path = paste0(folder_sp, "/"), pattern = ".asc$", full.names = T, recursive = T)
     )

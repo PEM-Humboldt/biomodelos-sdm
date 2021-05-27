@@ -55,7 +55,8 @@ do.folder.structure <- function(clim.datasets) {
 
 vector.packages <- c(
   "plyr", "dplyr", "automap", "PresenceAbsence", "devtools",
-  "CoordinateCleaner", "sf", "spThin", "raster", "dismo", "biomod2", "ENMeval","rgdal"
+  "CoordinateCleaner", "sf", "spThin", "raster", "dismo", "biomod2", "ENMeval","rgdal",
+  "rJava"
   )
 
 
@@ -64,6 +65,8 @@ vector.packages <- c(
 do.install <- function(x, update.packages = F) {
   tryCatch(
     expr = {
+      
+      x <- x[-"ENMeval"]
       
       missing_pkgs <- x[which(!x %in% installed.packages())]
 
@@ -76,6 +79,9 @@ do.install <- function(x, update.packages = F) {
         install.packages(x, repos = "https://www.icesi.edu.co/CRAN/" )
         return(paste0("packages installed "))
       }
+      
+      packageENMeval <- "https://cran.r-project.org/src/contrib/Archive/ENMeval/ENMeval_0.3.1.tar.gz"
+      install.packages(packagENMeval, repos="https://www.icesi.edu.co/CRAN/", type="source")
         
     },
     error = function(error_message) {
