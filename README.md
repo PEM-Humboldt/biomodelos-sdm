@@ -10,6 +10,8 @@ Current state: in development. Version 1.0.0
 
 Dependencies to install, choose the version depending on your operating system and version. For example, a windows 10 terminal with more than 4 gigabytes on memory RAM almost always has a 64 bit version of that version. Surf on the web in case of more information.
 
+* [R](https://cran.r-project.org/mirrors.html)
+* [RStudio](https://www.rstudio.com/products/rstudio/download/#download)
 * [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
 * [Java Development Kit](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
 * [Maxent](https://drive.google.com/file/d/1a-0QPZyqk9DFWEm7rSreBTYiuTJDgABR/view)
@@ -37,6 +39,19 @@ Libraries required and their versions
 ```
 
 ## How to run
+
+
+
+1. Create a folder and move (uncompressed) the content of this repository and "maxent.jar" file (downloaded previously) there. For better results choose a root directory like "C" or "D" in windows to create the folder (working directory).
+2. Open RStudio and create a new project using the folder created as working directory. It can be achieving doing the next. First, click on tool bar "File" (upper left of the RStudio window). Second, "New Project". In the opened window, click on "Existing Directory". After that, browse into the computer folder structure until reach the folder created in the step 1. Last, get click on "Create Project". *This step is comparative to setup a working directory with* `r setwd()`
+3.  Create in RStudio a new script. It can be achieve going to "File" tool bar, "New File" and then "R Script". It may well be used the icon "New file" right under the tool bar "File" or using the keyboard shortcut "Ctrl+Shift+N" in windows.
+4. 
+
+
+
+### Authomatic installation of libraries
+
+
 
 Please explain the order to run each script using bullets and identation, showing step by step series of examples that tell you how to get your scripts running, which one to run first and how to call the others
 
