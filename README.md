@@ -1,17 +1,28 @@
-# 16k project - Biomodelos 2
+# Biomodelos 2
 
-"16k project" is an effort to construct thousands of Species Distribution Models from databases gathered and managed by the Instituto de Investigacion de Recursos Biologicos Alexander von Humboldt (IAvH). It is attached to Biomodelos initiative from the IAvH. "16k project" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using several machine learning algorithms and then ensembles them. Fourth, it projects to future scenarios and evaluates extrapolation.
+Biomodelos 2 is an effort to construct thousands of Species Distribution Models from databases gathered and managed by the Instituto de Investigacion de Recursos Biologicos Alexander von Humboldt (IAvH). It is attached to Biomodelos initiative from the IAvH. "Biomodelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using several machine learning algorithms and then ensembles them. Fourth, it projects to future scenarios and evaluates extrapolation.
 
 Current state: in development. Version 1.0.0
 
 ## Prerequisites
 
+### Dependencies and files
+
+Dependencies to install, choose the version depending on your operating system and version. For example, a windows 10 terminal with more than 4 gigabytes on memory RAM almost always has a 64 bit version of that version. Surf on the web in case of more information.
+
+* [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+* [Java Development Kit](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
+* [Maxent](https://drive.google.com/file/d/1a-0QPZyqk9DFWEm7rSreBTYiuTJDgABR/view)
+* This repository
+
+### Libraries
 Libraries required and their versions
 
 ```
 "dplyr" version 1.04
 "plyr" version 1.8.6
 "rJava" version 0.9-13
+"automap" version 0.9-13
 "PresenceAbsence" version 1.1.9
 "devtools" version 2.3.2
 "CoordinateCleaner" version 2.0-18
@@ -23,14 +34,6 @@ Libraries required and their versions
 "ENMeval" version 0.3.1
 "rgdal" version 1.5-23
 "kuenm" version 1.1.6
-```
-
-### Required files
-
-URLs to download required files or templates to download before to run each script.
-
-```
-Give the example, as dataset names and where to download them
 ```
 
 ## How to run
