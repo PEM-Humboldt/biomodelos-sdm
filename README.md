@@ -41,38 +41,52 @@ Libraries required and their versions
 ## How to run
 
 1. Create a folder and move (uncompressed) the content of this repository and "maxent.jar" file (downloaded previously) there. For better results choose a root directory like "C" or "D" in windows to create the folder (working directory).
+
 2. Open RStudio and create a new project using the folder created as working directory. It can be achieving doing the next. First, click on tool bar "File" (upper left of the RStudio window). Second, "New Project". In the opened window, click on "Existing Directory". After that, browse into the computer folder structure until reach the folder created in the step 1. Last, get click on "Create Project". *This step is comparative to setup a working directory with* `setwd()`
+
 3.  Create in RStudio a new script. It can be achieve going to "File" tool bar, "New File" and then "R Script". It may well be used the icon "New file" right under the tool bar "File" or using the keyboard shortcut "Ctrl+Shift+N" in windows.
-4. 
 
-
-7. Cargue y corra las funciones de configuración de las funciones de biomodelos2:
-Para cargar las funciones, situado dentro del editor de script de R, porción superior de la pantalla, escriba el siguiente comando, source("setup.R"). Luego ejecute o corra haciendo click en el icono image.png "Run" o use la combinación de teclas "Ctrl+Enter" en windows. Despues de cargar las funciones de configuración encontrara en el ambiente ("Environment") de RStudio, situado en la porción superior derecha de la pantalla, 4 objetos nuevos: `vector.packages`   ( paquetes de R necesarios),  `do.install` (instalación automatica de los paquetes),  `do.load`   (carga automatica de los paquetes ) y  `do.folder.structure` (creación de la estructura de archivos).
-En el editor, escriba el siguiente comando, do.install(vector.packages). R comenzara a descargar e instalar los paquetes necesarios para la rutina, si se abre una ventana en la pantalla que le pregunta sobre instalar dependencias que necesitan compilación, click en Si ("Yes"). El proceso suele ser mas demorado que en una instalación normal, pero este proceso ayuda a que existan menos errores. Una vez instalados los paquetes, lo mejor seria bloquear el comando de instalación, situand un simbolo # antes del comando de instalación, dejando la linea del script como #  do.install(vector.packages).
-Cargue los paquetes con la función do.install(), siguiendo este comando, do.load(vector.packages).
-Instale el paquete "kuenm". Escriba y corra el siguiente comando, devtools::install_github("marlonecobos/kuenm"). Espere a instalar el paquete.
-Cree la estructura de carpetas necesarias al escribir y correr el siguiente comando, do.folder.structure("worldclim"). El caracter "worldclim" no supone una descarga de variables, sino la creación de la estructura donde deben ser almacenadas las variables.
-Cargue la rutina creada, "Bio2_routine", corriendo el comando, source("R/Bio2_routine.R")
-
-
-
-### Authomatic installation of libraries
-
-
-
-Please explain the order to run each script using bullets and identation, showing step by step series of examples that tell you how to get your scripts running, which one to run first and how to call the others
-
-Say what the step will be
+4. Load setup functions of **Biomodelos 2**. In the script editor type 
 
 ```
-Give the example
-```
+source(setup.R)
+``` 
 
-And repeat
+5. Then run it using the icon "Run" or the keyboard shortcut "Ctrl+Enter" in windows. You will find four new objects in the environment (upper left portion of the RStudio window)
++ *vector.packages* vector character that stores the name of each package necessary to run **Biomodelos 2**
++ *do.folder.structure* function to create folders to organize work process in the workind directory
++ *do.install* automatic installation of needed packages
++ *do.load* 
+
+6. Run the automatic installation in the editor script. The process will install the packages stored in the 'vector.packages' object. In case of showing a compilation window procedure, it is normally better to accept as it diminish likely of installation errors. Warning: if you have a version of ENMeval package upper to 0.3.1 it will be replace.
+```
+do.install(vector.packages)
+``` 
+
+7. You only need to install the packages once, so, it is better to block this command line typing a '#' character in the forefront of the line just before of the first run, like this `# do.install(vector.packages)`. If you need to troubleshoot on installing the packages, please refer to the vignete **Manual Installation of Packages** MISSING.
+
+8. Load the installed packages with
 
 ```
-until finished
+do.load(vector.packages)
+``` 
+9. Create the structure of folders typing and run. The use of the character 'worldclim' inside the function does not refer to retrieve the data from the repository. It is only a way to create an organized framework inside the working directory in which you may store the variables downloaded manually or using automatized tools. 
+
 ```
+do.folder.structure("worldclim")
+``` 
+
+10. Load the wrapper function "Bio2_routine". This function follows the basic structure of a "Ecological Niche Modelling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R. Please refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
+
+```
+source("R/Bio2_routine.R")
+``` 
+
+Now you are ready to run ENM models.
+
+## Example
+
+Having done
 
 **End with an example of getting some data out of the system or using it for a little demo**
 
