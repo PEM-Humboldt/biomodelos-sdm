@@ -86,13 +86,14 @@ source("R/Bio2_routine.R")
 
 Your folder structure must look like this:
 
+Your RStudio window must look like this:
 
 
-
+Now you are ready to load the Bio2_routine, customize it and run ENM models. To go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
 
 ## Example
 
-Now you are ready to load the Bio2_routine, customize it and run ENM models. To go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette. Having done the earlier steps, move the files inside of the folder *data_example* to the main folder. It will overwrite the folders *Data* and *Occurrences* please let it continue. 
+Having done the earlier steps, move the files inside of the folder *Data_example* to the main folder. It will overwrite the folders *Data* and *Occurrences* please let the process continue if you are asked about. 
 
 
 ## Authors and contact
@@ -114,7 +115,7 @@ Now you are ready to load the Bio2_routine, customize it and run ENM models. To 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [License.md](License.md) file for details
 
 ## Acknowledgments
 
