@@ -97,7 +97,7 @@ Now you are ready to load the Bio2_routine, customize it and run ENM models. To 
 
 ## Authors and contact
 
-* **Carlos Jair Muñoz Rodriguez** - *Initial development* - [CMunoz](https://github.com/cmunozr/)
+* **Carlos Jair Muñoz Rodriguez** - *Initial development* - [cmunoz@humboldt.org.co](cmunoz@humboldt.org.co)
 
 * **Gabriel Alejandro Perilla Suarez** - *Initial development* - 
 
@@ -116,7 +116,7 @@ Now you are ready to load the Bio2_routine, customize it and run ENM models. To 
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-## [Optional] Acknowledgments
+## Acknowledgments
 
 * Kuenm team
 * ENMeval team
