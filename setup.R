@@ -5,7 +5,7 @@ do.folder.structure <- function(clim.datasets) {
   # Mainbone folder structure
 
   dir.create("R", showWarnings = F) # to storage R scripts
-  dir.create("bias_layer", showWarnings = F) # to storage bias file layers created (TGS focus see https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x)
+  dir.create("Bias_layer", showWarnings = F) # to storage bias file layers created (TGS focus see https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x)
   dir.create("Data", showWarnings = F) # to storage raw geographical data
   dir.create("Occurrences", showWarnings = F) # to storage raw geographical data
 

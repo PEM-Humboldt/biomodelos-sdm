@@ -248,7 +248,7 @@ summary {
 <li><em>do.load</em></li>
 </ul>
 <ol start="6" style="list-style-type: decimal">
-<li>Run the automatic installation in the editor script. The process will install the packages stored in the ‘vector.packages’ object. In case of showing a compilation window procedure, it is normally better to accept as it diminish likely of installation errors. Warning: if you have a version of ENMeval package upper to 0.3.1 it will be replace.</li>
+<li>Run the automatic installation in the editor script. The process will install the packages stored in the ‘vector.packages’ object. In case of showing a compilation window procedure, it is normally better to accept as it diminish likely of installation errors. Warning: if you have a version of ENMeval package lower or higher than 0.3.1 it will be replace.</li>
 </ol>
 <pre><code>do.install(vector.packages)</code></pre>
 <ol start="7" style="list-style-type: decimal">
@@ -264,19 +264,27 @@ summary {
 <li>Load the wrapper function “Bio2_routine”. This function follows the basic structure of a “Ecological Niche Modelling” (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM’s or R. Please refer to <strong>Structure and Functions</strong> and <strong>More deep in Bio2_routine</strong> vignettes to find more information about.</li>
 </ol>
 <pre><code>source(&quot;R/Bio2_routine.R&quot;)</code></pre>
-<p>Please explain the order to run each script using bullets and identation, showing step by step series of examples that tell you how to get your scripts running, which one to run first and how to call the others</p>
-<p>Say what the step will be</p>
-<pre><code>Give the example</code></pre>
-<p>And repeat</p>
-<pre><code>until finished</code></pre>
-<p><strong>End with an example of getting some data out of the system or using it for a little demo</strong></p>
+<div id="folder-structure-and-rstudio" class="section level3">
+<h3>Folder structure and RStudio</h3>
+<p>Your folder structure must look like this:</p>
+<p>Now you are ready to load the Bio2_routine, customize it and run ENM models. To go deep in this function revise <strong>Structure and Functions</strong> and <strong>More deep in Bio2_routine</strong> vignette.</p>
+</div>
+</div>
+<div id="example" class="section level2">
+<h2>Example</h2>
+<p>Having done the earlier steps, move the files inside of the folder <em>data_example</em> to the main folder. It will overwrite the folders <em>Data</em> and <em>Occurrences</em> please let it continue.</p>
 </div>
 <div id="authors-and-contact" class="section level2">
 <h2>Authors and contact</h2>
 <ul>
-<li><strong>Billie Thompson</strong> - <em>Initial work</em> - <a href="https://github.com/PurpleBooth">PurpleBooth</a></li>
+<li><p><strong>Carlos Jair Muñoz Rodriguez</strong> - <em>Initial development</em> - <a href="https://github.com/cmunozr/">CMunoz</a></p></li>
+<li><p><strong>Gabriel Alejandro Perilla Suarez</strong> - <em>Initial development</em> -</p></li>
+<li><p><strong>Héctor Manuel Arango Martínez</strong> - <em>Initial development</em> -</p></li>
+<li><p><strong>Cristian Alexander Cruz Rodriguez</strong> - <em>Initial development</em> -</p></li>
+<li><p><strong>Luis Hernando Romero Jiménez</strong> - <em>Initial development</em> -</p></li>
+<li><p><strong>Andrés Felipe Suárez Castro</strong> - <em>Initial development</em> -</p></li>
+<li><p><strong>Elkin Alexi Noguera Urbano</strong> - <em>Initial development</em> -</p></li>
 </ul>
-<p>See also the list of <a href="https://github.com/your/project/contributors">contributors</a> who participated in this project.</p>
 </div>
 <div id="license" class="section level2">
 <h2>License</h2>

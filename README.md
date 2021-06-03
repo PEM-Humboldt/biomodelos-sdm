@@ -58,7 +58,7 @@ source(setup.R)
 + *do.install* automatic installation of needed packages
 + *do.load* 
 
-6. Run the automatic installation in the editor script. The process will install the packages stored in the 'vector.packages' object. In case of showing a compilation window procedure, it is normally better to accept as it diminish likely of installation errors. Warning: if you have a version of ENMeval package upper to 0.3.1 it will be replace.
+6. Run the automatic installation in the editor script. The process will install the packages stored in the 'vector.packages' object. In case of showing a compilation window procedure, it is normally better to accept as it diminish likely of installation errors. Warning: if you have a version of ENMeval package lower or higher than 0.3.1 it will be replace.
 ```
 do.install(vector.packages)
 ``` 
@@ -82,19 +82,35 @@ do.folder.structure("worldclim")
 source("R/Bio2_routine.R")
 ``` 
 
-Now you are ready to run ENM models.
+### Folder structure and RStudio window
+
+Your folder structure must look like this:
+
+
+
+
 
 ## Example
 
-Having done
+Now you are ready to load the Bio2_routine, customize it and run ENM models. To go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette. Having done the earlier steps, move the files inside of the folder *data_example* to the main folder. It will overwrite the folders *Data* and *Occurrences* please let it continue. 
 
-**End with an example of getting some data out of the system or using it for a little demo**
 
 ## Authors and contact
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Carlos Jair Muñoz Rodriguez** - *Initial development* - [CMunoz](https://github.com/cmunozr/)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+* **Gabriel Alejandro Perilla Suarez** - *Initial development* - 
+
+* **Héctor Manuel Arango Martínez** - *Initial development* - 
+
+* **Cristian Alexander Cruz Rodriguez** - *Initial development* - 
+
+* **Luis Hernando Romero Jiménez** - *Initial development* - 
+
+* **Andrés Felipe Suárez Castro** - *Initial development* - 
+
+* **Elkin Alexi Noguera Urbano** - *Initial development* - 
+
 
 ## License
 
@@ -102,10 +118,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## [Optional] Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
-
-## [Optional] Contributing
-
-It usually has its own file: [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426), which details the code of conduct, and the process for submitting pull requests to us.
+* Kuenm team
+* ENMeval team
+* Biomod team
+* LAE UNAM team
