@@ -15,7 +15,7 @@ Dependencies to install, choose the version depending on your operating system a
 * [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
 * [Java Development Kit](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
 * [Maxent](https://drive.google.com/file/d/1a-0QPZyqk9DFWEm7rSreBTYiuTJDgABR/view)
-* This repository
+* [Biomodelos 2 repositiry](https://github.com/cmunozr/16kproject_IAVH) update to the permanent repository
 
 ### Libraries
 Libraries required and their versions
@@ -46,7 +46,7 @@ Libraries required and their versions
 
 3.  Create in RStudio a new script. It can be achieve going to "File" tool bar, "New File" and then "R Script". It may well be used the icon "New file" right under the tool bar "File" or using the keyboard shortcut "Ctrl+Shift+N" in windows.
 
-4. Load setup functions of **Biomodelos 2**. In the script editor type 
+4. Load the setup functions of **Biomodelos 2**. In the script editor type 
 
 ```
 source(setup.R)
@@ -54,29 +54,43 @@ source(setup.R)
 
 5. Then run it using the icon "Run" or the keyboard shortcut "Ctrl+Enter" in windows. You will find four new objects in the environment (upper left portion of the RStudio window)
 + *vector.packages* vector character that stores the name of each package necessary to run **Biomodelos 2**
-+ *do.folder.structure* function to create folders to organize work process in the workind directory
++ *do.folder.structure* function to create folders to organize work process in the working directory.
 + *do.install* automatic installation of needed packages
-+ *do.load* 
++ *do.load* automatic loading of needed packages
 
 6. Run the automatic installation in the editor script. The process will install the packages stored in the 'vector.packages' object. In case of showing a compilation window procedure, it is normally better to accept as it diminish likely of installation errors. Warning: if you have a version of ENMeval package lower or higher than 0.3.1 it will be replace.
 ```
 do.install(vector.packages)
 ``` 
 
-7. You only need to install the packages once, so, it is better to block this command line typing a '#' character in the forefront of the line just before of the first run, like this `# do.install(vector.packages)`. If you need to troubleshoot on installing the packages, please refer to the vignete **Manual Installation of Packages** MISSING.
+You only need to install the packages once, so, it is better to block this command line typing a '#' character in the forefront of the line just before of the first run, like this `# do.install(vector.packages)`. If you need to troubleshoot on installing the packages, please refer to the vignete **Manual Installation of Packages** MISSING.
 
-8. Load the installed packages with
+7. Load the installed packages with
 
 ```
 do.load(vector.packages)
 ``` 
-9. Create the structure of folders typing and run. The use of the character 'worldclim' inside the function does not refer to retrieve the data from the repository. It is only a way to create an organized framework inside the working directory in which you may store the variables downloaded manually or using automatized tools. 
+8. Create the structure of folders typing and run. The use of the character 'worldclim' inside the function does not refer to retrieve the data from the repository. It is only a way to create an organized framework inside the working directory in which you may store the variables downloaded manually or using automatized tools. 
 
 ```
-do.folder.structure("worldclim")
+do.folder.structure(clim.datasets = "worldclim")
 ``` 
+After run the function you will have in your working directory 3 new folders with subfolders:
 
-10. Load the wrapper function "Bio2_routine". This function follows the basic structure of a "Ecological Niche Modelling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R. Please refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
+* *Bias_layer* to storage bias file layers created (please refer to the vignette *Constructing Bias Layer*, [this article](https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x) and this [blog](https://scottrinnan.wordpress.com/2015/08/31/how-to-construct-a-bias-file-with-r-for-use-in-maxent-modeling/)
+* *Data* to storage geographical data. Subfolders:
+  + *biogeographic_shp* storage biogeographic, ecoregions or hydrosheets objects used to construct accessible areas of species
+  + *env_vars* to storage of environmental variables. Subfolders:
+    + *other* environmental information not related with clime but consider important to modelled species
+      + *future*
+      + *current*
+    + *climatic* climatic information of the environment
+      + *future*
+      + *current*
+  + *shapes* to storage of useful shapefiles like Colombian or American borders
+* Occurrences to storage geographical records of species, those records must have a column with name species, latitude and longitude in decimal format 
+
+9. Load the wrapper function "Bio2_routine". This function follows the basic structure of an "Ecological Niche Modelling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R. Please refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
 
 ```
 source("R/Bio2_routine.R")
@@ -93,7 +107,11 @@ Now you are ready to load the Bio2_routine, customize it and run ENM models. To 
 
 ## Example
 
-Having done the earlier steps, move the files inside of the folder *Data_example* to the main folder. It will overwrite the folders *Data* and *Occurrences* please let the process continue if you are asked about. 
+Having done the earlier steps, move the files inside of the folder *Example* to the main folder. It will overwrite the folders *Data* and *Occurrences*, please let the process continue if you are asked about. Let us to explore these folders:
+
+
+In this example, we are going to run a simple ENM 
+
 
 
 ## Authors and contact
