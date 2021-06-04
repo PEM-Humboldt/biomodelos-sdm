@@ -1,6 +1,6 @@
-# Biomodelos 2
+# BioModelos 2
 
-Biomodelos 2 is an effort to construct thousands of Species Distribution Models from databases gathered and managed by the Instituto de Investigacion de Recursos Biologicos Alexander von Humboldt (IAvH). It is attached to Biomodelos initiative from the IAvH. "Biomodelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using several machine learning algorithms and then ensembles them. Fourth, it projects to future scenarios and evaluates extrapolation.
+BioModelos 2 is an effort to construct thousands of Species Distribution Models from databases gathered and managed by the Instituto de Investigacion de Recursos Biologicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. "BioModelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using several machine learning algorithms and then ensembles them. Fourth, it projects to future scenarios and evaluates extrapolation.
 
 Current state: in development. Version 1.0.0
 
@@ -8,14 +8,14 @@ Current state: in development. Version 1.0.0
 
 ### Dependencies and files
 
-Dependencies to install, choose the version depending on your operating system and version. For example, a windows 10 terminal with more than 4 gigabytes on memory RAM almost always has a 64 bit version of that version. Surf on the web in case of more information.
+Dependencies to install, choose the version depending on your operating system and version. For example, a windows 10 terminal with more than 4 gigabytes on memory RAM almost always has a 64 bit version of windows. Surf on the web in case of more information.
 
 * [R](https://cran.r-project.org/mirrors.html)
 * [RStudio](https://www.rstudio.com/products/rstudio/download/#download)
 * [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
 * [Java Development Kit](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
 * [Maxent](https://drive.google.com/file/d/1a-0QPZyqk9DFWEm7rSreBTYiuTJDgABR/view)
-* [Biomodelos 2 repositiry](https://github.com/cmunozr/16kproject_IAVH) update to the permanent repository
+* [BioModelos 2 repositiry](https://github.com/cmunozr/16kproject_IAVH) update to the permanent repository
 
 ### Libraries
 Libraries required and their versions
@@ -42,23 +42,23 @@ Libraries required and their versions
 
 1. Create a folder and move (uncompressed) the content of this repository and "maxent.jar" file (downloaded previously) there. For better results choose a root directory like "C" or "D" in windows to create the folder (working directory).
 
-2. Open RStudio and create a new project using the folder created as working directory. It can be achieving doing the next. First, click on tool bar "File" (upper left of the RStudio window). Second, "New Project". In the opened window, click on "Existing Directory". After that, browse into the computer folder structure until reach the folder created in the step 1. Last, get click on "Create Project". *This step is comparative to setup a working directory with* `setwd()`
+2. Open RStudio and create a new project using the folder created as working directory. It can be achieving doing the next. First, click on tool bar "File" (upper left of the RStudio window). Second, "New Project". In the opened window, click on "Existing Directory". After that, browse into the computer folder structure until reach the folder created in the step 1. Last, get click on "Create Project". *Note: This step is comparative to setup a working directory with* `setwd()`
 
 3.  Create in RStudio a new script. It can be achieve going to "File" tool bar, "New File" and then "R Script". It may well be used the icon "New file" right under the tool bar "File" or using the keyboard shortcut "Ctrl+Shift+N" in windows.
 
-4. Load the setup functions of **Biomodelos 2**. In the script editor type 
+4. Load the setup functions of **BioModelos 2**. In the script editor type 
 
 ```
-source(setup.R)
+source("setup.R")
 ``` 
 
 5. Then run it using the icon "Run" or the keyboard shortcut "Ctrl+Enter" in windows. You will find four new objects in the environment (upper left portion of the RStudio window)
-+ *vector.packages* vector character that stores the name of each package necessary to run **Biomodelos 2**
++ *vector.packages* vector character that stores the name of each package necessary to run **BioModelos 2**
 + *do.folder.structure* function to create folders to organize work process in the working directory.
 + *do.install* automatic installation of needed packages
 + *do.load* automatic loading of needed packages
 
-6. Run the automatic installation in the editor script. The process will install the packages stored in the 'vector.packages' object. In case of showing a compilation window procedure, it is normally better to accept as it diminish likely of installation errors. Warning: if you have a version of ENMeval package lower or higher than 0.3.1 it will be replace.
+6. Run the automatic installation in the editor script. The process will install the packages stored in the 'vector.packages' object. In case of showing a compilation window procedure accept as it diminish likely of installation errors, it is slower than a traditional method, so be patient. Warning: if you have a version of ENMeval package lower or higher than 0.3.1 it will be replace by the former.
 ```
 do.install(vector.packages)
 ``` 
@@ -77,20 +77,20 @@ do.folder.structure(clim.datasets = "worldclim")
 ``` 
 After run the function you will have in your working directory 3 new folders with subfolders:
 
-* *Bias_layer* to storage bias file layers created (please refer to the vignette *Constructing Bias Layer*, [this article](https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x) and this [blog](https://scottrinnan.wordpress.com/2015/08/31/how-to-construct-a-bias-file-with-r-for-use-in-maxent-modeling/)
-* *Data* to storage geographical data. Subfolders:
+* *Bias_layer* to storage bias file layers created (please refer to the vignette **Constructing Bias Layer**, [this article](https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x) and this [blog](https://scottrinnan.wordpress.com/2015/08/31/how-to-construct-a-bias-file-with-r-for-use-in-maxent-modeling/)
+* *Data* to storage geographical data. Sub-folders:
   + *biogeographic_shp* storage biogeographic, ecoregions or hydrosheets objects used to construct accessible areas of species
-  + *env_vars* to storage of environmental variables. Subfolders:
-    + *other* environmental information not related with clime but consider important to modelled species
+  + *env_vars* to storage of environmental variables. Sub-folders:
+    + *other* environmental variables not related with climate but consider important to modeled species
       + *future*
       + *current*
-    + *climatic* climatic information of the environment
+    + *climatic* climatic variables
       + *future*
       + *current*
   + *shapes* to storage of useful shapefiles like Colombian or American borders
 * Occurrences to storage geographical records of species, those records must have a column with name species, latitude and longitude in decimal format 
 
-9. Load the wrapper function "Bio2_routine". This function follows the basic structure of an "Ecological Niche Modelling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R. Please refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
+9. Load the wrapper function "Bio2_routine". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R. Please refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
 
 ```
 source("R/Bio2_routine.R")
@@ -100,7 +100,11 @@ source("R/Bio2_routine.R")
 
 Your folder structure must look like this:
 
+![Folder_Structure](Folder_Structure.png)
+
 Your RStudio window must look like this:
+
+![RStudio_View](RStudio_View.JPG)
 
 
 Now you are ready to load the Bio2_routine, customize it and run ENM models. To go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.

@@ -4,7 +4,6 @@ do.folder.structure <- function(clim.datasets) {
 
   # Mainbone folder structure
 
-  dir.create("R", showWarnings = F) # to storage R scripts
   dir.create("Bias_layer", showWarnings = F) # to storage bias file layers created (TGS focus see https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x)
   dir.create("Data", showWarnings = F) # to storage raw geographical data
   dir.create("Occurrences", showWarnings = F) # to storage raw geographical data
@@ -66,9 +65,39 @@ vector.packages <- c(
 
 
 do.install <- function(x = vector.packages, repository = "https://www.icesi.edu.co/CRAN/", update.packages = F) {
-  tryCatch(
-    expr = {
+  
+  if(!require(devtools, warn.conflicts = FALSE)){
+    install.packages("devtools")
+  }
+  
+  # Version of ENMeval now is 2.0.0 This routine works with 0.3.1
+  # make sure user has 0.3.1 and give a warning
+  missing_enmeval <- !"ENMeval" %in% installed.packages()
+  
+  # if enmeval is not installed
+  if(missing_enmeval == TRUE){
+
+    devtools::install_version("ENMeval", version = "0.3.1", repos = "http://cran.us.r-project.org")
+    
+  }else{
+    # if enmeval is already installed, check the version, uninstall if it is not 0.3.1  
+    
+    enmevalversion <- paste0(unlist(packageVersion("ENMeval")),collapse = ".") 
+    
+    if(enmevalversion != "0.3.1"){
       
+      remove.packages("ENMeval")
+      devtools::install_version("ENMeval", version = "0.3.1", repos = "http://cran.us.r-project.org")
+      warning(paste0("ENMeval was changed from ", enmevalversion, ", to 0.3.1"))
+      
+    }
+  }
+  
+  # kuenm needs to be installed from github as it doesn't have link to CRAN
+  if(!require(kuenm, warn.conflicts = FALSE)){
+    devtools::install_github("marlonecobos/kuenm")
+  }
+  
       x_noenmeval <- x[- which(x == "ENMeval")]
       x_nokuenm <- x_noenmeval[- which(x_noenmeval == "kuenm")]
       
@@ -80,46 +109,11 @@ do.install <- function(x = vector.packages, repository = "https://www.icesi.edu.
       }
       
       if (update.packages == T){
-        install.packages(x_noenmeval, repos = repository)
+        install.packages(missing_pkgs, repos = repository)
         return(paste0("packages installed "))
       }
       
-      # Version of ENMeval is 2.0.0 This routine works with 0.3.1
-      # make sure user has 0.3.1 and give a warning
-      missing_enmeval <- !"ENMeval" %in% installed.packages()
       
-      # if enmeval is not installed
-      if(missing_enmeval){
-        library(devtools)
-        install_version("ENMeval", version = "0.3.1", repos = "http://cran.us.r-project.org")
-      }else{
-      # if enmeval is already installed, check the version, uninstall if it is not 0.3.1  
-        enmevalversion <- paste0(unlist(packageVersion("ENMeval")),collapse = ".") 
-        if(enmevalversion != "0.3.1"){
-          remove.packages("ENMeval")
-          library(devtools)
-          install_version("ENMeval", version = "0.3.1", repos = "http://cran.us.r-project.org")
-          warning(paste0("ENMeval was changed from ", enmevalversion, ", to 0.3.1"))
-        }
-      }
-      
-      # kuenm needs to be installed from github as it doesn't have link to CRAN
-      missing_kuenm <- !"kuenm" %in% installed.packages()
-      if(missing_kuenm){
-        library("devtools")
-        devtools::install_github("marlonecobos/kuenm")
-        }
-    },
-    error = function(error_message) {
-      e <- conditionMessage(error_message)
-      message(paste0("Fail installing packages because ", e))
-    },
-    warning = function(warning_message) {
-      w <- message(warning_message)
-      message("Some warnings detected")
-      message(w)
-    }
-  )
 }
 
 do.load <- function(x) {
