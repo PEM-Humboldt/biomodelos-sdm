@@ -100,7 +100,7 @@ source("R/Bio2_routine.R")
 
 Your folder structure must look like this:
 
-![Folder_Structure](Folder_Structure.png)
+![Folder_Structure](Folder_Structure.PNG)
 
 Your RStudio window must look like this:
 
