@@ -167,10 +167,3 @@ In this example, we are going to run a simple ENM
 ## License
 
 This project is licensed under the MIT License - see the [License.md](License.md) file for details
-
-## Acknowledgments
-
-* Kuenm team
-* ENMeval team
-* Biomod team
-* LAE UNAM team
