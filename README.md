@@ -136,14 +136,36 @@ Your RStudio window must look like this:
 ![RStudio_View](RStudio_View.JPG)
 
 
-Now you are ready to load the Bio2_routine, customize it and run ENM models. To go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
+Now you are ready to load the Bio2_routine, customize it and run ENM models. You only need two basic elements, environmental variables and georeferenced occurrence data of one or several species. The next example shows the structure of both elements. Also, to go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
 
 ## Example
 
-Having done the earlier steps, move the files inside of the folder *Example* to the main folder. It will overwrite the folders *Data* and *Occurrences*, please let the process continue if you are asked about. Let us to explore these folders:
+Having done the earlier steps, move the files inside of the folder *Example* to the main folder. It will overwrite the folders *Data* and *Occurrences*, please let the process continue if you are asked about. Those folders store one the one hand, environmental variables representing climatic and other factors of current and future scenarios (CanESM5 2041-2060 and 2061-2080, rcp 4.5 and 8.5 learn more at [IPCC Website](https://www.ipcc.ch/report/emissions-scenarios/)) inside *Data* folder. On the other hand, you will find two spreadsheet in ".csv" format inside *Occurrences* folder. Each csv stores occurrence data, the first one is a single species database with column labels "species", "longitude" and "latitude", the second one is a multiple species database (10 species) using identical column names. 
 
 
-In this example, we are going to run a simple ENM 
+In this example, we are going to run a simple ENM of a single species database. Please, load the "xxx.csv". After loading, feel free to explore the object call dataSp.
+
+```
+dataSp <- read.csv("Example/Occurrences/xxx.csv")
+``` 
+
+Once species occurrence data and environmental variables are ready, the function `Bio2_routine()` can be filled and run.
+
+```
+Bio2_routine(occ = dataSp, col_sp = "species", col_lat = "lat", col_lon = "lon",
+             do_clean = FALSE, drop_out = "any", IQR_mtpl = NULL,
+             clim_vars = "worldclim", dir_clim = "Data/env_vars/", 
+             dir_other = "Data/env_vars/other/", extension_vars = ".tif$", 
+             uniq1k_method = "spthin", dist_uniq = 10, MCP_buffer = TRUE, 
+             polygon_select = FALSE, points_Buffer = FALSE, polygon_M = NULL,
+             raster_M = NULL, dist_MOV = 78, proj_models = "M-M", 
+             area_G = NULL, compute_G = FALSE, dir_G = NULL, use_bias = FALSE, 
+             TGS_kernel = NULL, algos = "MAXENT", extrapo = "no_ext", 
+             predic = "kuenm", do_future = TRUE, compute_F = TRUE, dir_F = NULL, 
+             keep_files = "essential", transf_biomo_ext = TRUE 
+            )
+```
+
 
 
 
