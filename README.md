@@ -21,20 +21,20 @@ Dependencies to install, choose the version depending on your operating system a
 Libraries required and their versions
 
 ```
-"dplyr" version 1.04
 "plyr" version 1.8.6
-"rJava" version 0.9-13
-"automap" version 0.9-13
+"dplyr" version 1.0.5
+"automap" version 1.0.14
 "PresenceAbsence" version 1.1.9
 "devtools" version 2.3.2
-"CoordinateCleaner" version 2.0-18
-"sf" version 0.9-7
+"CoordinateCleaner" version 2.0.18
+"sf" version 0.9.8
 "spThin" version 0.2.0
-"raster" version 3.4-5
-"dismo" version 1.3-3
+"raster" version 3.4.10
+"dismo" version 1.3.3
 "biomod2" version 3.4.6
 "ENMeval" version 0.3.1
-"rgdal" version 1.5-23
+"rgdal" version 1.5.23
+"rJava" version 0.9.13
 "kuenm" version 1.1.6
 ```
 
@@ -63,9 +63,38 @@ source("setup.R")
 do.install(vector.packages)
 ``` 
 
-You only need to install the packages once, so, it is better to block this command line typing a '#' character in the forefront of the line just before of the first run, like this `# do.install(vector.packages)`. If you need to troubleshoot on installing the packages, please refer to the vignete **Manual Installation of Packages** MISSING.
+You only need to install the packages once, so, it is better to block this command line typing a '#' character in the forefront of the line just before of the first run, like this `# do.install(vector.packages)` or even erase the line. 
 
-7. Load the installed packages with
+7. Verify if packages were successfully installed using
+```
+do.check(vector.packages)
+``` 
+A message showing a table with column names "package" and "successfully_completed" will be shown in the console (corner left of the RStudio window), as well as the ENMeval version installed. For example,
+
+```
+             package successfully_installed
+1               plyr                  TRUE
+2              dplyr                  TRUE
+3            automap                  TRUE
+4    PresenceAbsence                  TRUE
+5           devtools                  TRUE
+6  CoordinateCleaner                  TRUE
+7                 sf                  TRUE
+8             spThin                  TRUE
+9             raster                  TRUE
+10             dismo                  TRUE
+11           biomod2                  TRUE
+12           ENMeval                  TRUE
+13             rgdal                  TRUE
+14             rJava                  TRUE
+15             kuenm                  TRUE
+
+ENMeval version 0.3.1 is TRUE
+```
+
+In case of receiving a FALSE statement on table or having an ENMeval version different to 0.3.1 you need to troubleshoot before to continue. Please refer to the vignette **Manual Installation of Packages** MISSING.
+
+8. Load the installed packages with
 
 ```
 do.load(vector.packages)

@@ -55,80 +55,67 @@ do.folder.structure <- function(clim.datasets) {
 
 vector.packages <- c(
   "plyr", "dplyr", "automap", "PresenceAbsence", "devtools",
-  "CoordinateCleaner", "sf", "spThin", "raster", "dismo", "biomod2", "ENMeval","rgdal",
+  "CoordinateCleaner", "sf", "spThin", "raster", "dismo", "biomod2", "ENMeval", "rgdal",
   "rJava", "kuenm"
-  )
-
+)
 
 # Installing
 
-
-
 do.install <- function(x = vector.packages, repository = "https://www.icesi.edu.co/CRAN/", update.packages = F) {
-  
-  if(!require(devtools, warn.conflicts = FALSE)){
+  if (!require(devtools, warn.conflicts = FALSE)) {
     install.packages("devtools")
   }
-  
+
   # Version of ENMeval now is 2.0.0 This routine works with 0.3.1
   # make sure user has 0.3.1 and give a warning
   missing_enmeval <- !"ENMeval" %in% installed.packages()
-  
-  # if enmeval is not installed
-  if(missing_enmeval == TRUE){
 
+  # if enmeval is not installed
+  if (missing_enmeval == TRUE) {
     devtools::install_version("ENMeval", version = "0.3.1", repos = "http://cran.us.r-project.org")
-    
-  }else{
-    # if enmeval is already installed, check the version, uninstall if it is not 0.3.1  
-    
-    enmevalversion <- paste0(unlist(packageVersion("ENMeval")),collapse = ".") 
-    
-    if(enmevalversion != "0.3.1"){
-      
+  } else {
+    # if enmeval is already installed, check the version, uninstall if it is not 0.3.1
+
+    enmevalversion <- paste0(unlist(packageVersion("ENMeval")), collapse = ".")
+
+    if (enmevalversion != "0.3.1") {
       remove.packages("ENMeval")
       devtools::install_version("ENMeval", version = "0.3.1", repos = "http://cran.us.r-project.org")
       warning(paste0("ENMeval was changed from ", enmevalversion, ", to 0.3.1"))
-      
     }
   }
-  
+
   # kuenm needs to be installed from github as it doesn't have link to CRAN
-  if(!require(kuenm, warn.conflicts = FALSE)){
+  if (!require(kuenm, warn.conflicts = FALSE)) {
     devtools::install_github("marlonecobos/kuenm")
   }
-  
-      x_noenmeval <- x[- which(x == "ENMeval")]
-      x_nokuenm <- x_noenmeval[- which(x_noenmeval == "kuenm")]
-      
-      missing_pkgs <- x_nokuenm[which(!x_nokuenm %in% installed.packages())]
 
-      if (length(missing_pkgs)){
-        install.packages(missing_pkgs, repos = repository)
-        return(paste0("packages installed ", length(missing_pkgs),",", missing_pkgs))
-      }
-      
-      if (update.packages == T){
-        install.packages(missing_pkgs, repos = repository)
-        return(paste0("packages installed "))
-      }
-      
-      
+  x_noenmeval <- x[-which(x == "ENMeval")]
+  x_nokuenm <- x_noenmeval[-which(x_noenmeval == "kuenm")]
+
+  missing_pkgs <- x_nokuenm[which(!x_nokuenm %in% installed.packages())]
+
+  if (length(missing_pkgs)) {
+    install.packages(missing_pkgs, repos = repository)
+    return(paste0("packages installed ", length(missing_pkgs), ",", missing_pkgs))
+  }
+
+  if (update.packages == T) {
+    install.packages(missing_pkgs, repos = repository)
+    return(paste0("packages installed "))
+  }
 }
 
-do.check <- function(x = vector.packages){
+do.check <- function(x = vector.packages) {
   # table of packages
-  dfpcks <- data.frame("package" = vector.packages, "succesfully_installed" = x %in% rownames(installed.packages()))
+  dfpcks <- data.frame("package" = vector.packages, "successfully_installed" = x %in% rownames(installed.packages()))
   # enmeval version
-  enmevalversion <- paste0(unlist(packageVersion("ENMeval")),collapse = ".") == "0.3.1"
+  enmevalversion <- paste0(unlist(packageVersion("ENMeval")), collapse = ".") == "0.3.1"
   # message showing user results
-  message(paste0(capture.output(dfpcks), collapse = "\n"), paste0("\n\nENMeval version 0.3.1 is ", b))
+  message(paste0(capture.output(dfpcks), collapse = "\n"), paste0("\n\nENMeval version 0.3.1 is ", enmevalversion))
 }
-
-
 
 do.load <- function(x) {
   lapply(x, require, character.only = TRUE)
   return("ok")
 }
-
