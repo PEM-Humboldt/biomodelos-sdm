@@ -116,6 +116,17 @@ do.install <- function(x = vector.packages, repository = "https://www.icesi.edu.
       
 }
 
+do.check <- function(x = vector.packages){
+  # table of packages
+  dfpcks <- data.frame("package" = vector.packages, "succesfully_installed" = x %in% rownames(installed.packages()))
+  # enmeval version
+  enmevalversion <- paste0(unlist(packageVersion("ENMeval")),collapse = ".") == "0.3.1"
+  # message showing user results
+  message(paste0(capture.output(dfpcks), collapse = "\n"), paste0("\n\nENMeval version 0.3.1 is ", b))
+}
+
+
+
 do.load <- function(x) {
   lapply(x, require, character.only = TRUE)
   return("ok")
