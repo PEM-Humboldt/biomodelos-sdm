@@ -140,8 +140,11 @@ Now you are ready to load the Bio2_routine, customize it and run ENM models. You
 
 ## Example
 
+### Environmental Data and Ocurrences
+
 Having done the earlier steps, move the files inside of the folder *Example* to the main folder. It will overwrite the folders *Data* and *Occurrences*, please let the process continue if you are asked about. Those folders store one the one hand, environmental variables representing climatic and other factors of current and future scenarios (CanESM5 2041-2060 and 2061-2080, rcp 4.5 and 8.5 learn more at [IPCC Website](https://www.ipcc.ch/report/emissions-scenarios/)) inside *Data* folder. On the other hand, you will find two spreadsheet in ".csv" format inside *Occurrences* folder. Each csv stores occurrence data, the first one is a single species database with column labels "species", "longitude" and "latitude", the second one is a multiple species database (10 species) using identical column names. 
 
+### Running the example
 
 In this example, we are going to run a simple ENM of a single species database. Please, load the "xxx.csv". After loading, feel free to explore the object call dataSp.
 
@@ -166,7 +169,10 @@ Bio2_routine(occ = dataSp, col_sp = "species", col_lat = "lat", col_lon = "lon",
             )
 ```
 
+### Checking console answers and working directory files
 
+
+### Final results: Ensembles
 
 
 ## Authors and contact
