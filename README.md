@@ -99,7 +99,7 @@ In case of receiving a FALSE statement on table or having an ENMeval version dif
 ```
 do.load(vector.packages)
 ``` 
-8. Create the structure of folders typing and run. The use of the character 'worldclim' inside the function does not refer to retrieve the data from the repository. It is only a way to create an organized framework inside the working directory in which you may store the variables downloaded manually or using automatized tools. 
+9. Create the structure of folders typing and run. The use of the character 'worldclim' inside the function does not refer to retrieve the data from the repository. It is only a way to create an organized framework inside the working directory in which you may store the variables downloaded manually or using automatized tools. 
 
 ```
 do.folder.structure(clim.datasets = "worldclim")
@@ -119,7 +119,7 @@ After run the function you will have in your working directory 3 new folders wit
   + *shapes* to storage of useful shapefiles like Colombian or American borders
 * Occurrences to storage geographical records of species, those records must have a column with name species, latitude and longitude in decimal format 
 
-9. Load the wrapper function "Bio2_routine". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R. Please refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
+10. Load the wrapper function "Bio2_routine". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R. Please refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
 
 ```
 source("R/Bio2_routine.R")
@@ -144,33 +144,36 @@ Now you are ready to load the Bio2_routine, customize it and run ENM models. You
 
 Having done the earlier steps, move the files inside of the folder *Example* to the main folder. It will overwrite the folders *Data* and *Occurrences*, please let the process continue if you are asked about. Those folders store one the one hand, environmental variables representing climatic and other factors of current and future scenarios (CanESM5 2041-2060 and 2061-2080, rcp 4.5 and 8.5 learn more at [IPCC Website](https://www.ipcc.ch/report/emissions-scenarios/)) inside *Data* folder. On the other hand, you will find two spreadsheet in ".csv" format inside *Occurrences* folder. Each csv stores occurrence data, the first one is a single species database with column labels "species", "longitude" and "latitude", the second one is a multiple species database (10 species) using identical column names. 
 
-### Running the example
 
-In this example, we are going to run a simple ENM of a single species database. Please, load the "xxx.csv". After loading, feel free to explore the object call dataSp.
+In this example, we are going to run a simple ENM of a single species database. So, load the "xxx.csv". After loading, feel free to explore the object call dataSp.
 
 ```
 dataSp <- read.csv("Example/Occurrences/xxx.csv")
 ``` 
 
+### Running
+
 Once species occurrence data and environmental variables are ready, the function `Bio2_routine()` can be filled and run.
 
 ```
-Bio2_routine(occ = dataSp, col_sp = "species", col_lat = "lat", col_lon = "lon",
-             do_clean = FALSE, drop_out = "any", IQR_mtpl = NULL,
-             clim_vars = "worldclim", dir_clim = "Data/env_vars/", 
-             dir_other = "Data/env_vars/other/", extension_vars = ".tif$", 
-             uniq1k_method = "spthin", dist_uniq = 10, MCP_buffer = TRUE, 
-             polygon_select = FALSE, points_Buffer = FALSE, polygon_M = NULL,
-             raster_M = NULL, dist_MOV = 78, proj_models = "M-M", 
-             area_G = NULL, compute_G = FALSE, dir_G = NULL, use_bias = FALSE, 
-             TGS_kernel = NULL, algos = "MAXENT", extrapo = "no_ext", 
-             predic = "kuenm", do_future = TRUE, compute_F = TRUE, dir_F = NULL, 
-             keep_files = "essential", transf_biomo_ext = TRUE 
-            )
+Bio2_routine(
+  occ = occ_sp, col_sp = "species", col_lat = "lat", drop_out = "any",
+  col_lon = "lon", clim_vars = "worldclim", dir_clim = "Data/env_vars/", 
+  dir_other = "Data/env_vars/other/", uniq1k_method = "sqkm", dist_uniq = 1,
+  points_Buffer = TRUE, MCP_buffer = F, polygon_select = F, dist_MOV = 74, 
+  proj_models = "M-M", algos = "MAXENT",keep_files = "essential", use_bias = F 
+) 
 ```
 
-### Checking console answers and working directory files
+### Checking console messages and working directory files
 
+```
+[1] "Cleaning data"
+[1] "Thinning database to 1km, using  sqkm"
+[1] "Constructing accessible area - M"
+[1] "Processing environmental layers"
+[1] "Processing bias layer"
+```
 
 ### Final results: Ensembles
 
