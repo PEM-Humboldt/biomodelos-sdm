@@ -1,6 +1,6 @@
 # BioModelos 2
 
-BioModelos 2 is an effort to construct thousands of Species Distribution Models from databases gathered and managed by the Instituto de Investigacion de Recursos Biologicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. "BioModelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using several machine learning algorithms and then ensembles them. Fourth, it projects to future scenarios and evaluates extrapolation.
+BioModelos 2 is an effort to construct thousands of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigacion de Recursos Biologicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. "BioModelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using several machine learning algorithms and then ensembles them. Fourth, it projects to future scenarios and evaluates extrapolation.
 
 Current state: in development. Version 1.0.0
 
@@ -144,7 +144,7 @@ Your RStudio window must look like this:
 ![RStudio_View](RStudio_View.png)
 
 
-Now you are ready to load the Bio2_routine, customize it and run ENM models. You only need two basic elements, environmental variables and georeferenced occurrence data of one or several species. The next example shows the structure of both elements. Also, to go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
+Now you are ready to customize Bio2_routine and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. The next example will show you the structure and characteristics of both elements. Also, to go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
 
 ## Example
 
@@ -161,7 +161,7 @@ dataSp <- read.csv("Example/Occurrences/xxx.csv")
 
 ### Running
 
-Once species occurrence data and environmental variables are ready, the function `Bio2_routine()` can be filled and run.
+Once the species occurrence data and environmental variables are ready, the function `Bio2_routine()` can be filled and run.
 
 ```
 Bio2_routine(
@@ -189,6 +189,8 @@ Bio2_routine(
 ## Authors and contact
 
 * **Carlos Jair Muñoz Rodriguez** - *Initial development* - [cmunoz@humboldt.org.co](cmunoz@humboldt.org.co)
+
+* **María Helena Olaya** - *Initial development* -
 
 * **Gabriel Alejandro Perilla Suarez** - *Initial development* - 
 
