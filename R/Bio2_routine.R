@@ -1,3 +1,5 @@
+
+
 # title: "Biomodelos 2 routine"
 # date: "1/02/2021"
 
@@ -15,8 +17,57 @@
 # dir_other = "Data/env_vars/other",
 # TGS_kernel, # = "bias_layer/primates.tif", # Where is the bias file, in case of do.bias active
 
-## Rutina
-
+#' Biomodelos 2 Routine
+#'
+#' @param occ 
+#' @param col_sp 
+#' @param col_lat 
+#' @param col_lon 
+#' @param do_clean 
+#' @param drop_out 
+#' @param IQR_mtpl 
+#' @param clim_vars 
+#' @param dir_clim 
+#' @param dir_other 
+#' @param extension_vars 
+#' @param uniq1k_method 
+#' @param dist_uniq 
+#' @param MCP_buffer 
+#' @param polygon_select 
+#' @param points_Buffer 
+#' @param polygon_M 
+#' @param raster_M 
+#' @param dist_MOV 
+#' @param proj_models 
+#' @param area_G 
+#' @param compute_G 
+#' @param dir_G 
+#' @param use_bias 
+#' @param TGS_kernel 
+#' @param algos 
+#' @param beta_5.25 
+#' @param fc_5.25 
+#' @param beta_25 
+#' @param fc_25 
+#' @param extrapo 
+#' @param predic 
+#' @param do_future 
+#' @param crs_proyect 
+#' @param tipo 
+#' @param kept 
+#' @param E 
+#' @param mxnt.pckg 
+#' @param other.pckg 
+#' @param compute_F 
+#' @param dir_F 
+#' @param keep_files 
+#' @param write_intfiles 
+#' @param transf_biomo_ext 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL,
                          drop_out, IQR_mtpl = NULL, clim_vars, dir_clim, dir_other,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,

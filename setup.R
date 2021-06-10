@@ -12,8 +12,7 @@ do.folder.structure <- function(clim.datasets) {
 
   dir.create("Data/biogeographic_shp", showWarnings = F) # storage of biogeographic, ecoregions, hydrosheets used to construct accesible are by each species
   dir.create("Data/env_vars", showWarnings = F) # env_vars: storage of environmental variables (other folder and climatic folders)
-  dir.create("Data/shapes", showWarnings = F) # shapes: storage of useful shapefiles like Colombian or American borders
-
+  
   # env_vars sub folders
 
   dir.create(paste0("Data/env_vars/other"), showWarnings = F)

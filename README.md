@@ -119,21 +119,29 @@ After run the function you will have in your working directory 3 new folders wit
   + *shapes* to storage of useful shapefiles like Colombian or American borders
 * Occurrences to storage geographical records of species, those records must have a column with name species, latitude and longitude in decimal format 
 
-10. Load the wrapper function "Bio2_routine". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R. Please refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
+10. Load the wrapper function "Bio2_routine". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R.
 
 ```
 source("R/Bio2_routine.R")
 ``` 
 
+For help run 
+
+```
+help(Bio2_routine)
+```
+
+Also, please read all this readme or refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
+
 ### Folder structure and RStudio window
 
 Your folder structure must look like this:
 
-![Folder_Structure](Folder_Structure.PNG)
+![Folder_Structure](Folder_Structure.png)
 
 Your RStudio window must look like this:
 
-![RStudio_View](RStudio_View.JPG)
+![RStudio_View](RStudio_View.png)
 
 
 Now you are ready to load the Bio2_routine, customize it and run ENM models. You only need two basic elements, environmental variables and georeferenced occurrence data of one or several species. The next example shows the structure of both elements. Also, to go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
