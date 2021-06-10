@@ -202,7 +202,7 @@ Bio2_routine(
 
 * **Andrés Felipe Suárez Castro** - *Initial development* - 
 
-* **Elkin Alexi Noguera Urbano** - *Initial development* - 
+* **Elkin Alexi Noguera Urbano** - *Initial development* - [enoguera@humboldt.org.co](enoguera@humboldt.org.co) 
 
 
 ## License
