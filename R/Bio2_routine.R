@@ -160,7 +160,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   #--------------------------------------
   # 0. Setup
   #--------------------------------------
-
+  
+  print("Preparing folders and files")
+  
   # 0.1 Calling individual functions
 
   source("R/1_clean_rawocc.R")

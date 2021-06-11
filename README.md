@@ -176,7 +176,7 @@ Bio2_routine(
 ) 
 ```
 
-A quick explanation for each of those arguments:
+A quick explanation for each of these arguments:
 
 + Occurrences (**occ**) database is *dataSp* (the database loaded before)
 + Column name of species **col_sp** in the database is *species* 
@@ -196,10 +196,11 @@ There are several more arguments and ways to customize them, so, go to vignettes
 
 ### Checking console messages and working directory folder
 
-Once you run the last script, you would monitor the process in the console (left down in RStudio) and the working directory folder.
+Once you run the last script, you would monitor the process in the console (left down in RStudio) and the working directory folder. In the next table we show how the function works. Each row represents a working step that is explained in the column "Action" and you will find what messages are displayed in the RStudio console and how your working directory looks.
 
 |Step|Console|Action|Working folder|
 |-|--|---|---|
+|0|``` [1] "Preparing folders and files"```|Creating species folder in the working directory, temporary files and a log file to follow and save the parameters given to the function and follow process (your are only allowed to see the content at the end of the process, see the vignette **knowing your log file** MISSING)||
 |1   |``` [1] "Cleaning data"```|Detecting and correcting (or removing) corrupt or inaccurate records from the database. In a first moment the routine searches missing coordinates or having strange characters. Then, in an optional step, it removes geographical outliers and data potentially problematic making use of the [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html)|   |
 |2   |```[1] "Thinning database to 1km, using  sqkm"```|Spatial thinning of occurrence records in a way to diminish the bias sample and make the process more efficient. Here, by default the function uses [clean_dup](https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R) from [ntbox](https://github.com/luismurao/ntbox/tree/master/R), but can be customized to run [spThin](https://cran.r-project.org/web/packages/spThin/spThin.pdf).|   |
 |3   |```[1] "Constructing accessible area"```|Constructing research areas or accessible areas in which the algorithm(s) selected will be trained and projected. In this way, *Bio2_routine* has several options to construct it. Please see **More deep in Bio2_routine** vignette.|   |
