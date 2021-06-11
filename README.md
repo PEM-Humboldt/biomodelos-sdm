@@ -178,13 +178,13 @@ Bio2_routine(
 
 A quick explanation for each of those arguments:
 
-+ Occurrences **occ** database is *dataSp*
-+ Column name of species **col_sp** in the database *species* 
-+ Column in which is the longitude information **col_lon** in the database is *lon*
-+ Column in which is the latitude information **col_lat** in the database is *lat*
-+ Name of climatic variables (**clim_vars**) is *worldclim* (with this character string the function will search on the directory path)
-+ The climatic directory (**dir_clim**) is located in *Data/env_vars/"* and the not-climatic variables (**dir_other**) in *Data/env_vars/other/*.
-+ The niche models will be calibrated and projected inside a buffer (**points_Buffer**) to each occurrence point around a movement distance (**dist_Mov**) of 74 kilometers
++ Occurrences (**occ**) database is *dataSp* (the database loaded before)
++ Column name of species **col_sp** in the database is *species* 
++ Column in which is the longitude (**col_lon**) information in the database is *lon*
++ Column in which is the latitude (**col_lat**) information  in the database is *lat*
++ Name of climatic variables (**clim_vars**) is *worldclim*, with this character string the function will search on the directory path
++ The climatic directory (**dir_clim**) is located in *Data/env_vars/"* and the not-climatic variables (**dir_other**) are inside *Data/env_vars/other/*.
++ The niche models will be calibrated and projected in the accesible area (*M-M*) inside a buffer (**points_Buffer**) to each occurrence point around a movement distance (**dist_Mov**) of 74 kilometers
 + Algorithm (**algos**) used will be *MAXENT*
 
 
@@ -194,11 +194,18 @@ There are several more arguments and ways to customize them, so, go to vignettes
 ?Bio2_routine
 ```
 
-### Checking console messages and working directory files
+### Checking console messages and working directory folder
+
+Once you run the last script, you would monitor the process in the console (left down in RStudio) and the working directory folder.
+
+This first step involves detecting and correcting (or removing) corrupt or inaccurate records from the database. In a first moment the routine searches missing coordinates or having strange characters. Then, in an optional step it removes geographical outliers and data potential problematic data making use of the [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) package. In the console will appear:
 
 ```
 [1] "Cleaning data"
 ```
+
+The second step implies the spatial thinning of occurrence records in a way to diminish the bias sample and making the p 
+
 ```
 [1] "Thinning database to 1km, using  sqkm"
 ```
