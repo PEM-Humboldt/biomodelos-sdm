@@ -148,9 +148,9 @@ Your RStudio window must look like this:
 ![RStudio_View](RStudio_View.png)
 
 
-Now you are ready to customize Bio2_routine and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. The next example will show you the structure and characteristics of both elements. Also, to go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
+Now you are ready to customize Bio2_routine and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. We encourage you to follow the next section. It will show you the structure and characteristics of both elements and transcendental information to run and learn this application. Also, to go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
 
-## Example
+## Working Example
 
 ### Environmental Data and Ocurrences
 
@@ -198,31 +198,15 @@ There are several more arguments and ways to customize them, so, go to vignettes
 
 Once you run the last script, you would monitor the process in the console (left down in RStudio) and the working directory folder.
 
-This first step involves detecting and correcting (or removing) corrupt or inaccurate records from the database. In a first moment the routine searches missing coordinates or having strange characters. Then, in an optional step it removes geographical outliers and data potential problematic data making use of the [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) package. In the console will appear:
-
-```
-[1] "Cleaning data"
-```
-
-The second step implies the spatial thinning of occurrence records in a way to diminish the bias sample and making the p 
-
-```
-[1] "Thinning database to 1km, using  sqkm"
-```
-
-```
-[1] "Constructing accessible area - M"
-```
-```
-[1] "Processing environmental layers"
-```
-
-```
-[1] "Processing bias layer"
-```
-
-### Final results: Ensembles
-
+|Step|Console|Action|Working folder|
+|-|--|---|---|
+|1   |``` [1] "Cleaning data"```|Detecting and correcting (or removing) corrupt or inaccurate records from the database. In a first moment the routine searches missing coordinates or having strange characters. Then, in an optional step, it removes geographical outliers and data potentially problematic making use of the [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html)|   |
+|2   |```[1] "Thinning database to 1km, using  sqkm"```|Spatial thinning of occurrence records in a way to diminish the bias sample and make the process more efficient. Here, by default the function uses [clean_dup](https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R) from [ntbox](https://github.com/luismurao/ntbox/tree/master/R), but can be customized to run [spThin](https://cran.r-project.org/web/packages/spThin/spThin.pdf).|   |
+|3   |```[1] "Constructing accessible area"```|Constructing research areas or accessible areas in which the algorithm(s) selected will be trained and projected. In this way, *Bio2_routine* has several options to construct it. Please see **More deep in Bio2_routine** vignette.|   |
+|4   |```[1] "Processing environmental layers"```|Cropping and masking the environmental variables, either be current or future ones. It also stores them temporally in a folder call M (or G in case of transferring/projecting the model to other areas)|   |
+|Optional|```[1] "Processing bias layer"```|Cropping and masking to accessible area extent the bias layer constructed by the user|   |
+|5   |```[1] "Calibrating and evaluating SDM's"```|Running algorithms chosen and evaluating them. Supported algorithms include Maxent and those native to [BIOMOD2](https://cran.r-project.org/web/packages/biomod2/index.html). In this version only Maxent is tuned using [ENMeval](https://cran.r-project.org/web/packages/ENMeval/index.html) or [Kuenm](https://github.com/marlonecobos/kuenm). If there are less than 25 occurrence species records a jackknife procedure is performed, by the other side the models are tuned using blocks. Algorithms runned by Biomod are replicated 10 times. Evaluation of models depends on a hierarchical selection of best Partial Roc (only for Kuenm and Biomod) or AUC (only for ENMeval), Akaike Information Criterion, and the lowest omission rate at user discretion percentile (default 10th).|   |
+|6   |```[1] "Ensembles"```|Ensambling the best models of each algorithm type. A median, coefficient of variation, standard deviation and sum are calculated, those measures are not performed if only one model is selected. 4 threshold-type maps are calculated from the median: minimum threshold presence, ten threshold percentile, twenty threshold percentile and thirty threshold according to [Biomodelos framework](http://biomodelos.humboldt.org.co/).|   |
 
 ## Authors and contact
 

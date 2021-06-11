@@ -373,7 +373,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   #--------------------------------------
   # 3. Accesible Area.
   #--------------------------------------
-  print("Constructing accesible area - M")
+  print("Constructing accesible area")
 
   linesmsg3 <- tryCatch(
     expr = {
@@ -456,11 +456,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   # 5. Bias file by species
   #--------------------------------------
 
-  print("Procesing bias layer")
 
   linesmsg5 <- tryCatch(
     expr = {
       if (use_bias == TRUE) {
+        print("Procesing bias layer")
         BiasSp <- get_BiasSp(
           data. = M_$occurrences, TGS.kernel = TGS_kernel, shape.M = M_$shape_M, env.M = envars$M,
           ext = "*.asc", folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat,
@@ -480,11 +480,13 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
   #------- tracking file
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
-
+  
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
-
+  
+  print("Calibrating and evaluating SDM's")
+  
   if (nrow(M_$occurrences) >= 5 & nrow(M_$occurrences) <= 25) {
     if (length(which(algos == "MAXENT")) != 0) {
 
@@ -514,7 +516,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
 
-      print("Path A, ensembles")
+      print("Ensembles")
 
       linesmsg6.2 <- tryCatch(
         expr = {
@@ -596,7 +598,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
 
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
-
+      
+      print("Ensembles")
+      
       linesmsg6.3 <- tryCatch(
         expr = {
           currentEns_byAlg(
@@ -658,7 +662,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
 
       writeLines(text = linesmsg6.4, con = filelog, sep = "\n")
-
+      
+      print("Ensembles")
+      
       linesmsg6.5 <- tryCatch(
         expr = {
           for (i in 1:length(algos2)) {
