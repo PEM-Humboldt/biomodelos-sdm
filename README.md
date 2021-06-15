@@ -141,7 +141,7 @@ Also, please read all this readme or refer to **Structure and Functions** and **
 
 Your folder structure must look like this:
 
-![Folder_Structure](images/Folder_Structure.png)
+![Folder_Structure](images/Folder_structure.png)
 
 Your RStudio window must look like this:
 
