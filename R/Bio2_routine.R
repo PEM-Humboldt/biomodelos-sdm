@@ -145,9 +145,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   if (is.null(polygon_select)) polygon_select <- FALSE
   if (is.null(points_Buffer)) points_Buffer <- TRUE
   if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
-  if (is.null(use_bias)) use_bias <- TRUE
-  if (is.null(compute_G)) compute_G <- TRUE
-  if (is.null(compute_F)) compute_F <- TRUE
+  if (is.null(use_bias)) use_bias <- FALSE
+  if (is.null(compute_G)) compute_G <- FALSE
+  if (is.null(compute_F)) compute_F <- FALSE
   #  if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
   #  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
   if (is.null(extrapo)) extrapo <- "ext_clam"
