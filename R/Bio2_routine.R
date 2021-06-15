@@ -69,7 +69,7 @@
 #'
 #' @examples
 Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL,
-                         drop_out, IQR_mtpl = NULL, clim_vars, dir_clim, dir_other,
+                         drop_out = "any", IQR_mtpl = NULL, clim_vars, dir_clim, dir_other,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
                          MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, polygon_M = NULL,
                          raster_M = NULL, dist_MOV = NULL, proj_models, area_G = NULL, compute_G = NULL,
@@ -518,7 +518,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
 
-      print("Ensembles")
+      print("\nEnsembles")
 
       linesmsg6.2 <- tryCatch(
         expr = {
@@ -601,7 +601,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
       
-      print("Ensembles")
+      print("\nEnsembles")
       
       linesmsg6.3 <- tryCatch(
         expr = {
@@ -665,7 +665,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
       writeLines(text = linesmsg6.4, con = filelog, sep = "\n")
       
-      print("Ensembles")
+      print("\nEnsembles")
       
       linesmsg6.5 <- tryCatch(
         expr = {
