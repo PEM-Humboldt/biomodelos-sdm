@@ -154,13 +154,12 @@ Now you are ready to customize Bio2_routine and run SDM models. You only need,as
 
 ### Environmental Data and Ocurrences
 
-Having done the earlier steps, move the files inside of the folder *Example* to the main root folder. It will overwrite *Data* and *Occurrences* folders, please let the process continue if you are asked about. Inside *Data* folder you will find environmental variables representing climatic and other factors of current and future scenarios (for future explanation go to vignette **exercises**). In the current worldclim folder you will find two raster files ".tif". On the other hand, you will find two spreadsheet in ".csv" format inside *Occurrences* folder. Each ".csv" stores occurrence data, the first one is a single species database with column labels "species", "lon" and "lat", the second one is a multiple species database (10 species) using identical column names. 
+Having done the earlier steps, extract the files inside of the "zip" folder *Example* to the main root folder. It will overwrite *Bias_file*, *Data*, and *Occurrences* folders, please let the process continue if you are asked about. Inside *Data* folder you will find environmental variables representing climatic and other factors of current and future scenarios (for future explanation go to vignette **exercises**). In the current worldclim folder you will find two raster files ".tif". On the other hand, you will find two spreadsheet in ".csv" format inside *Occurrences* folder. Each ".csv" stores occurrence data, the first one is a single species database with column labels "species", "lon" and "lat", the second one is a multiple species database (5 species) using identical column names. 
 
-
-In this example, we are going to run a simple ENM of a single species database. So, load the "xxx.csv". After loading, feel free to explore the object call dataSp.
+In this example, we are going to run a simple ENM of a single species database. So, load the "single_species.csv". After loading, feel free to explore the object call *dataSp*.
 
 ```
-dataSp <- read.csv("Example/Occurrences/xxx.csv")
+dataSp <- read.csv("Example/Occurrences/single_species.csv")
 ``` 
 
 ### Running
@@ -184,15 +183,11 @@ A quick explanation for each of these arguments:
 + Column in which is the latitude (**col_lat**) information  in the database is *lat*
 + Name of climatic variables (**clim_vars**) is *worldclim*, with this character string the function will search on the directory path
 + The climatic directory (**dir_clim**) is located in *Data/env_vars/"* and the not-climatic variables (**dir_other**) are inside *Data/env_vars/other/*.
-+ The niche models will be calibrated and projected in the accesible area (*M-M*) inside a buffer (**points_Buffer**) to each occurrence point around a movement distance (**dist_Mov**) of 74 kilometers
++ The niche models will be calibrated and projected in the accessible area (*M-M*) inside a buffer (**points_Buffer**) to each occurrence point around a movement distance (**dist_Mov**) of 74 kilometers
 + Algorithm (**algos**) used will be *MAXENT*
 
 
-There are several more arguments and ways to customize them, so, go to vignettes. Remember, for help run
-
-```
-?Bio2_routine
-```
+There are several more arguments and ways to customize them, revise the vignettes and go for help running `?Bio2_routine`.
 
 ### Checking console messages and working directory folder
 
