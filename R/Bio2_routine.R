@@ -1,54 +1,3 @@
-#' Biomodelos 2 Routine
-#'
-#' @param occ  Occurrence data at least must have species name, latitude, longitude, and date columns
-#' @param col_sp
-#' @param col_lat
-#' @param col_lon
-#' @param do_clean
-#' @param drop_out any, IQR, "freq", "IQR"
-#' @param IQR_mtpl
-#' @param clim_vars Which climatic data use, useful when you want to compare fit of different climatic data sets
-#' @param dir_clim
-#' @param dir_other
-#' @param extension_vars
-#' @param uniq1k_method
-#' @param dist_uniq
-#' @param MCP_buffer
-#' @param polygon_select
-#' @param points_Buffer
-#' @param polygon_M Spatial data to construct M composed, must be inside project file
-#' @param raster_M solo se "prende cuando drop out es freq"
-#' @param dist_MOV Movement distance of the group
-#' @param proj_models "M-M", # "M-G
-#' @param area_G solo se prende cuando projection es M-G, MISSING puede ser raster o shape
-#' @param compute_G
-#' @param dir_G
-#' @param use_bias Where is the bias file, in case of do.bias active
-#' @param TGS_kernel
-#' @param algos
-#' @param beta_5.25
-#' @param fc_5.25
-#' @param beta_25
-#' @param fc_25
-#' @param extrapo
-#' @param predic
-#' @param do_future
-#' @param crs_proyect
-#' @param tipo
-#' @param kept
-#' @param E
-#' @param mxnt.pckg
-#' @param other.pckg
-#' @param compute_F
-#' @param dir_F
-#' @param keep_files
-#' @param write_intfiles
-#' @param transf_biomo_ext
-#'
-#' @return
-#' @export
-#'
-#' @examples
 Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL,
                          drop_out = "any", IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
@@ -202,37 +151,37 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
   # ellipsis arguments
   # occurrence arguments
-  if (is.null(col_sp)) col_sp <- "acceptedNameUsage" # Which is the species name column
-  if (is.null(col_lat)) col_lat <- "decimalLatitude" # Which is the latitude coordinate name column
-  if (is.null(col_lon)) col_lon <- "decimalLongitude" # Which is the longitude coordinate name column
+  if (is.null(col_sp)) col_sp <- "acceptedNameUsage"
+  if (is.null(col_lat)) col_lat <- "decimalLatitude"
+  if (is.null(col_lon)) col_lon <- "decimalLongitude"
   if (is.null(do_clean)) do_clean <- FALSE
   if (is.null(drop_out)) drop_out <- "any"
   if (is.null(IQR_mtpl)) IQR_mtpl <- 5
-  
-  # Environmental variables 
+
+  # Environmental variables
   if (is.null(dir_clim)) dir_clim <- "Data/env_vars/"
   if (is.null(dir_clim)) dir_other <- "Data/env_vars/other/"
-  if (is.null(extension_vars)) extension_vars <- "*.tif$" #### ?Solo aceptara tifs? como hacer para que lea solamente archivos que pueda usar raster
-  
+  if (is.null(extension_vars)) extension_vars <- "*.tif$"
+
   # Bias management
-  if (is.null(uniq1k_method)) uniq1k_method <- "sqkm" # "spthin" #MISSING user choose the grid
+  if (is.null(uniq1k_method)) uniq1k_method <- "sqkm"
   if (is.null(dist_uniq)) dist_uniq <- 1
   if (is.null(use_bias)) use_bias <- FALSE
-  
+
   # Accessible area
   if (is.null(MCP_buffer)) MCP_buffer <- FALSE
   if (is.null(polygon_select)) polygon_select <- FALSE
   if (is.null(points_Buffer)) points_Buffer <- TRUE
-  
+
   # Projections
   if (is.null(compute_G)) compute_G <- FALSE
   if (is.null(do_future)) do_future <- FALSE
   if (is.null(compute_F)) compute_F <- FALSE
-  
-  #Algorithms
+
+  # Algorithms
   if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
   if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
-  if (is.null(fc_5.25)) fc_5.25 <- c("l", "q", "lq") # solo minusculas
+  if (is.null(fc_5.25)) fc_5.25 <- c("l", "q", "lq")
   if (is.null(beta_25)) beta_25 <- seq(1, 6, 1)
   if (is.null(fc_25)) {
     fc_25 <- c(
@@ -240,25 +189,28 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       "lqt", "lqh", "lpt", "lph", "qpt", "qph", "qth", "pth", "lqpt",
       "lqph", "lqth", "lpth", "lqpth"
     )
+  }
   if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 5
-  if (is.null(predic)) predic <- "kuenm" # dismo #missing maxnet
-  
+  if (is.null(predic)) predic <- "kuenm" 
+
   # other arguments
-  if (is.null(tipo)) tipo <- "" # optional, in case of experiment (it is attached to folder sp name created)*
+  if (is.null(tipo)) tipo <- ""
   if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
-  if (is.null(kept)) kept <- FALSE # kuenm argument to clean competitor models
+  if (is.null(kept)) kept <- FALSE 
   if (is.null(keep_files)) keep_files <- "essential"
   if (is.null(write_intfiles)) write_intfiles <- FALSE
   if (is.null(transf_biomo_ext)) transf_biomo_ext <- TRUE
-  
+
   # to reorganize
   # if (is.null(date_period)) date_period <- "1970-01-01" # "From" date to limit chronologically occurrence data "year-month-day"
   # if (is.null(event_date)) event_date <- "eventDate"
-  
+
   # to develop
   #  if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
   #  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
+  # predic with maxnet #[MISSING]
+  # area_G M-G, [MISSING] can be shape not only raster
   
   #--------------------------------------
   # 0. Setup
@@ -691,7 +643,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo,
             write.intfiles = write_intfiles
             # MISSING for Unix and macOs the automated input of biasfile, ready for windows
-          ) ####### MISSING
+          )
           paste0(
             "\nLarge samples Maxent modelling: ok. Check Final models folder in the species directory folder."
           )
@@ -778,7 +730,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
               projBalgo_i <- PathBOther$c_proj[[layersalgo_i]]
               currentEns_byAlg(
                 ras.Stack = projBalgo_i, data. = M_$occurrences, collon = col_lon, collat = col_lat,
-                e = 5, algorithm = algos2[i], foldersp = folder_sp ############ MISSING let user choice e
+                e = E, algorithm = algos2[i], foldersp = folder_sp
               )
             }
           }
