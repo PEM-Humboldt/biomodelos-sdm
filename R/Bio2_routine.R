@@ -1,75 +1,56 @@
-
-
-# title: "Biomodelos 2 routine"
-# date: "1/02/2021"
-
-#--------------------------------------
-
-# occ = x, # Occurrence data at least must have species name, latitude, longitude, and date columns
-# drop_out = "IQR", # "freq", # "IQR"
-# polygon_M, # "Data/biogeographic_shp/wwf_ecoregions/wwf_terr_ecos.shp", # Spatial data to construct M composed, must be inside project file
-# raster_M = NULL, # "Data/biogeographic_shp/bior_colextent/bior.tif", #MISSING solo se "prende cuando drop out es freq"
-# proj_models = "M-M", # "M-G
-# area_G = NULL, # "Data/biogeographic_shp/areaG.tif", # MISSING solo se prende cuando projection es M-G, MISSING puede ser raster o shape
-# dist_MOV, # = 10, # Movement distance of the group
-# clim_vars, # = "worldclim", # Which climatic data use (Chelsa, worldclim, other "MISSING")
-# dir_clim = "Data/env_vars/", # Folder worldclim data,   "Data/present/chelsa/", inside folder project
-# dir_other = "Data/env_vars/other",
-# TGS_kernel, # = "bias_layer/primates.tif", # Where is the bias file, in case of do.bias active
-
 #' Biomodelos 2 Routine
 #'
-#' @param occ 
-#' @param col_sp 
-#' @param col_lat 
-#' @param col_lon 
-#' @param do_clean 
-#' @param drop_out 
-#' @param IQR_mtpl 
-#' @param clim_vars 
-#' @param dir_clim 
-#' @param dir_other 
-#' @param extension_vars 
-#' @param uniq1k_method 
-#' @param dist_uniq 
-#' @param MCP_buffer 
-#' @param polygon_select 
-#' @param points_Buffer 
-#' @param polygon_M 
-#' @param raster_M 
-#' @param dist_MOV 
-#' @param proj_models 
-#' @param area_G 
-#' @param compute_G 
-#' @param dir_G 
-#' @param use_bias 
-#' @param TGS_kernel 
-#' @param algos 
-#' @param beta_5.25 
-#' @param fc_5.25 
-#' @param beta_25 
-#' @param fc_25 
-#' @param extrapo 
-#' @param predic 
-#' @param do_future 
-#' @param crs_proyect 
-#' @param tipo 
-#' @param kept 
-#' @param E 
-#' @param mxnt.pckg 
-#' @param other.pckg 
-#' @param compute_F 
-#' @param dir_F 
-#' @param keep_files 
-#' @param write_intfiles 
-#' @param transf_biomo_ext 
+#' @param occ  Occurrence data at least must have species name, latitude, longitude, and date columns
+#' @param col_sp
+#' @param col_lat
+#' @param col_lon
+#' @param do_clean
+#' @param drop_out any, IQR, "freq", "IQR"
+#' @param IQR_mtpl
+#' @param clim_vars Which climatic data use, useful when you want to compare fit of different climatic data sets
+#' @param dir_clim
+#' @param dir_other
+#' @param extension_vars
+#' @param uniq1k_method
+#' @param dist_uniq
+#' @param MCP_buffer
+#' @param polygon_select
+#' @param points_Buffer
+#' @param polygon_M Spatial data to construct M composed, must be inside project file
+#' @param raster_M solo se "prende cuando drop out es freq"
+#' @param dist_MOV Movement distance of the group
+#' @param proj_models "M-M", # "M-G
+#' @param area_G solo se prende cuando projection es M-G, MISSING puede ser raster o shape
+#' @param compute_G
+#' @param dir_G
+#' @param use_bias Where is the bias file, in case of do.bias active
+#' @param TGS_kernel
+#' @param algos
+#' @param beta_5.25
+#' @param fc_5.25
+#' @param beta_25
+#' @param fc_25
+#' @param extrapo
+#' @param predic
+#' @param do_future
+#' @param crs_proyect
+#' @param tipo
+#' @param kept
+#' @param E
+#' @param mxnt.pckg
+#' @param other.pckg
+#' @param compute_F
+#' @param dir_F
+#' @param keep_files
+#' @param write_intfiles
+#' @param transf_biomo_ext
 #'
 #' @return
 #' @export
 #'
 #' @examples
 Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL,
-                         drop_out = "any", IQR_mtpl = NULL, clim_vars, dir_clim, dir_other,
+                         drop_out = "any", IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
                          MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, polygon_M = NULL,
                          raster_M = NULL, dist_MOV = NULL, proj_models, area_G = NULL, compute_G = NULL,
@@ -80,52 +61,176 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
                          compute_F = NULL, dir_F = NULL, keep_files = NULL, write_intfiles = NULL,
                          transf_biomo_ext = NULL) {
 
-  # Missing arguments
+  # checking concatenated arguments and format of files
 
   if (!exists("occ")) {
     stop("Provide an occurrence data base as a data.frame at least with species name,
         longitud and latitud. You can use arguments col_sp, col_lat and col_lon 
         to provide the column names of each one.")
   } else {
-    if (!is.data.frame(occ)) stop("The data base provided need to be a data.frame object")
+    if (!is.data.frame(occ)) {
+      stop("The data base provided need to be a data.frame object.")
+    } else {
+      if (!is.null(col_lon) | !is.null(col_lat)) {
+        try(
+          expr = {
+            ln <- occ[, col_lon]
+            lt <- occ[, col_lat]
+          }
+        )
+        if (!exists("ln") | !exists("lt")) {
+          stop("Longitude or latitude coordinates does not find at database. Please check the column names and retry.")
+        } else {
+          rm(ln, lt)
+        }
+      }
+    }
+  }
+
+  if (!is.null(uniq1k_method)) {
+    if (uniq1k_method != "sqkm" | uniq1k_method != "spthin") {
+      stop("Provide a valid method to thin the database, either be sqkm or spthin.")
+    } else {
+      if (!is.null(dist_uniq)) {
+        if (!is.numeric(dist_uniq)) stop("Provide a distance to thin the database, only numeric.")
+      }
+    }
+  }
+
+  if (!exists("clim_vars")) {
+    stop("Provide a climatic variable folder to use. Pre-processed by the user.")
+  } else {
+    if (!is.character(clim_vars)) {
+      stop("Provide a character string mentioning the climatic variables to use.")
+    } else {
+      if (!is.null(dir_clim)) {
+        if (!dir.exists(dir_clim)) stop("Climatic directory does not exist, please provide a valid one.")
+      }
+      if (!is.null(dir_other)) {
+        if (!dir.exists(dir_other)) stop("Other directory does not exist, please provide a valid one.")
+      }
+    }
   }
 
   if (!exists("drop_out")) {
-    stop("Provide a way to dropping out 'outliers' records in the data.base")
+    stop("Provide a way to dropping out 'outliers' records in the data.base.")
   } else {
-    if (drop_out != "any") {
-      if (drop_out != "freq") {
-        if (drop_out != "IQR") {
-          stop("Provide a valid method for dropping out 'outliers' either 'any', 'freq' or 'IQR'. For more details, refer to general documentation and vigenettes")
+    if (!is.null(drop_out)) {
+      if (drop_out != "any") {
+        if (drop_out != "freq") {
+          if (drop_out != "IQR") {
+            stop("Provide a valid method for dropping out 'outliers' either 'any', 'freq' or 'IQR'. For more details, refer to general documentation and vigenettes.")
+          }
+        } else {
+          if (is.null(raster_M)) stop("Provide a rasterize layer (readable by the raster package) of a shapefile to select frequencies (path non an object).")
         }
-      } else {
-        if (is.null(raster_M)) stop("Provide a rasterize layer (readable by the raster package) of a shapefile to select frequencies (path non an object)")
+      }
+    }
+  }
+
+  if (!is.null(MCP_buffer) | !is.null(points_Buffer)) {
+    if (!is.null(dist_MOV)) {
+      if (!is.numeric(dist_MOV)) {
+        stop("Provide a numeric distance to construct buffer of points_buffer or Minimun convex polygon.")
       }
     }
   }
 
   if (exists("polygon_select")) {
     if (isTRUE(polygon_select)) {
-      if (is.null(polygon_M)) stop("Provide a shapefile ('.shp') to select polygons from in polygon_M argument (path non an object)")
+      if (is.null(polygon_M)) stop("Provide a shapefile ('.shp') to select polygons from in polygon_M argument (path non an object).")
     }
   }
 
-  #  if(exists("proj_models")){
-  #    if(proj_models == "M-G"){
-  #
-  #    }
-  #  }
+  if (!exists("proj_models")) {
+    stop("You need to provide a method to calibrate and project the models, either be M-M or M-G.")
+  } else {
+    if (proj_models == "M-G") {
+      if (compute_G == TRUE) {
+        if (is.null(area_G)) {
+          stop("Provide a raster file of an area diferent to M in order to project the models.")
+        } else {
+          try(
+            rtemp <- raster::raster(area_G)
+          )
+          if (!exists("rtemp")) stop("Provide a raster file supported by the raster package. See documentation.")
+        }
+        rm(rtemp)
+      } else {
+        if (is.null(dir_G)) {
+          stop("Provide a path directory in which are stored the variables pre-processed using G as geographic extent.")
+        } else {
+          if (!dir.exists(dir_G)) {
+            stop("Directory of G variables does not exist, please provide a valid one.")
+          } else {
+            dir_GFiles <- list.files(dir_G)
+            if (length(length(dir_GFiles)) == 0) {
+              stop("Any file inside dir_G path. Are the files located there?")
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (!is.null(extrapo)) {
+    if (extrapo != "all") {
+      if (extrapo != "ext_clam") {
+        if (extrapo != "ext") {
+          if (extrapo != "no_ext") stop("Provide a valid type to make the projections.")
+        }
+      }
+    }
+  }
+
+  if (do_future == TRUE) {
+    if (compute_F == FALSE) {
+      if (is.null(dir_F)) {
+        stop("Provide a path directory in which are stored the future variables pre-processed using M or G as geographic extent.")
+      } else {
+        if (!dir.exists(dir_F)) {
+          stop("Directory of F variables does not exist, please provide a valid one.")
+        } else {
+          dir_FFiles <- list.files(dir_F)
+          if (length(length(dir_FFiles)) == 0) {
+            stop("Any file inside dir_F path. Are the files located there?")
+          }
+        }
+      }
+    }
+  }
 
   # ellipsis arguments
+  # occurrence arguments
   if (is.null(col_sp)) col_sp <- "acceptedNameUsage" # Which is the species name column
   if (is.null(col_lat)) col_lat <- "decimalLatitude" # Which is the latitude coordinate name column
   if (is.null(col_lon)) col_lon <- "decimalLongitude" # Which is the longitude coordinate name column
-  if (is.null(do_future)) do_future <- FALSE # MISSING kuenm modelling
-  # if (is.null(date_period)) date_period <- "1970-01-01" # "From" date to limit chronologically occurrence data "year-month-day"
-  # if (is.null(event_date)) event_date <- "eventDate"
+  if (is.null(do_clean)) do_clean <- FALSE
+  if (is.null(drop_out)) drop_out <- "any"
+  if (is.null(IQR_mtpl)) IQR_mtpl <- 5
+  
+  # Environmental variables 
+  if (is.null(dir_clim)) dir_clim <- "Data/env_vars/"
+  if (is.null(dir_clim)) dir_other <- "Data/env_vars/other/"
   if (is.null(extension_vars)) extension_vars <- "*.tif$" #### ?Solo aceptara tifs? como hacer para que lea solamente archivos que pueda usar raster
-  if (is.null(tipo)) tipo <- "" # optional, in case of experiment (it is attached to folder sp name created)*
-  if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
+  
+  # Bias management
+  if (is.null(uniq1k_method)) uniq1k_method <- "sqkm" # "spthin" #MISSING user choose the grid
+  if (is.null(dist_uniq)) dist_uniq <- 1
+  if (is.null(use_bias)) use_bias <- FALSE
+  
+  # Accessible area
+  if (is.null(MCP_buffer)) MCP_buffer <- FALSE
+  if (is.null(polygon_select)) polygon_select <- FALSE
+  if (is.null(points_Buffer)) points_Buffer <- TRUE
+  
+  # Projections
+  if (is.null(compute_G)) compute_G <- FALSE
+  if (is.null(do_future)) do_future <- FALSE
+  if (is.null(compute_F)) compute_F <- FALSE
+  
+  #Algorithms
+  if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
   if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
   if (is.null(fc_5.25)) fc_5.25 <- c("l", "q", "lq") # solo minusculas
   if (is.null(beta_25)) beta_25 <- seq(1, 6, 1)
@@ -135,34 +240,32 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       "lqt", "lqh", "lpt", "lph", "qpt", "qph", "qth", "pth", "lqpt",
       "lqph", "lqth", "lpth", "lqpth"
     )
-  } # solo minusculas
-  if (is.null(kept)) kept <- FALSE # kuenm argument to clean competitor models
-  if (is.null(IQR_mtpl)) IQR_mtpl <- 5
+  if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 5
-  if (is.null(do_clean)) do_clean <- FALSE
-  if (is.null(uniq1k_method)) uniq1k_method <- "sqkm" # "spthin" #MISSING user choose the grid
-  if (is.null(MCP_buffer)) MCP_buffer <- FALSE
-  if (is.null(polygon_select)) polygon_select <- FALSE
-  if (is.null(points_Buffer)) points_Buffer <- TRUE
-  if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
-  if (is.null(use_bias)) use_bias <- FALSE
-  if (is.null(compute_G)) compute_G <- FALSE
-  if (is.null(compute_F)) compute_F <- FALSE
-  #  if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
-  #  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
-  if (is.null(extrapo)) extrapo <- "ext_clam"
   if (is.null(predic)) predic <- "kuenm" # dismo #missing maxnet
-  if (is.null(dist_uniq)) dist_uniq <- 1
+  
+  # other arguments
+  if (is.null(tipo)) tipo <- "" # optional, in case of experiment (it is attached to folder sp name created)*
+  if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
+  if (is.null(kept)) kept <- FALSE # kuenm argument to clean competitor models
   if (is.null(keep_files)) keep_files <- "essential"
   if (is.null(write_intfiles)) write_intfiles <- FALSE
   if (is.null(transf_biomo_ext)) transf_biomo_ext <- TRUE
-
+  
+  # to reorganize
+  # if (is.null(date_period)) date_period <- "1970-01-01" # "From" date to limit chronologically occurrence data "year-month-day"
+  # if (is.null(event_date)) event_date <- "eventDate"
+  
+  # to develop
+  #  if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
+  #  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
+  
   #--------------------------------------
   # 0. Setup
   #--------------------------------------
-  
+
   print("Preparing folders and files")
-  
+
   # 0.1 Calling individual functions
 
   source("R/1_clean_rawocc.R")
@@ -482,13 +585,13 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
   #------- tracking file
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
-  
+
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
-  
+
   print("Calibrating and evaluating SDM's")
-  
+
   if (nrow(M_$occurrences) >= 5 & nrow(M_$occurrences) <= 25) {
     if (length(which(algos == "MAXENT")) != 0) {
 
@@ -600,9 +703,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
 
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
-      
+
       print("\nEnsembles")
-      
+
       linesmsg6.3 <- tryCatch(
         expr = {
           currentEns_byAlg(
@@ -664,9 +767,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
 
       writeLines(text = linesmsg6.4, con = filelog, sep = "\n")
-      
+
       print("\nEnsembles")
-      
+
       linesmsg6.5 <- tryCatch(
         expr = {
           for (i in 1:length(algos2)) {
