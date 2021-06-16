@@ -1,14 +1,65 @@
+#' Biomodelos 2 Routine
+#'
+#' @param occ Occurrence data at least must have species name, latitude, longitude, and date columns
+#' @param col_sp Which is the species name column
+#' @param col_lat Which is the latitude coordinate name column
+#' @param col_lon Which is the longitude coordinate name column
+#' @param do_clean 
+#' @param drop_out any, IQR, "freq", "IQR"
+#' @param IQR_mtpl 
+#' @param clim_vars Which climatic data use, useful when you want to compare fit of different climatic data sets
+#' @param dir_clim 
+#' @param dir_other 
+#' @param extension_vars  
+#' @param uniq1k_method "sqkm", "spthin"
+#' @param dist_uniq 
+#' @param use_bias 
+#' @param TGS_kernel 
+#' @param MCP_buffer 
+#' @param polygon_select 
+#' @param points_Buffer 
+#' @param dist_MOV 
+#' @param polygon_M Spatial data to construct M composed, must be inside project file
+#' @param raster_M 
+#' @param proj_models 
+#' @param area_G 
+#' @param compute_G 
+#' @param dir_G 
+#' @param do_future 
+#' @param compute_F 
+#' @param dir_F 
+#' @param algos 
+#' @param beta_5.25 
+#' @param fc_5.25 
+#' @param beta_25 
+#' @param fc_25 
+#' @param E 
+#' @param extrapo 
+#' @param predic 
+#' @param crs_proyect 
+#' @param tipo 
+#' @param kept 
+#' @param keep_files 
+#' @param write_intfiles 
+#' @param transf_biomo_ext 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL,
                          drop_out = "any", IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
-                         MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, polygon_M = NULL,
-                         raster_M = NULL, dist_MOV = NULL, proj_models, area_G = NULL, compute_G = NULL,
-                         dir_G = NULL, use_bias = NULL, TGS_kernel = NULL, algos = NULL,
-                         beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL,
-                         extrapo = NULL, predic = NULL, do_future = NULL, crs_proyect = NULL,
-                         tipo = NULL, kept = NULL, E = NULL, mxnt.pckg = NULL, other.pckg = NULL,
-                         compute_F = NULL, dir_F = NULL, keep_files = NULL, write_intfiles = NULL,
-                         transf_biomo_ext = NULL) {
+                         use_bias = NULL, TGS_kernel = NULL, MCP_buffer = NULL,
+                         polygon_select = NULL, points_Buffer = NULL, dist_MOV = NULL,
+                         polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL,
+                         compute_G = NULL, dir_G = NULL, do_future = NULL, compute_F = NULL,
+                         dir_F = NULL, algos = NULL, beta_5.25 = NULL, fc_5.25 = NULL,
+                         beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
+                         predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL,
+                         keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL
+                         # mxnt.pckg = NULL, other.pckg = NULL
+) {
 
   # checking concatenated arguments and format of files
 
@@ -192,12 +243,12 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   }
   if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 5
-  if (is.null(predic)) predic <- "kuenm" 
+  if (is.null(predic)) predic <- "kuenm"
 
   # other arguments
   if (is.null(tipo)) tipo <- ""
   if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
-  if (is.null(kept)) kept <- FALSE 
+  if (is.null(kept)) kept <- FALSE
   if (is.null(keep_files)) keep_files <- "essential"
   if (is.null(write_intfiles)) write_intfiles <- FALSE
   if (is.null(transf_biomo_ext)) transf_biomo_ext <- TRUE
@@ -211,7 +262,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   #  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
   # predic with maxnet #[MISSING]
   # area_G M-G, [MISSING] can be shape not only raster
-  
+
   #--------------------------------------
   # 0. Setup
   #--------------------------------------
