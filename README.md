@@ -129,13 +129,7 @@ After run the function you will have in your working directory 3 new folders wit
 source("R/Bio2_routine.R")
 ``` 
 
-For help run 
-
-```
-?(Bio2_routine)
-```
-
-Also, please read all this readme or refer to **Structure and Functions** and **More deep in Bio2_routine** vignettes to find more information about. 
+For help go to [Bio2_routine](vignettes/Bio2_routine.md) and [Structure and Functions]() vignettes to find more information about. 
 
 ### Folder structure and RStudio window
 
@@ -148,7 +142,7 @@ Your RStudio window must look like this:
 ![RStudio_View](images/RStudio_View.png)
 
 
-Now you are ready to customize Bio2_routine and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. We encourage you to follow the next section. It will show you the structure and characteristics of both elements and transcendental information to run and learn this application. Also, to go deep in this function revise **Structure and Functions** and **More deep in Bio2_routine** vignette.
+Now you are ready to customize Bio2_routine and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. We encourage you to follow the next section. It will show you the structure and characteristics of both elements and transcendental information to run and learn this application. Also, to go deep in this function revise **Structure and Functions** and [Bio2_routine](vignettes/Bio2_routine.md) vignette.
 
 ## Working Example
 
@@ -187,7 +181,7 @@ A quick explanation for each of these arguments:
 + Algorithm (**algos**) used will be *MAXENT*.
 
 
-There are several more arguments and ways to customize them, revise the vignettes and go for help running `?Bio2_routine`.
+There are several more arguments and ways to customize them, revise the [Bio2_routine](vignettes/Bio2_routine.md) vignette.
 
 ### Checking console messages and working directory folder
 
@@ -198,7 +192,7 @@ Once you run the last script, you would monitor the process in the console (left
 |0   |Just after running, the routine creates a species folder in the working directory. Inside the last, it sets up a temporary folder for raster files (Temp), occurrences by species, and a log file. The log file is used to save the parameters given to the function and make possible to reproduce the modeling process. You are allowed to see the content of the log file at the end of the process, see the vignette **knowing your log file** MISSING.|``` [1] "Preparing folders and files"```|![Step0](images/step0.png)|
 |1   |Detecting and correcting (or removing) corrupt or inaccurate records from the database. In a first moment the routine searches missing coordinates or having strange characters. Then, in an optional step, when *do_clean = TRUE* and *drop_out = IQR*, it removes geographical outliers and data potentially problematic making use of the [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) package.|``` [1] "Cleaning data"```|![Step1](images/step1.png)|
 |2   |Spatial thinning of occurrence records in a way to diminish the bias sample and make the process more efficient. Here, by default the function uses [clean_dup](https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R) from [ntbox](https://github.com/luismurao/ntbox/tree/master/R), but can be customized to run [spThin](https://cran.r-project.org/web/packages/spThin/spThin.pdf).|```[1] "Thinning database to 1km, using  sqkm"```|![Step2](images/step2.png) |
-|3   |Constructing research areas or accessible areas in which the algorithm(s) selected will be trained. In this way, *Bio2_routine* has several options to construct it. Please see **More deep in Bio2_routine** vignette.|```[1] "Constructing accessible area"```|![Step3](images/step3.png)   |
+|3   |Constructing research areas or accessible areas in which the algorithm(s) selected will be trained. In this way, *Bio2_routine* has several options to construct it. Please see [Bio2_routine](vignettes/Bio2_routine.md) vignette.|```[1] "Constructing accessible area"```|![Step3](images/step3.png)   |
 |4   |Cropping and masking the environmental variables, either be current or future ones. It also stores them temporally in a folder call M (or G in case of transferring/projecting the model to other areas)|```[1] "Processing environmental layers"```| ![Step4](images/step4.png) |
 |Optional|Cropping and masking the bias layer constructed by the user to accessible area extent|```[1] "Processing bias layer"```|![Step_optional](images/step_optional.png)   |
 |5   |Running algorithms chosen and evaluating them. Supported algorithms include Maxent and those native to [BIOMOD2](https://cran.r-project.org/web/packages/biomod2/index.html). In the current version only Maxent hyperparameters are tuned using [ENMeval](https://cran.r-project.org/web/packages/ENMeval/index.html) or [Kuenm](https://github.com/marlonecobos/kuenm). If there are less than 25 occurrence species records a jackknife procedure is performed, by the other side the models are tuned using blocks. Algorithms runned by Biomod are replicated 10 times. Evaluation of models depends on a hierarchical selection of best Partial Roc (only for Kuenm and Biomod) or AUC (only for ENMeval), Akaike Information Criterion, and the lowest omission rate at user discretion percentile (default 10th).|```[1] "Calibrating and evaluating SDM's"```|![Step5](images/step5.png)   |
