@@ -18,51 +18,61 @@ occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL, drop_out = 
 
 )
 ```
-### Parameters
+### Arguments
 
-Parameters will be presented in groups.
+Arguments will be presented in groups.
 
 #### Managing species occurrences
 
-*occ* data frame: occurrence data base of a single species. As a minimum, the data base must have species name, latitude, longitude, and date columns
-*col_sp* vector character: containing the species name column
-*col_lat* vector character: containing the latitude coordinate name column
-*col_lon* vector character: containing the longitude coordinate name column
-*do_clean* logical:
-*drop_out* vector character: method for dropping outliers out from occurrence database. Methods are "any", "IQR", ""freq".
-*IQR_mtpl*
+* **occ** Data frame: occurrence data base of a single species. As a minimum, the data base must have species name, latitude, longitude, and date columns
+* **col_sp** vector character: containing the species name column
+* **col_lat** vector character: containing the latitude coordinate name column
+* **col_lon** vector character: containing the longitude coordinate name column
+* **do_clean** logical:
+* **drop_out** vector character: method for dropping outliers out from occurrence database. Methods are "any", "IQR", ""freq".
+* **IQR_mtpl**
 
 #### Environmental varialbles
 
-*clim_vars* Which climatic data use, useful when you want to compare fit of different climatic data sets
-#' @param dir_clim
-#' @param dir_other
-#' @param extension_vars
-#' @param uniq1k_method "sqkm", "spthin"
-#' @param dist_uniq
-#' @param use_bias
-#' @param TGS_kernel
-#' @param MCP_buffer
-#' @param polygon_select
-#' @param points_Buffer
-#' @param dist_MOV
-#' @param polygon_M Spatial data to construct M composed, must be inside project file
-#' @param raster_M
-#' @param proj_models
-#' @param area_G
-#' @param compute_G
-#' @param dir_G
-#' @param do_future
-#' @param compute_F
-#' @param dir_F
-#' @param algos
-#' @param beta_5.25
-#' @param fc_5.25
-#' @param beta_25
-#' @param fc_25
-#' @param E
-#' @param extrapo
-#' @param predic
+* **clim_vars** Which climatic data use, useful when you want to compare fit of different climatic data sets
+* **dir_clim**
+* **dir_other**
+* **extension_vars**
+* **uniq1k_method** "sqkm", "spthin"
+* **dist_uniq**
+* **use_bias**
+* **TGS_kernel**
+
+#### Accessible Area or M Area
+
+* **MCP_buffer**
+* **polygon_select**
+* **points_Buffer**
+* **dist_MOV**
+* **polygon_M** Spatial data to construct M composed, must be inside project file
+* **raster_M**
+
+* **proj_models**
+* **area_G**
+* **compute_G**
+* **dir_G**
+* **do_future**
+* **compute_F**
+* **dir_F**
+
+#### Algorithms
+
+* **algos**
+* **beta_5.25**
+* **fc_5.25**
+* **beta_25**
+* **fc_25**
+* **E**
+* **extrapo**
+* **predic**
+
+#### Miscellaneous
+
 #' @param crs_proyect
 #' @param tipo
 #' @param kept
