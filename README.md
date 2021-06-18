@@ -1,6 +1,6 @@
 # BioModelos 2
 
-BioModelos 2 is an effort to automate the construction of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. "BioModelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
+BioModelos 2 is an effort to automate the construction of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. "BioModelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necessary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
 
 Current state: in development. Version 0.0.1
 
@@ -55,7 +55,7 @@ source("setup.R")
 5. Then run it using the icon "Run" or the keyboard shortcut "Ctrl+Enter" in windows. You will find four new objects in the environment (upper left portion of the RStudio window)
 + *vector.packages* vector character that stores the name of each package necessary to run **BioModelos 2**
 + *do.install* automatic installation of needed packages
-+ *do.check* function to verify if the installation of vector packages was successfull
++ *do.check* function to verify if the installation of vector packages was successful
 + *do.load* automatic loading of needed packages
 + *do.folder.structure* function to create folders to organize work process in the working directory.
 

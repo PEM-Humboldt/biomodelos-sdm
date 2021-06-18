@@ -13,9 +13,15 @@ This is a function to automate the fitting of Species Distribution Models (SDM) 
 
 ```
 Bio2_routine(
-
-occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL, drop_out = "any", IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL, extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, dist_MOV = NULL, polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL, compute_G = NULL, dir_G = NULL, do_future = NULL, compute_F = NULL, dir_F = NULL, algos = NULL, beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL, predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL, keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL
-
+  occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL, drop_out = "any",
+  IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL, extension_vars = NULL,
+  uniq1k_method = NULL, dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, 
+  MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, dist_MOV = NULL, 
+  polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL, compute_G = NULL, 
+  dir_G = NULL, do_future = NULL, compute_F = NULL, dir_F = NULL, algos = NULL, 
+  beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
+  predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL, keep_files = NULL,
+  write_intfiles = NULL, transf_biomo_ext = NULL
 )
 ```
 ### Arguments
@@ -24,7 +30,17 @@ Arguments will be presented in groups.
 
 #### Managing species occurrences
 
-* **occ** Data frame: occurrence data base of a single species. As a minimum, the data base must have species name, latitude, longitude, and date columns
+* **occ** data frame: occurrence data base of a single species. As a minimum, the data base must have species name, latitude, longitude, and date columns. Example:
+
+|Species|     decimalLatitude|      decimalLongitude| ...|
+|-|-|-|-
+|Anisognathus melanogenys| 11.1085| -74.0612| ...|
+|Anisognathus melanogenys| 11.1041| -74.0695| ...|
+|Anisognathus melanogenys| 11.1113| -74.0549| ...|
+|Anisognathus melanogenys| 11.1096| -74.0449| ...|
+|Anisognathus melanogenys| 11.1073| -74.0489| ...|
+|Anisognathus melanogenys| 11.1024| -74.0616| ...|
+
 * **col_sp** vector character: containing the species name column
 * **col_lat** vector character: containing the latitude coordinate name column
 * **col_lon** vector character: containing the longitude coordinate name column
@@ -73,9 +89,9 @@ Arguments will be presented in groups.
 
 #### Miscellaneous
 
-#' @param crs_proyect
-#' @param tipo
-#' @param kept
-#' @param keep_files
-#' @param write_intfiles
-#' @param transf_biomo_ext
+* **crs_proyect**
+* **tipo**
+* *kept*
+* **keep_files**
+* **write_intfiles**
+* **transf_biomo_ext**
