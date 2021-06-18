@@ -1,47 +1,53 @@
 #' Biomodelos 2 Routine
 #'
-#' @param occ Occurrence data at least must have species name, latitude, longitude, and date columns
-#' @param col_sp Which is the species name column
+#' @description
+#' `Bio2_routine` automates the fitting of Species Distribution Models from occurrence and environmental data.
+#'
+#' @details
+#' This is a function to automate the fitting of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. "BioModelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
+#'
+#' @param occ data frame: occurrence data base of a single species. As a minimum, the data base must have species name, latitude, longitude, and date columns
+#' @param col_sp vector character containing the species name column referred i
 #' @param col_lat Which is the latitude coordinate name column
 #' @param col_lon Which is the longitude coordinate name column
-#' @param do_clean 
+#' @param do_clean
 #' @param drop_out any, IQR, "freq", "IQR"
-#' @param IQR_mtpl 
+#' @param IQR_mtpl
 #' @param clim_vars Which climatic data use, useful when you want to compare fit of different climatic data sets
-#' @param dir_clim 
-#' @param dir_other 
-#' @param extension_vars  
+#' @param dir_clim
+#' @param dir_other
+#' @param extension_vars
 #' @param uniq1k_method "sqkm", "spthin"
-#' @param dist_uniq 
-#' @param use_bias 
-#' @param TGS_kernel 
-#' @param MCP_buffer 
-#' @param polygon_select 
-#' @param points_Buffer 
-#' @param dist_MOV 
+#' @param dist_uniq
+#' @param use_bias
+#' @param TGS_kernel
+#' @param MCP_buffer
+#' @param polygon_select
+#' @param points_Buffer
+#' @param dist_MOV
 #' @param polygon_M Spatial data to construct M composed, must be inside project file
-#' @param raster_M 
-#' @param proj_models 
-#' @param area_G 
-#' @param compute_G 
-#' @param dir_G 
-#' @param do_future 
-#' @param compute_F 
-#' @param dir_F 
-#' @param algos 
-#' @param beta_5.25 
-#' @param fc_5.25 
-#' @param beta_25 
-#' @param fc_25 
-#' @param E 
-#' @param extrapo 
-#' @param predic 
-#' @param crs_proyect 
-#' @param tipo 
-#' @param kept 
-#' @param keep_files 
-#' @param write_intfiles 
-#' @param transf_biomo_ext 
+#' @param raster_M
+#' @param proj_models
+#' @param area_G
+#' @param compute_G
+#' @param dir_G
+#' @param do_future
+#' @param compute_F
+#' @param dir_F
+#' @param algos
+#' @param beta_5.25
+#' @param fc_5.25
+#' @param beta_25
+#' @param fc_25
+#' @param E
+#' @param extrapo
+#' @param predic
+#' @param crs_proyect
+#' @param tipo
+#' @param kept
+#' @param keep_files
+#' @param write_intfiles
+#' @param transf_biomo_ext
 #'
 #' @return
 #' @export
@@ -377,8 +383,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       occClean <- clean_rawocc(
         occ. = occ, col.lon = col_lon, col.lat = col_lat, spp.col = col_sp,
         drop.out = drop_out, IQR.mtpl = IQR_mtpl, do.clean = do_clean
+        # col.date = event_date, date = date_period,
       )
-      # col.date = event_date, date = date_period,
+
       write.csv(occClean, paste0(folder_sp, "/occurrences/occ_cleanCoord.csv"), row.names = F)
       paste0(
         "Handling occurrences", "\n",
