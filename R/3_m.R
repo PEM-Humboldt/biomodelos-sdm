@@ -1,5 +1,5 @@
 M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.Mov,
-                   drop.out, MCPbuffer, polygon.select, pointsBuffer) {
+                   drop.out, MCPbuffer, polygon.select, pointsBuffer, freq_percent) {
 
   # method 1: accessible area by buffer at points controlled by dist.Mov
 
@@ -121,9 +121,9 @@ M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.
 
       # in case of cleaning from frequency table of biogeographical regions
 
-      occ.br <- dplyr::filter(.data = occ.br, biofreq > 0.05) # MISSING let user choice
+      occ.br <- dplyr::filter(.data = occ.br, biofreq > (freq_percent/100)) # MISSING let user choice
 
-      # Create expression to filter the bio geographical with more than 5 % of data
+      # Create expression to filter the bio geographical with more than freq.percent
       namreg <- as.expression(unique(occ.br$bior))
 
       coord <- subset(occ.br, select = -c(ID, bior, biofreq))

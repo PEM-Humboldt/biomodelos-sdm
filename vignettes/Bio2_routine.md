@@ -13,8 +13,9 @@ This is a function to automate the fitting of Species Distribution Models (SDM) 
 
 ```
 Bio2_routine(
-  occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL, drop_out = "any",
-  IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL, extension_vars = NULL,
+  occ, col_sp = "acceptedNameUsage", col_lat = "decimalLatitude", col_lon = "decimalLongitude", 
+  do_clean = FALSE, drop_out = "any", IQR_mtpl = NULL, freq_percent = NULL, clim_vars, dir_clim = NULL,
+  dir_other = NULL, extension_vars = NULL,
   uniq1k_method = NULL, dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, 
   MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, dist_MOV = NULL, 
   polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL, compute_G = NULL, 
@@ -30,27 +31,30 @@ Arguments will be presented in groups.
 
 #### Managing species occurrences
 
-* **occ** data frame: occurrence data base of a single species. As a minimum, the data base must have species name, latitude, longitude, and date columns. Example:
+* **occ** data frame: occurrence data base of a single species. As a minimum, the data base must have species name, latitude, longitude, and date columns. It does not matter the order of the database or if there are companion columns. No Default defined.
+Example:
 
-|Species|     decimalLatitude|      decimalLongitude| ...|
-|-|-|-|-
-|Anisognathus melanogenys| 11.1085| -74.0612| ...|
-|Anisognathus melanogenys| 11.1041| -74.0695| ...|
-|Anisognathus melanogenys| 11.1113| -74.0549| ...|
-|Anisognathus melanogenys| 11.1096| -74.0449| ...|
-|Anisognathus melanogenys| 11.1073| -74.0489| ...|
-|Anisognathus melanogenys| 11.1024| -74.0616| ...|
+|acceptedNameUsage       | ...   |decimalLatitude|decimalLongitude      | ...   |
+|-                       | -     |-              |-                     |-      |
+|Anisognathus melanogenys| ...   | 11.1085       | -74.0612             | ...   |
+|Anisognathus melanogenys| ...   | 11.1041       | -74.0695             | ...   |
+|Anisognathus melanogenys| ...   | 11.1113       | -74.0549             | ...   |
+|Anisognathus melanogenys| ...   | 11.1096       | -74.0449             | ...   |
+|Anisognathus melanogenys| ...   | 11.1073       | -74.0489             | ...   |
+|Anisognathus melanogenys| ...   | 11.1024       | -74.0616             | ...   |
+| ...                    | ...   | ...           | ...                  | ...   |
 
-* **col_sp** vector character: containing the species name column
-* **col_lat** vector character: containing the latitude coordinate name column
-* **col_lon** vector character: containing the longitude coordinate name column
-* **do_clean** logical:
-* **drop_out** vector character: method for dropping outliers out from occurrence database. Methods are "any", "IQR", ""freq".
-* **IQR_mtpl**
+* **col_sp** vector character: containing the species name column. Default is defined as: "acceptedNameUsage". 
+* **col_lat** vector character: containing the latitude coordinate name column. Default is defined as: "decimalLatitude".
+* **col_lon** vector character: containing the longitude coordinate name column. Default is defined as: "decimalLongitude".
+* **do_clean** logical: occurrence data cleaning. If FALSE only a searching and removing for strange characters ("@[>!¿<#?&/\\]") and duplicated data is performed on latitude and longitude columns. If TRUE, apart from the last, records falling in capitals, gbif headquarters or research institutions coordinates, regional or national centroids, having equal latitude and longitude or zero-zero at both, as well as seas data. Here is uded the function [clean_coordinates](https://github.com/ropensci/CoordinateCleaner/blob/master/R/clean_coordinates.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) Default is defined as: FALSE.
+* **drop_out** vector character: method for dropping geographical outliers out from occurrence database. Valid strings are "any", "IQR", ""freq". For no action, "any" string. The "IQR" method stands by outlier detection based on an interquantile range test using the function [cc_outl](https://github.com/ropensci/CoordinateCleaner/blob/master/R/cc_outl.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html). The "freq" method removes occurrence records from bio-geographical polygons under represented in the distribution of the species. It calculates the frequency of registers in each region extracting the region information by each record. Next, the regions with a relative frequency below an user threshold percentage are removed. The method uses a rasterized layer created from a polygon file and geographical records. Default is defined as: "any".
+* **IQR_mtpl** numeric: value of the interquantile range to use with "IQR" dropping outlier method. Default is defined as: NULL.
+* **freq_percent** numeric: value of relative frequency threshold to use with "freq" dropping outlier method. Default is defined as: NULL.
 
 #### Environmental varialbles
 
-* **clim_vars** Which climatic data use, useful when you want to compare fit of different climatic data sets
+* **clim_vars** vector character: which climatic data folder use, useful when you want to compare fit of different climatic data sets
 * **dir_clim**
 * **dir_other**
 * **extension_vars**

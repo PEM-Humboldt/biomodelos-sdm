@@ -213,7 +213,6 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   if (is.null(col_lon)) col_lon <- "decimalLongitude"
   if (is.null(do_clean)) do_clean <- FALSE
   if (is.null(drop_out)) drop_out <- "any"
-  if (is.null(IQR_mtpl)) IQR_mtpl <- 5
 
   # Environmental variables
   if (is.null(dir_clim)) dir_clim <- "Data/env_vars/"
@@ -495,7 +494,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       M_ <- M_area(
         polygon.M = polygon_M, raster.M = raster_M, occ. = occ_thin, col.lon = col_lon,
         col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV, drop.out = drop_out,
-        MCPbuffer = MCP_buffer, polygon.select = polygon_select, pointsBuffer = points_Buffer
+        MCPbuffer = MCP_buffer, polygon.select = polygon_select, pointsBuffer = points_Buffer,
+        freq.percent = freq_percent
       )
 
       write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
