@@ -14,8 +14,7 @@ This is a function to automate the fitting of Species Distribution Models (SDM) 
 ```
 Bio2_routine(
   occ, col_sp = "acceptedNameUsage", col_lat = "decimalLatitude", col_lon = "decimalLongitude", 
-  do_clean = FALSE, drop_out = "any", IQR_mtpl = NULL, freq_percent = NULL, clim_vars, dir_clim = NULL,
-  dir_other = NULL, extension_vars = NULL,
+  do_clean = FALSE, drop_out = "any", IQR_mtpl = NULL, freq_percent = NULL, clim_vars, dir_clim = "Data/env_vars/", dir_other = "Data/env_vars/other/", extension_vars = "*.tif$",
   uniq1k_method = NULL, dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, 
   MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, dist_MOV = NULL, 
   polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL, compute_G = NULL, 
@@ -44,20 +43,24 @@ Example:
 |Anisognathus melanogenys| ...   | 11.1024       | -74.0616             | ...   |
 | ...                    | ...   | ...           | ...                  | ...   |
 
-* **col_sp** vector character: containing the species name column. Default is defined as: "acceptedNameUsage". 
-* **col_lat** vector character: containing the latitude coordinate name column. Default is defined as: "decimalLatitude".
-* **col_lon** vector character: containing the longitude coordinate name column. Default is defined as: "decimalLongitude".
-* **do_clean** logical: occurrence data cleaning. If FALSE only a searching and removing for strange characters ("@[>!¿<#?&/\\]") and duplicated data is performed on latitude and longitude columns. If TRUE, apart from the last, records falling in capitals, gbif headquarters or research institutions coordinates, regional or national centroids, having equal latitude and longitude or zero-zero at both, as well as seas data. Here is uded the function [clean_coordinates](https://github.com/ropensci/CoordinateCleaner/blob/master/R/clean_coordinates.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) Default is defined as: FALSE.
-* **drop_out** vector character: method for dropping geographical outliers out from occurrence database. Valid strings are "any", "IQR", ""freq". For no action, "any" string. The "IQR" method stands by outlier detection based on an interquantile range test using the function [cc_outl](https://github.com/ropensci/CoordinateCleaner/blob/master/R/cc_outl.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html). The "freq" method removes occurrence records from bio-geographical polygons under represented in the distribution of the species. It calculates the frequency of registers in each region extracting the region information by each record. Next, the regions with a relative frequency below an user threshold percentage are removed. The method uses a rasterized layer created from a polygon file and geographical records. Default is defined as: "any".
-* **IQR_mtpl** numeric: value of the interquantile range to use with "IQR" dropping outlier method. Default is defined as: NULL.
-* **freq_percent** numeric: value of relative frequency threshold to use with "freq" dropping outlier method. Default is defined as: NULL.
+* **col_sp** character: containing the species name column. Default: "acceptedNameUsage". 
+* **col_lat** character: containing the latitude coordinate name column. Default: "decimalLatitude".
+* **col_lon** character: containing the longitude coordinate name column. Default: "decimalLongitude".
+* **do_clean** logical: occurrence data cleaning. If FALSE only a searching and removing for strange characters ("@[>!¿<#?&/\\]") and duplicated data is performed on latitude and longitude columns. If TRUE, apart from the last, records falling in capitals, gbif headquarters or research institutions coordinates, regional or national centroids, having equal latitude and longitude or zero-zero at both, as well as seas data. Here is uded the function [clean_coordinates](https://github.com/ropensci/CoordinateCleaner/blob/master/R/clean_coordinates.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) Default: FALSE.
+* **drop_out** character: method for dropping geographical outliers out from occurrence database. Valid strings are "any", "IQR", ""freq". For no action, "any" string. The "IQR" method stands by outlier detection based on an interquantile range test using the function [cc_outl](https://github.com/ropensci/CoordinateCleaner/blob/master/R/cc_outl.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html). The "freq" method removes occurrence records from bio-geographical polygons under represented in the distribution of the species. It calculates the frequency of registers in each region extracting the region information by each record. Next, the regions with a relative frequency below an user threshold percentage are removed. The method uses a rasterized layer created from a polygon file and geographical records. Default: "any".
+* **IQR_mtpl** numeric: value of the interquantile range to use with "IQR" dropping outlier method. Default: NULL.
+* **freq_percent** numeric: value of relative frequency threshold to use with "freq" dropping outlier method. Default: NULL.
 
 #### Environmental varialbles
 
-* **clim_vars** vector character: which climatic data folder use, useful when you want to compare fit of different climatic data sets
-* **dir_clim**
-* **dir_other**
-* **extension_vars**
+* **clim_vars** character: filename of climatic data set to use. It is useful when you want to compare fit of different climatic data sets. No Default.
+* **dir_clim** character: path in where is stored the climatic data set specified. Default: "Data/env_vars/".
+* **dir_other**  character: path in where is stored the other environmental variables. Default: "Data/env_vars/other/".
+* **extension_vars** character: it is used to find the raster layers to load. Use regular expressions as it use grep() functionality. Supported file types are the 'native' raster
+package format and those that can be read via rgdal (see [raster formats](https://www.rdocumentation.org/packages/raster/versions/3.4-10/topics/writeFormats) Default: "*.tif$".
+
+
+#### Bias management
 * **uniq1k_method** "sqkm", "spthin"
 * **dist_uniq**
 * **use_bias**
