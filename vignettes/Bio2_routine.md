@@ -14,7 +14,8 @@ This is a function to automate the fitting of Species Distribution Models (SDM) 
 ```
 Bio2_routine(
   occ, col_sp = "acceptedNameUsage", col_lat = "decimalLatitude", col_lon = "decimalLongitude", 
-  do_clean = FALSE, drop_out = "any", IQR_mtpl = NULL, freq_percent = NULL, clim_vars, dir_clim = "Data/env_vars/", dir_other = "Data/env_vars/other/", extension_vars = "*.tif$",
+  do_clean = FALSE, drop_out = "any", IQR_mtpl = NULL, freq_percent = NULL, clim_vars,
+  dir_clim = "Data/env_vars/", dir_other = "Data/env_vars/other/", extension_vars = "*.tif$",
   uniq1k_method = NULL, dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, 
   MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, dist_MOV = NULL, 
   polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL, compute_G = NULL, 
