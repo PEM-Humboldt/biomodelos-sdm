@@ -1,5 +1,5 @@
 M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.Mov,
-                   drop.out, MCPbuffer, polygon.select, pointsBuffer, freq_percent) {
+                   drop.out, MCPbuffer, polygon.select, pointsBuffer, freq.percent) {
 
   # method 1: accessible area by buffer at points controlled by dist.Mov
 

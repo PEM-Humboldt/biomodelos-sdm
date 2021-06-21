@@ -84,17 +84,20 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             lt <- occ[, col_lat]
           }
         )
-        if (!exists("ln") | !exists("lt")) {
-          stop("Longitude or latitude coordinates does not find at database. Please check the column names and retry.")
-        } else {
-          rm(ln, lt)
+        if (!exists("ln")) {
+          if (!exists("lt")) {
+            stop("Longitude or latitude coordinates does not find at database. Please check the column names and retry.")
+          } else {
+            rm(ln, lt)
+          }
         }
       }
     }
   }
 
   if (!is.null(uniq1k_method)) {
-    if (uniq1k_method != "sqkm" | uniq1k_method != "spthin") {
+    if (uniq1k_method != "sqkm")
+      if(uniq1k_method != "spthin") {
       stop("Provide a valid method to thin the database, either be sqkm or spthin.")
     } else {
       if (!is.null(dist_uniq)) {
@@ -134,7 +137,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     }
   }
 
-  if (!is.null(MCP_buffer) | !is.null(points_Buffer)) {
+  if (!is.null(MCP_buffer)| !is.null(points_Buffer)) {
     if (!is.null(dist_MOV)) {
       if (!is.numeric(dist_MOV)) {
         stop("Provide a numeric distance to construct buffer of points_buffer or Minimun convex polygon.")

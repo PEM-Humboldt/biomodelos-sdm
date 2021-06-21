@@ -57,13 +57,13 @@ Example:
 * **clim_vars** character: filename of climatic data set to use. It is useful when you want to compare fit of different climatic data sets. No Default.
 * **dir_clim** character: path in where is stored the climatic data set specified. Default: "Data/env_vars/".
 * **dir_other**  character: path in where is stored the other environmental variables. Default: "Data/env_vars/other/".
-* **extension_vars** character: it is used to find the raster layers to load. Use regular expressions as it use grep() functionality. Supported file types are the 'native' raster
-package format and those that can be read via rgdal (see [raster formats](https://www.rdocumentation.org/packages/raster/versions/3.4-10/topics/writeFormats) Default: "*.tif$".
-
+* **extension_vars** character: regular expression to find the environmental raster layers to load. Supported file types are the 'native' raster
+package format and those that can be read via rgdal (see [raster formats](https://www.rdocumentation.org/packages/raster/versions/3.4-10/topics/writeFormats)) Default: "*.tif$".
 
 #### Bias management
-* **uniq1k_method** "sqkm", "spthin"
-* **dist_uniq**
+
+* **uniq1k_method** character: Spatial thinning of species occurrence records can help address problems associated with spatial sampling biases. Ideally, thinning removes the fewest records necessary to substantially reduce the effects of sampling bias, while simultaneously retaining the greatest amount of useful information. Two methods are available: "sqkm" and "spthin". The former divides the geographical extent in squares of an user select distance and let one (1) occurrence record by each of those squares, it uses the function [clean_dup](https://github.com/luismurao/nichetoolbox/blob/master/R/clean_dup.R) from the package [nichetoolbox](https://www.google.com/search?q=nichetoolbox&rlz=1C1CHBF_esCO935CO935&oq=nichetoolbox&aqs=chrome..69i57j0i19i30j69i60l2j69i61.2307j1j4&sourceid=chrome&ie=UTF-8). The latter uses a randomization algorithm to create a data set in which each record is at least an user select distance apart, it uses the function [thin](https://github.com/cran/spThin/blob/master/R/thin.R) from the [spThin](https://cran.r-project.org/web/packages/spThin/spThin.pdf) package. Default: "sqkm".    
+* **dist_uniq** 
 * **use_bias**
 * **TGS_kernel**
 
@@ -99,7 +99,7 @@ package format and those that can be read via rgdal (see [raster formats](https:
 
 * **crs_proyect**
 * **tipo**
-* *kept*
+* **kept**
 * **keep_files**
 * **write_intfiles**
 * **transf_biomo_ext**
