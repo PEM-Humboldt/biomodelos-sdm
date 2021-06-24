@@ -1,197 +1,237 @@
-M_area <- function(polygon.M, raster.M, occ., col.lon, col.lat, folder.sp, dist.Mov,
-                   drop.out, MCPbuffer, polygon.select, pointsBuffer, freq.percent) {
+inte_areas <- function(polygon.data = polygon_data, raster.data = raster_data, occ. = occ_thin,
+                       col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
+                       drop.out = drop_out, method.M = method_M, method.G = method_G,
+                       method.F = method_F, area.G = area_G, area.F = area.F, freq.percent = freq_percent,
+                       proj.models = proj_models, do.future = do_future) {
 
-  # method 1: accessible area by buffer at points controlled by dist.Mov
+  # freq layer doesn't work to cut as it hast a lot of self intersection errors
 
-  if (polygon.select == FALSE & MCPbuffer == FALSE & pointsBuffer == TRUE) {
-    coord <- occ.
+  if (method.M == "points_buffer") M <- gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov) %>% as_Spatial()
+  if (method.M == "points_MCP") M <- gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)) %>% as_Spatial()
+  if (method.M == "points_MCP_buffer") M <- gen.st.buffer(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
 
-    coord_sf <- coord %>%
-      dplyr::select(col.lon, col.lat) %>%
-      st_as_sf(coords = c(col.lon, col.lat), crs = st_crs("EPSG:4326")) %>%
-      st_transform(st_crs("EPSG:4326"))
-
-    # buffer to every occurrence with dist.Mov
-    M <- st_buffer(coord_sf, dist.Mov / 120) %>%
-      st_union() %>%
-      as_Spatial()
-
-    raster::shapefile(
-      x = M,
-      filename = paste0(folder.sp, "/", "shape_M"),
-      overwrite = T
-    )
-
-    return(result <- (list(shape_M = M, occurrences = coord)))
+  if (grepl(method.M, pattern = "polygon")) {
+    if (grepl(method.M, pattern = "polygon_points")) M <- gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+    if (grepl(method.M, pattern = "polygon_buffer")) M <- gen.st.buffer(gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ), distMov = dist.Mov) %>% as_Spatial()
+    if (grepl(method.M, pattern = "polygon_points_buffer")) M <- gen.Polygon(gen.st.buffer(gen_st_points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+    if (grepl(method.M, pattern = "polygon_MCP")) M <- gen.Polygon(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+    if (grepl(method.M, pattern = "cut_buffer")) M <- cut.polygon(M, gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
+    if (grepl(x = method.M, pattern = "cut_MCP")) M <- cut.polygon(M, gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat))) %>% as_Spatial()
   }
 
-  # method 2: when you don't want to select your accesible area through features from a bio geographical
-  # region, nor dropping outliers by bio geographical frequency in those features. It makes a Minimum
-  # convex polygon around the points with a buffer controlled by dist.Mov (in kilometers). It could use cleaned or not cleaned data.
+  if (proj.models == "M-G") {
+    if (is.null(area.G)) {
+      if (!is.null(method.G)) {
+        if (method.G == "points_buffer") G <- gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov)  %>% as_Spatial()
+        if (method.G == "points_MCP") G <- gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat))  %>% as_Spatial()
+        if (method.G == "points_MCP_buffer") G <- gen.st.buffer(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov)  %>% as_Spatial()
 
-  if (polygon.select == FALSE & MCPbuffer == TRUE) {
-    M <- do.MCP(
-      dat = occ., collon = col.lon, collat = col.lat,
-      distMov = dist.Mov
-    )
-
-    coord <- occ.
-
-    raster::shapefile(
-      x = M,
-      filename = paste0(folder.sp, "/", "shape_M"),
-      overwrite = T
-    )
-
-    return(result <- (list(shape_M = M, occurrences = coord)))
-  }
-
-  # method 3: when you want to select your accessible area through features from a bio geographical
-  # region. You need the directory of the file polygon.M and depending of the sub method, a raster layer
-  # of it. Sub methods: A. selecting features by intersecting points with a buffer. This buffer
-  #                        ensures a full layer without spaces between features.
-  #                     B. selecting features by intersecting points without a buffer but
-  #                        excluding features with points in a frequency count less than 0.05
-  #                        (It is only possible if you use a raster layer of the bio geographical
-  #                         shape file to compute frequencies)
-  #
-
-  # bio geographical polygon selection
-
-  if (polygon.select == TRUE) {
-    if (is.null(polygon.M)) {
-      stop("You need a polygon shape file to select features")
-    }
-    Polygon. <- sf::st_read(polygon.M)
-
-    # convert occurrence data to spatial object
-    coord <- occ.
-
-    if (drop.out != "freq") {
-      # in case of buffer to every occurrence with dist.Mov
-
-      coord_sf <- coord %>%
-        dplyr::select(col.lon, col.lat) %>%
-        st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
-        st_transform(st_crs(Polygon.))
-
-      if (pointsBuffer == TRUE) {
-        coord_buff <- st_buffer(coord_sf, dist.Mov / 120)
-
-        # cropping buffer with polygon extension to ensure parsimony
-        coord_buff <- st_crop(coord_buff, Polygon.)
-
-        # intersecting coordinates with buffer and polygons from shape file, the data is lost
-
-        tryCatch(
-          exp = {
-            M <- Polygon.$geometry[coord_buff] %>% as_Spatial()
-          },
-          error = function(error_message) {
-            stop("points outside polygon")
-          }
-        )
+        if (grepl(method.G, pattern = "polygon")) {
+          if (grepl(method.G, pattern = "polygon_points")) G <- gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ)  %>% as_Spatial()
+          if (grepl(method.G, pattern = "polygon_buffer")) G <- gen.st.buffer(gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ), distMov = dist.Mov)  %>% as_Spatial()
+          if (grepl(method.G, pattern = "polygon_points_buffer")) G <- gen.Polygon(gen.st.buffer(gen_st_points(dat = occ., collon = col.lon, collat = col.lat)), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ)  %>% as_Spatial()
+          if (grepl(method.G, pattern = "polygon_MCP")) G <- gen.Polygon(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+          if (grepl(method.G, pattern = "cut_buffer")) G <- cut.polygon(M, gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov)) %>% as_Spatial()
+          if (grepl(x = method.G, pattern = "cut_MCP")) G <- cut.polygon(M, gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)))  %>% as_Spatial()
+        }
       } else {
-        tryCatch(
-          exp = {
-            M <- Polygon.$geometry[coord_sf] %>% as_Spatial()
-          },
-          error = function(error_message) {
-            stop("points outside polygon")
-          }
-        )
+        stop("Provide a method for G area")
       }
-    }
-
-    if (drop.out == "freq") {
-      # sub method B (frequency activate)
-      if (is.null(raster.M)) {
-        stop("Raster is necesary to compute biogeohraphical frequencies")
-      }
-
-      # reading raster of biogeographical shape file to calculate frequencies
-      Ras. <- raster::raster(raster.M)
-
-      # extract bio region data and joint it with occurrence dat aset
-      occr <- bior_extract(RasPolygon = Ras., data. = occ., collon = col.lon, collat = col.lat)
-
-      # count and frequency for each bio geographic region
-
-      occ.br <- plyr::ddply(occr, "bior", dplyr::mutate, biofreq = length(ID) / nrow(occr))
-
-      # in case of cleaning from frequency table of biogeographical regions
-
-      occ.br <- dplyr::filter(.data = occ.br, biofreq > (freq_percent/100)) # MISSING let user choice
-
-      # Create expression to filter the bio geographical with more than freq.percent
-      namreg <- as.expression(unique(occ.br$bior))
-
-      coord <- subset(occ.br, select = -c(ID, bior, biofreq))
-
-      # Filtering bio regions for M area
-      M <- Polygon. %>%
-        dplyr::filter(BIOME_NUM %in% c(namreg)) %>%
-        dplyr::select(BIOREG) %>%
-        as(Class = "Spatial")
-    
-      if (pointsBuffer == TRUE) { # CHANGE TO A FUNCTION
-        
-        coord_buff <- coord %>%
-          dplyr::select(col.lon, col.lat) %>%
-          st_as_sf(coords = c(col.lon, col.lat), crs = st_crs(Polygon.)) %>%
-          st_transform(st_crs(Polygon.)) %>%
-          st_buffer(dist.Mov / 120) %>%
-          st_crop(Polygon.) %>%
-          st_union() %>%
-          as_Spatial()
-        
-        # intersecting coordinates with buffer and polygons from shape file, the data is lost
-        
-        tryCatch(
-          exp = {
-            M <- intersectsp(x = M, y = coord_buff, valid = 2)
-          },
-          error = function(error_message) {
-            stop("points outside polygon")
-          }
-        )
-      }  
-    }
-    
-    if (MCPbuffer == TRUE) {
-      MCPbuf <- do.MCP(
-        dat = coord, collon = col.lon, collat = col.lat,
-        distMov = dist.Mov
-      )
-
-      M <- tryCatch(
+    } else {
+      try(
         exp = {
-          intersectsp(x = M, y = MCPbuf, valid = 2)
-        },
-        error = function(error_message) {
-          stop("imposible fixing self intersection")
+          finalstr <- tail(unlist(strsplit(area.G, "\\.")), n = 1)
+          if (finalstr == "shp") {
+            G <- raster::shapefile(area.G)
+          } else {
+            G <- raster::raster(area.G)
+          }
         }
       )
+      if (!exists("F.")) stop("if you do not provide a method for F at least provide a valid raster/shape path file ")
+    }
+  }
+
+
+  if (do.future == TRUE) {
+    if (is.null(area.F)) {
+      if (!is.null(method.F)) {
+        if (method.F == "points_buffer") F. <- gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov) %>% as_Spatial()
+        if (method.F == "points_MCP") F. <- gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)) %>% as_Spatial()
+        if (method.F == "points_MCP_buffer") F. <- gen.st.buffer(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
+
+        if (grepl(method.F, pattern = "polygon")) {
+          if (grepl(method.F, pattern = "polygon_points")) F. <- gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+          if (grepl(method.F, pattern = "polygon_buffer")) F. <- gen.st.buffer(gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ), distMov = dist.Mov) %>% as_Spatial()
+          if (grepl(method.F, pattern = "polygon_points_buffer")) F. <- gen.Polygon(gen.st.buffer(gen_st_points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+          if (grepl(method.F, pattern = "polygon_MCP")) F. <- gen.Polygon(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+          if (grepl(method.F, pattern = "cut_buffer")) F. <- cut.polygon(M, gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov)) %>% as_Spatial()
+          if (grepl(x = method.F, pattern = "cut_MCP")) F. <- cut.polygon(M, gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat))) %>% as_Spatial()
+        }
+      } else {
+        if (proj.models == "M-M") F. <- M
+        if (proj.models == "M-G") F. <- G
+      }
+    } else {
+      try(
+        exp = {
+          finalstr <- tail(unlist(strsplit(area.F, "\\.")), n = 1)
+          if (finalstr == "shp") {
+            F. <- raster::shapefile(area.F)
+          } else {
+            F. <- raster::raster(area.F)
+          }
+        }
+      )
+      if (!exists("F.")) stop("if you do not provide a method for F at least provide a valid raster/shape path file ")
+    }
+  }
+  
+  if (proj.models == "M-M" & do.future == F) res <- list(shape_M = M, shape_G = NULL, shape_F = NULL, occurrences = occ.)
+  if (proj.models == "M-M" & do.future == T) res <- list(shape_M = M, shape_G = NULL, shape_F = F., occurrences = occ.)
+
+  if (proj.models == "M-G" & do.future == F) res <- list(shape_M = M, shape_G = G, shape_F = NULL, occurrences = occ.)
+  if (proj.models == "M-G" & do.future == T) res <- list(shape_M = M, shape_G = G, shape_F = F., occurrences = occ.)
+
+  dir.create(paste0(folder.sp, "/", "interest_areas"), showWarnings = F)
+  
+  for (i in 1:length(res)) {
+     resi <- res[[i]]
+     namesresi <- names(res[i])
+     if (!is.null(resi)) {
+       if (!is.data.frame(resi)) {
+         if(class(resi)[1] == "RasterLayer"){
+           raster::writeRaster(resi, paste0(folder.sp, "/", "interest_areas", "/", namesresi, ".tif"), overwrite = T, NAflag = -9999, datatype = "INT2S", options = "COMPRESS=LZW")
+         }else{
+           raster::shapefile(x = resi, filename = paste0(folder.sp, "/", "interest_areas", "/", namesresi), overwrite = T)
+         }
+       }
+     }
+  }
+
+  return(res)
+}
+
+#--------------------------------
+# Generate points
+
+gen.st.points <- function(dat, collon = col.lon, collat = col.lat) {
+  st.points <- dat %>%
+    dplyr::select(collon, collat) %>%
+    st_as_sf(coords = c(collon, collat), crs = st_crs("EPSG:4326")) %>%
+    st_transform(st_crs("EPSG:4326"))
+}
+
+#--------------------------------
+# Generate buffer around sf object
+
+gen.st.buffer <- function(stobject, distMov = dist.Mov) {
+  st_buffer(stobject, distMov / 120) %>%
+    st_union()
+}
+
+#--------------------------------
+# Minimum convex polygon
+
+gen.MCP <- function(stobject) {
+  st_convex_hull(st_union(stobject))
+}
+
+#--------------------------------
+# Generate Polygon
+
+gen.Polygon <- function(stobject, polygondata = polygon.data, dropout = drop.out,
+                        freqperc = freq.percent, rasterdata = raster.data,
+                        occurrences = occ.) {
+  Polygon. <- sf::st_read(polygondata)
+
+  if (dropout != "freq") {
+    if (unique(sf::st_geometry_type(stobject)) == "POINT") {
+      pntpolygon <- Polygon.$geometry[stobject] %>%
+        st_union()
+      return(shapes = pntpolygon)
     }
 
+    if (unique(sf::st_geometry_type(stobject)) == "MULTIPOLYGON" |
+      unique(sf::st_geometry_type(stobject)) == "POLYGON") {
 
-    # write shape file either bio geographical regions selected (cleaning or not by frequencies) or
-    # biogeographical regions selected cutted with MCP
-    raster::shapefile(
-      x = M,
-      filename = paste0(folder.sp, "/", "shape_M"),
-      overwrite = T
-    )
+      # cropping buffer with polygon extension to ensure parsimony
+      coord_buff <- sf::st_crop(stobject, Polygon.)
 
-    return(result <- (list(shape_M = M, occurrences = coord)))
+      tryCatch(
+        exp = {
+          bffrpolygon <- Polygon.$geometry[coord_buff] %>%
+            st_union()
+        },
+        error = function(error_message) {
+          stop("points outside polygon")
+        }
+      )
+      return(shapes = bffrpolygon)
+    }
+  }
+
+  if (dropout == "freq") {
+    if (freq.percent > 0) {
+      if (!is.null(raster.data)) {
+        if (unique(sf::st_geometry_type(stobject)) == "POINT") {
+          # reading raster of biogeographical shape file to calculate frequencies
+          Ras. <- raster::raster(rasterdata)
+          stobject_coord <- st_coordinates(stobject)
+          # extract bio region data and joint it with occurrence dat aset
+          occr <- bior.extract(RasPolygon = Ras., data. = stobject_coord, collon = "X", collat = "Y")
+          # count and frequency for each bio geographic region
+          occ.br <- plyr::ddply(occr, "bior", dplyr::mutate, biofreq = length(ID) / nrow(occr))
+          # in case of cleaning from frequency table of biogeographical regions
+          occ.br <- dplyr::filter(.data = occ.br, biofreq > (freqperc / 100)) # MISSING let user choice
+          # Create expression to filter the bio geographical with more than freq.percent
+          namreg <- as.expression(unique(occ.br$bior))
+
+          new.occ. <- subset(occ.br, select = -c(ID, bior, biofreq))
+
+          # Filtering bio regions
+          new.regions <- Polygon. %>%
+            dplyr::filter(BIOME_NUM %in% c(namreg)) %>%
+            dplyr::select(BIOREG) %>%
+            st_union()
+
+          return(shapes = new.regions)
+        }
+      } else {
+        stop("Provide a rasterized layer of the polygons to compute frequencies")
+      }
+    } else {
+      stop("Provide a frequency percentege of occurrences to remove under-represented regions")
+    }
   }
 }
 
+#--------------------------------
+# Cut polygon
 
-#--------------------------
+cut.polygon <- function(polygon.Gen, obj.withCut) {
+  polygon.Gen <- polygon.Gen %>%
+    st_union() %>%
+    as_Spatial()
+  obj.withCut <- obj.withCut %>%
+    st_union() %>%
+    as_Spatial()
+
+  tryCatch(
+    exp = {
+      polygon.cutted <- intersect.sp(x = polygon.Gen, y = obj.withCut, valid = 2)
+    },
+    error = function(error_message) {
+      stop("imposible fixing self intersection")
+    }
+  )
+  return(polygon.cutted)
+}
+
+#--------------------------------
 ### Function to extract bioregion data and joint it with occurrence dataset
 
-bior_extract <- function(RasPolygon, data., collon, collat) {
+bior.extract <- function(RasPolygon, data., collon, collat) {
   extc <- raster::extract(RasPolygon, data.[, c(collon, collat)], fun = "simple", df = TRUE)
   data.2 <- cbind(data., extc)
   data.2 <- na.omit(data.2)
@@ -199,11 +239,11 @@ bior_extract <- function(RasPolygon, data., collon, collat) {
   return(data.2)
 }
 
-#-------------------------
+#--------------------------------
 # force intersect of spatial objects to check and try to buffer by zero distance to repair not valid
 # auto intersection
 
-intersectsp <- function(x, y, valid) {
+intersect.sp <- function(x, y, valid) {
   requireNamespace("rgeos")
 
   prj <- x@proj4string
@@ -306,3 +346,4 @@ intersectsp <- function(x, y, valid) {
   int@proj4string <- prj
   int
 }
+

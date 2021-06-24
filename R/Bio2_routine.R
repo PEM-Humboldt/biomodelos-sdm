@@ -54,14 +54,14 @@
 #'
 #' @examples
 Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL,
-                         drop_out = "any", IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL,
+                         drop_out = NULL, IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
-                         use_bias = NULL, TGS_kernel = NULL, MCP_buffer = NULL,
-                         polygon_select = NULL, points_Buffer = NULL, dist_MOV = NULL,
-                         polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL,
-                         compute_G = NULL, dir_G = NULL, do_future = NULL, compute_F = NULL,
-                         dir_F = NULL, algos = NULL, beta_5.25 = NULL, fc_5.25 = NULL,
-                         beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
+                         use_bias = NULL, TGS_kernel = NULL, method_M = NULL, 
+                         dist_MOV = NULL, proj_models, method_G = NULL, area_G = NULL,
+                         compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL,
+                         area_F = NULL, compute_F = NULL, dir_F = NULL, polygon_data = NULL,
+                         raster_data = NULL, freq_percent = NULL, algos = NULL, beta_5.25 = NULL, 
+                         fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
                          predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL,
                          keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL
                          # mxnt.pckg = NULL, other.pckg = NULL
@@ -96,12 +96,13 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   }
 
   if (!is.null(uniq1k_method)) {
-    if (uniq1k_method != "sqkm")
-      if(uniq1k_method != "spthin") {
-      stop("Provide a valid method to thin the database, either be sqkm or spthin.")
-    } else {
-      if (!is.null(dist_uniq)) {
-        if (!is.numeric(dist_uniq)) stop("Provide a distance to thin the database, only numeric.")
+    if (uniq1k_method != "sqkm") {
+      if (uniq1k_method != "spthin") {
+        stop("Provide a valid method to thin the database, either be sqkm or spthin.")
+      } else {
+        if (!is.null(dist_uniq)) {
+          if (!is.numeric(dist_uniq)) stop("Provide a distance to thin the database, only numeric.")
+        }
       }
     }
   }
@@ -137,50 +138,57 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     }
   }
 
-  if (!is.null(MCP_buffer)| !is.null(points_Buffer)) {
-    if (!is.null(dist_MOV)) {
-      if (!is.numeric(dist_MOV)) {
-        stop("Provide a numeric distance to construct buffer of points_buffer or Minimun convex polygon.")
-      }
-    }
-  }
+  # if (!is.null(MCP_buffer)) {
+  #   if (!is.null(dist_MOV)) {
+  #     if (!is.numeric(dist_MOV)) {
+  #       stop("Provide a numeric distance to construct buffer of points_buffer or Minimun convex polygon.")
+  #     }
+  #   }
+  # }
+  # if (!is.null(points_Buffer)) {
+  #   if (!is.null(dist_MOV)) {
+  #     if (!is.numeric(dist_MOV)) {
+  #       stop("Provide a numeric distance to construct buffer of points_buffer or Minimun convex polygon.")
+  #     }
+  #   }
+  # }
 
-  if (exists("polygon_select")) {
-    if (isTRUE(polygon_select)) {
-      if (is.null(polygon_M)) stop("Provide a shapefile ('.shp') to select polygons from in polygon_M argument (path non an object).")
-    }
-  }
-
-  if (!exists("proj_models")) {
-    stop("You need to provide a method to calibrate and project the models, either be M-M or M-G.")
-  } else {
-    if (proj_models == "M-G") {
-      if (compute_G == TRUE) {
-        if (is.null(area_G)) {
-          stop("Provide a raster file of an area diferent to M in order to project the models.")
-        } else {
-          try(
-            rtemp <- raster::raster(area_G)
-          )
-          if (!exists("rtemp")) stop("Provide a raster file supported by the raster package. See documentation.")
-        }
-        rm(rtemp)
-      } else {
-        if (is.null(dir_G)) {
-          stop("Provide a path directory in which are stored the variables pre-processed using G as geographic extent.")
-        } else {
-          if (!dir.exists(dir_G)) {
-            stop("Directory of G variables does not exist, please provide a valid one.")
-          } else {
-            dir_GFiles <- list.files(dir_G)
-            if (length(length(dir_GFiles)) == 0) {
-              stop("Any file inside dir_G path. Are the files located there?")
-            }
-          }
-        }
-      }
-    }
-  }
+  # if (exists("polygon_data")) {
+  #   if (isTRUE(polygon_select)) {
+  #     if (is.null(polygon_M)) stop("Provide a shapefile ('.shp') to select polygons from in polygon_M argument (path non an object).")
+  #   }
+  # }
+  # 
+  # if (!exists("proj_models")) {
+  #   stop("You need to provide a method to calibrate and project the models, either be M-M or M-G.")
+  # } else {
+  #   if (proj_models == "M-G") {
+  #     if (compute_G == TRUE) {
+  #       if (is.null(area_G)) {
+  #         stop("Provide a raster file of an area diferent to M in order to project the models.")
+  #       } else {
+  #         try(
+  #           rtemp <- raster::raster(area_G)
+  #         )
+  #         if (!exists("rtemp")) stop("Provide a raster file supported by the raster package. See documentation.")
+  #       }
+  #       rm(rtemp)
+  #     } else {
+  #       if (is.null(dir_G)) {
+  #         stop("Provide a path directory in which are stored the variables pre-processed using G as geographic extent.")
+  #       } else {
+  #         if (!dir.exists(dir_G)) {
+  #           stop("Directory of G variables does not exist, please provide a valid one.")
+  #         } else {
+  #           dir_GFiles <- list.files(dir_G)
+  #           if (length(length(dir_GFiles)) == 0) {
+  #             stop("Any file inside dir_G path. Are the files located there?")
+  #           }
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
 
   if (!is.null(extrapo)) {
     if (extrapo != "all") {
@@ -192,22 +200,22 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     }
   }
 
-  if (do_future == TRUE) {
-    if (compute_F == FALSE) {
-      if (is.null(dir_F)) {
-        stop("Provide a path directory in which are stored the future variables pre-processed using M or G as geographic extent.")
-      } else {
-        if (!dir.exists(dir_F)) {
-          stop("Directory of F variables does not exist, please provide a valid one.")
-        } else {
-          dir_FFiles <- list.files(dir_F)
-          if (length(length(dir_FFiles)) == 0) {
-            stop("Any file inside dir_F path. Are the files located there?")
-          }
-        }
-      }
-    }
-  }
+  # if (do_future == TRUE) {
+  #   if (compute_F == FALSE) {
+  #     if (is.null(dir_F)) {
+  #       stop("Provide a path directory in which are stored the future variables pre-processed using M or G as geographic extent.")
+  #     } else {
+  #       if (!dir.exists(dir_F)) {
+  #         stop("Directory of F variables does not exist, please provide a valid one.")
+  #       } else {
+  #         dir_FFiles <- list.files(dir_F)
+  #         if (length(length(dir_FFiles)) == 0) {
+  #           stop("Any file inside dir_F path. Are the files located there?")
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
 
   # ellipsis arguments
   # occurrence arguments
@@ -224,19 +232,19 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
   # Bias management
   if (is.null(uniq1k_method)) uniq1k_method <- "sqkm"
-  if (is.null(dist_uniq)) dist_uniq <- 1
+  if (is.null(dist_uniq)) dist_uniq <- 10
   if (is.null(use_bias)) use_bias <- FALSE
 
-  # Accessible area
-  if (is.null(MCP_buffer)) MCP_buffer <- FALSE
-  if (is.null(polygon_select)) polygon_select <- FALSE
-  if (is.null(points_Buffer)) points_Buffer <- TRUE
+  # Areas and projections of interest
 
-  # Projections
+  ##
+  if (is.null(method_M)) method_M <- "points_buffer"
+
+  ## Projections
   if (is.null(compute_G)) compute_G <- FALSE
   if (is.null(do_future)) do_future <- FALSE
   if (is.null(compute_F)) compute_F <- FALSE
-
+  
   # Algorithms
   if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
   if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
@@ -335,9 +343,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     "Method for unique records ", uniq1k_method, "\n",
     "Distance used for unique records ", dist_uniq, " km", "\n",
     "\n",
-    "Accesible area constructed with:", "Buffer points ", points_Buffer,
-    ", Minimun convex poligon ", MCP_buffer, ", Selecting polygons ", polygon_select, "\n",
-    "Polygon shapefile for accesible area: ", polygon_M, "\n",
+    "Accesible area constructed with:", method_M,
+    "Polygon shapefile for accesible area: ", polygon_data, "\n",
     "Movement distance vector (buffer depends on this vector): ", dist_MOV, " km", "\n",
     "\n",
     "Projections", "\n",
@@ -406,7 +413,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     text = linesmsg1,
     con = filelog, sep = "\n"
   )
-
+  
   ### -----------------------------
   # ask5occ
   ### -----------------------------
@@ -431,7 +438,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       }
     }
   )
-
+  
+  linestime <- give.msg.time(time.1 = time1)
+  
+  writeLines(linestime, filelog)
+  
   #--------------------------------------
   # 2. Unique occurrences to x km
   #--------------------------------------
@@ -486,30 +497,34 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     }
   )
 
-
+  linestime <- give.msg.time(time.1 = time1)
+  
+  writeLines(linestime, filelog)
+  
   #--------------------------------------
-  # 3. Accesible Area.
+  # 3. Accessible Area.
   #--------------------------------------
   print("Constructing accesible area")
-
+ 
   linesmsg3 <- tryCatch(
     expr = {
-      M_ <- M_area(
-        polygon.M = polygon_M, raster.M = raster_M, occ. = occ_thin, col.lon = col_lon,
-        col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV, drop.out = drop_out,
-        MCPbuffer = MCP_buffer, polygon.select = polygon_select, pointsBuffer = points_Buffer,
-        freq.percent = freq_percent
+      M_ <- inte_areas(
+        polygon.data = polygon_data, raster.data = raster_data,
+        occ. = occ_thin, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp,
+        dist.Mov = dist_MOV, drop.out = drop_out, method.M = method_M,
+        method.G = method_G, area.G = area_G, method.F = method_F,
+        area.F = area_F, freq.percent = freq_percent, proj.models = proj_models, 
+        do.future = do_future
       )
-
       write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
       paste("Accesible area: ok.", "\n")
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
-      return(paste0("\nAccesible area: fail.\nError R: ", e))
+      return(paste0("\nAccesible area: fail\nError R: ", e))
     }
   )
-
+  
   #------- tracking file
 
   writeLines(text = linesmsg3, con = filelog, sep = "\n")
@@ -539,6 +554,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     }
   )
 
+  linestime <- give.msg.time(time.1 = time1)
+  
+  writeLines(linestime, filelog)
+  
   #--------------------------------------
   # 4. Processing environmental layers
   #--------------------------------------
@@ -547,11 +566,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   linesmsg4 <- tryCatch( # missing at copy, use a vector of names instead of numbers to select what layers to copy
     expr = {
       envars <- process_env.current(
-        clim.dataset = clim_vars, clim.dir = dir_clim, extension = extension_vars,
-        crs.proyect = crs_proyect, area.M = M_$shape_M, area.G = area_G,
-        env.other = dir_other, folder.sp = folder_sp, dofuture = do_future,
-        proj.models = proj_models, compute.G = compute_G, compute.F = compute_F,
-        dir.G = dir_G, dir.F = dir_F
+        clim.dataset = clim_vars, clim.dir = dir_clim, exten = extension_vars,
+        crs.proyect = crs_proyect, shape.M = M_$shape_M, shape.G = M_$shape_G,
+        shape.F = M_$shape_F, env.other = dir_other, folder.sp = folder_sp, 
+        dofuture = do_future, proj.models = proj_models, compute.G = compute_G, 
+        compute.F = compute_F, dir.G = dir_G, dir.F = dir_F
       )
       paste0(
         "Processing environmental layers: ok.", "\n",
@@ -565,6 +584,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       return(paste0("Processing environmental layers: fail.\nError R: ", e))
     }
   )
+  
+  linestime <- give.msg.time(time.1 = time1)
+  
+  writeLines(linestime, filelog)
+  
 
   #------- tracking file
 
@@ -580,7 +604,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       if (use_bias == TRUE) {
         print("Procesing bias layer")
         BiasSp <- get_BiasSp(
-          data. = M_$occurrences, TGS.kernel = TGS_kernel, shape.M = M_$shape_M, env.M = envars$M,
+          data. = M_$occurrences, TGS.kernel = "bias_layer/aves.tif", shape.M = M_$shape_M, env.M = envars$M,
           ext = "*.asc", folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat,
           col.sp = col_sp
         )
@@ -598,7 +622,12 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
   #------- tracking file
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
-
+  
+  linestime <- give.msg.time(time.1 = time1)
+  
+  writeLines(linestime, filelog)
+  
+  
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
@@ -632,7 +661,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         } ## MISSING FIXING DISMO PREDIC
       )
 
+      writeLines(linestime, filelog)
+      
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
+      linestime <- give.msg.time(time.1 = time1)
 
       print("\nEnsembles")
 
@@ -640,7 +672,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         expr = {
           enscurr <- currentEns_byAlg(
             ras.Stack = PathAMaxent$c_proj, data. = M_$occurrences,
-            collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
+            collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
             foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext
           )
@@ -651,7 +683,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             for (f in 1:length(layersF)) {
               currentEns_byAlg(
                 ras.Stack = layersF[[f]], data. = M_$occurrences,
-                collon = col_lon, collat = col_lat, e = 10, algorithm = "MAXENT",
+                collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                 crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext
               )
@@ -666,6 +698,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
 
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
+      
+      linestime <- give.msg.time(time.1 = time1)
+      writeLines(linestime, filelog)
+      
     }
   }
 
@@ -698,7 +734,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
           PathBMaxent <- do.kuenm(
             occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
             biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
-            maxent.path = getwd(), selection. = "OR_AICc", proj.models = proj_models,
+            maxent.path = getwd(), proj.models = proj_models, E = E,
             do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
             env.Gdir = paste0(folder_sp, "/G_variables"),
             crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo,
@@ -716,6 +752,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
 
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
+      
+      linestime <- give.msg.time(time.1 = time1)
+      writeLines(linestime, filelog)
+      
 
       print("\nEnsembles")
 
@@ -723,7 +763,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         expr = {
           currentEns_byAlg(
             ras.Stack = PathBMaxent$c_proj, data. = M_$occurrences,
-            collon = col_lon, collat = col_lat, e = 5, algorithm = "MAXENT",
+            collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
             foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext
           )
@@ -734,7 +774,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             for (f in 1:length(layersF)) {
               currentEns_byAlg(
                 ras.Stack = layersF[[f]], data. = M_$occurrences,
-                collon = col_lon, collat = col_lat, e = 5, algorithm = "MAXENT",
+                collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                 crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext
               )
@@ -749,6 +789,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         }
       )
       writeLines(text = linesmsg6.3, con = filelog, sep = "\n")
+      
+      linestime <- give.msg.time(time.1 = time1)
+      writeLines(linestime, filelog)
     }
 
 
@@ -780,6 +823,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       )
 
       writeLines(text = linesmsg6.4, con = filelog, sep = "\n")
+      
+      linestime <- give.msg.time(time.1 = time1)
+      writeLines(linestime, filelog)
 
       print("\nEnsembles")
 
@@ -806,6 +852,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         }
       )
       writeLines(text = linesmsg6.5, con = filelog, sep = "\n")
+      
+      linestime <- give.msg.time(time.1 = time1)
+      writeLines(linestime, filelog)
     }
   }
 
@@ -850,7 +899,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
   linestime <- give.msg.time(time.1 = time1)
 
-  writeLines(linestime, filelog)
+  writeLines(paste0("keep_files: ", keep_files, "\n", linestime), filelog)
 
   close(filelog)
 

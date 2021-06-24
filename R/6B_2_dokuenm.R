@@ -1,5 +1,5 @@
 
-do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
+do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
                      folder.sp, biasfile, kept., proj.models, do.future, env.Mdir, env.Gdir,
                      crs.proyect, use.bias, extrap, write.intfiles) {
 
@@ -48,15 +48,16 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   rand_percent <- 50
   iterations. <- 500
   paral_proc <- FALSE
-  threshold. <- 5 # MISSING option for user
-
+  threshold. <- 10
+  select <- "OR_AICc"
+  
   # evaluate
   eval1 <- kuenm::kuenm_ceval(
     path = out_dir, occ.joint = occjoint, occ.tra = occtra,
     occ.test = occtest, batch = batch_cal, out.eval = out_eval,
     threshold = threshold., rand.percent = rand_percent,
     iterations = iterations., kept = kept.,
-    selection = selection., parallel.proc = paral_proc
+    selection = "OR_AICc", parallel.proc = paral_proc
   )
 
   #--------------------
@@ -68,11 +69,11 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
   best <- na.omit(best)
 
   # AUC greater than 0.7
-  best1 <- best[which(best$Mean_AUC_ratio >= 1 & best$pval_pROC <= 0.05), ]
+  best1 <- best[which(best$Mean_AUC_ratio >= 1 & best$pval_pROC <= 0.1), ]
 
   if (nrow(best1) != 0) {
     # model with the OR10 less minimun value
-    best2 <- best1[which(best1$`Omission_rate_at_5%` == min(best1$`Omission_rate_at_5%`)), ]
+    best2 <- best1[which(best1$`Omission_rate_at_10%` == min(best1$`Omission_rate_at_10%`)), ]
   } else {
     message("any model met the test criterion")
     return(NULL)
@@ -141,9 +142,9 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, selection., sp.name,
       current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(folder.sp, ".asc$"), full.names = T, include.dirs = T, recursive = T)
     }
   }
+  
   if (proj.models == "M-G") current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
   
-
     current_proj <- raster::stack(current_proj_files)
     names(current_proj) <- best3$Model
 

@@ -8,7 +8,7 @@ give.msg.time <- function(time.1) {
 
   t.min <- round((alltime - trunc(alltime)) * 60)
 
-  msg <- paste("\nCompleted in ", trunc(alltime), "hours", t.min, "mins")
+  msg <- paste("Completed in ", trunc(alltime), "hours", t.min, "mins\n")
 
   return(msg)
 }
