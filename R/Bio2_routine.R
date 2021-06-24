@@ -440,7 +440,6 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   )
   
   linestime <- give.msg.time(time.1 = time1)
-  
   writeLines(linestime, filelog)
   
   #--------------------------------------
@@ -498,7 +497,6 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   )
 
   linestime <- give.msg.time(time.1 = time1)
-  
   writeLines(linestime, filelog)
   
   #--------------------------------------
@@ -555,7 +553,6 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   )
 
   linestime <- give.msg.time(time.1 = time1)
-  
   writeLines(linestime, filelog)
   
   #--------------------------------------
@@ -585,14 +582,12 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     }
   )
   
-  linestime <- give.msg.time(time.1 = time1)
-  
-  writeLines(linestime, filelog)
-  
-
   #------- tracking file
 
   writeLines(text = linesmsg4, con = filelog, sep = "\n")
+  
+  linestime <- give.msg.time(time.1 = time1)
+  writeLines(linestime, filelog)
 
   #--------------------------------------
   # 5. Bias file by species
@@ -624,7 +619,6 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
   
   linestime <- give.msg.time(time.1 = time1)
-  
   writeLines(linestime, filelog)
   
   

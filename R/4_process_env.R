@@ -26,7 +26,7 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
   if (!identical(other_files, character(0))) {
     envfiles <- c(clim_files, other_files)
   } else {
-    env_files <- clim_files
+    envfiles <- clim_files
   }
 
   envMstack <- raster::stack()
