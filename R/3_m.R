@@ -5,7 +5,7 @@ inte_areas <- function(polygon.data = polygon_data, raster.data = raster_data, o
                        proj.models = proj_models, do.future = do_future) {
 
   # freq layer doesn't work to cut as it hast a lot of self intersection errors
-
+  
   if (method.M == "points_buffer") M <- gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov) %>% as_Spatial()
   if (method.M == "points_MCP") M <- gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)) %>% as_Spatial()
   if (method.M == "points_MCP_buffer") M <- gen.st.buffer(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
@@ -126,7 +126,7 @@ gen.st.points <- function(dat, collon = col.lon, collat = col.lat) {
 # Generate buffer around sf object
 
 gen.st.buffer <- function(stobject, distMov = dist.Mov) {
-  st_buffer(stobject, distMov / 120) %>%
+  st_buffer(stobject, units::set_units(distMov, km)) %>%
     st_union()
 }
 

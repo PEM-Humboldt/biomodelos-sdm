@@ -258,7 +258,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     )
   }
   if (is.null(extrapo)) extrapo <- "no_ext"
-  if (is.null(E)) E <- 5
+  if (is.null(E)) E <- 10
   if (is.null(predic)) predic <- "kuenm"
 
   # other arguments

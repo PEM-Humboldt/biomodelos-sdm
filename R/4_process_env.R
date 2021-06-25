@@ -28,29 +28,20 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
   } else {
     envfiles <- clim_files
   }
+  
+  envras <- raster::stack(envfiles)
 
-  envMstack <- raster::stack()
-  envGstack <- raster::stack()
-
-  for (i in 1:length(envfiles)) {
-    rasi <- raster::raster(envfiles[i])
-    crs(rasi) <- sp::CRS(crs.proyect)
-    # cut to M
-    envMi <- rasi %>%
+  envMstack <- envras %>%
     raster::crop(shape.M) %>%
     raster::mask(shape.M)
-    names(envMi) <- names(rasi)
-    envMstack <- raster::stack(envMstack, envMi)
-    
-    if (proj.models == "M-G" & compute.G == TRUE) {
-      # cut to G
-      envGi <- rasi %>%
-        raster::crop(shape.G) %>%
-        raster::mask(shape.G)
-      names(envGi) <- names(rasi)
-      envGstack <- raster::stack(envGstack, envGi)
-    }
+  
+  if (proj.models == "M-G" & compute.G == TRUE) {
+    # cut to G
+    envGstack <- envras %>%
+      raster::crop(shape.G) %>%
+      raster::mask(shape.G)
   }
+  
 
   #---------------------
   # writing environmental layers
@@ -293,6 +284,7 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
 
         complimentVars <- VarsNames[!VarsNames %in% names(env_Ffiles)]
         
+        if(!identical(other_F, character(0))){
         other_rootfiles <- list.files(paste0(envother,"current"), 
                                            pattern = extension, full.names = T, 
                                            recursive = T)
@@ -306,19 +298,23 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
         other_rootuse <- other_rootfiles[other_rootnames %in% complimentVars]
         
         env_Ffiles <- c(env_Ffiles, other_rootuse)
-
+        
+        }else{
+          env_Ffiles <- env_Ffiles
+        }
       }
 
-      # writing information of future scenaries
+      # writing information of future scenarios
       write.csv(cbind(model, year, concentration), paste0(foldersp, "/G_variables/Set_1/", info_cc, "/data.csv"), row.names = F)
       
+      env_Fras <- raster::stack(env_Ffiles)
+      
+      env_Fstack <- env_Fras %>% 
+        raster::crop(shapeF)
+      
       # writing future layers
-      for (d in 1:length(env_Ffiles)) {
-        env_Fd <- raster::raster(env_Ffiles[d])
-        env_Fd <- env_Fd %>% raster::crop(shapeF) 
-        # if(!class(shapeF) == "RasterLayer"){
-        #   env_Fd <- raster::mask(env_Fd, shapeF)  
-        # }
+      for (d in 1:nlayers(env_Fstack)) {
+        env_Fd <- env_Fstack[[d]]
         names(env_Fd) <- names.ras[d]        
         raster::writeRaster(
           x = env_Fd,
