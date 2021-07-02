@@ -1,7 +1,7 @@
 # environmental variables
 
 process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shape.M,
-                                shape.G, shape.F, env.other, folder.sp, dofuture,
+                                shape.G, shape.F, env.other, folder.sp, do.future,
                                 proj.models, compute.G, compute.F, dir.G, dir.F) {
   
   # climatic folder paths
@@ -42,7 +42,6 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
       raster::mask(shape.G)
   }
   
-
   #---------------------
   # writing environmental layers
 
@@ -56,15 +55,28 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
   # write M area, Maxent needs ".asc" files
 
   for (i in 1:nlayers(envMstack)) {
+      envMi <- envMstack[[i]]
+      
+      value <- na.omit(values(envMi)) %>% max()
+      y <- ndec(x = value)
+      
+      if(y == 0){
+        datTyp <-  "INT2S"
+        decinum <- 0
+      }
+      if(y >= 1){
+        datTyp <-  "FLT4S"
+        decinum <- 3
+      }
+      
       raster::writeRaster(
-      x = envMstack[[i]],
+      x = round(envMi, digits = decinum),
       filename = paste0(
         folder.sp, "/M_variables/Set_1/", names(envMstack[[i]]), ".asc"
       ),
       overwrite = T,
       NAflag = -9999,
-      datatype = "FLT4S",
-      options = "COMPRESS=LZW"
+      datatype = datTyp
     )
   }
 
@@ -85,15 +97,28 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
       # write G area if it was computed
 
       for (i in 1:nlayers(envGstack)) {
+        envGi <- envGstack[[i]]
+        
+        value <- na.omit(values(envGi)) %>% max()
+        y <- ndec(x = value)
+        
+        if(y == 0){
+          datTyp <-  "INT2S"
+          decinum <- 0
+        }
+        if(y >= 1){
+          datTyp <-  "FLT4S"
+          decinum <- 1
+        }
+        
         raster::writeRaster(
-          x = envGstack[[i]],
+          x = round(envGi, digits = decinum),
           filename = paste0(
             folder.sp, "/G_variables/Set_1/G/", names(envGstack[[i]]), ".asc"
           ),
           overwrite = T,
           NAflag = -9999,
-          datatype = "FLT4S",
-          options = "COMPRESS=LZW"
+          datatype = datTyp
         )
       }
     } else {
@@ -124,7 +149,7 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
 
   # future
 
-  if (dofuture == TRUE) {
+  if (do.future == TRUE) {
     envFstack <- process_env.future(
       climdataset = clim.dataset,
       climdir = clim.dir,
@@ -169,6 +194,19 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
   # creating directories for M-M projections in future, for M-G is not necessary as the routine
   # in a former step do it already
 
+  dir.create(paste0(foldersp, "/G_variables"), showWarnings = F)
+  dir.create(paste0(foldersp, "/G_variables/Set_1"), showWarnings = F)
+  dir.create(paste0(foldersp, "/G_variables/Set_1/M"), showWarnings = F)
+  
+  Mfiles <- list.files(paste0(foldersp, "/M_variables/Set_1/"), pattern = ".asc", full.names = T, recursive = F)
+  for (a in 1:length(Mfiles)) {
+    file.copy(
+      from = Mfiles[a],
+      to = paste0(foldersp, "/G_variables/Set_1/M/"),
+      overwrite = T, recursive = T
+    )
+  }
+  
   if (computeF == FALSE) {
 
     # as was not computed F vars, is necessary to copy them from directory in which them are stored
@@ -184,19 +222,7 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
   }
 
   if (computeF == TRUE) {
-    dir.create(paste0(foldersp, "/G_variables"), showWarnings = F)
-    dir.create(paste0(foldersp, "/G_variables/Set_1"), showWarnings = F)
-    dir.create(paste0(foldersp, "/G_variables/Set_1/M"), showWarnings = F)
 
-    Mfiles <- list.files(paste0(foldersp, "/M_variables/Set_1/"), pattern = ".asc", full.names = T, recursive = F)
-    for (a in 1:length(Mfiles)) {
-      file.copy(
-        from = Mfiles[a],
-        to = paste0(foldersp, "/G_variables/Set_1/M/"),
-        overwrite = T, recursive = T
-      )
-    }
-    
     # Start
 
     # future climatic folders/ directories
@@ -284,7 +310,6 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
 
         complimentVars <- VarsNames[!VarsNames %in% names(env_Ffiles)]
         
-        if(!identical(other_F, character(0))){
         other_rootfiles <- list.files(paste0(envother,"current"), 
                                            pattern = extension, full.names = T, 
                                            recursive = T)
@@ -299,9 +324,6 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
         
         env_Ffiles <- c(env_Ffiles, other_rootuse)
         
-        }else{
-          env_Ffiles <- env_Ffiles
-        }
       }
 
       # writing information of future scenarios
@@ -315,20 +337,39 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
       # writing future layers
       for (d in 1:nlayers(env_Fstack)) {
         env_Fd <- env_Fstack[[d]]
+        
+        value <- na.omit(values(env_Fd)) %>% max()
+        y <- ndec(x = value)
+        
+        if(y == 0){
+          datTyp <-  "INT2S"
+          decinum <- 0
+        }
+        if(y >= 1){
+          datTyp <-  "FLT4S"
+          decinum <- 1
+        }
+        
         names(env_Fd) <- names.ras[d]        
         raster::writeRaster(
-          x = env_Fd,
+          x = round(env_Fd, digits = decinum),
           filename = paste0(
             foldersp, "/G_variables/Set_1/", info_cc, "/", names(env_Fd), ".asc"
           ),
           overwrite = T,
           NAflag = -9999,
-          datatype = "FLT4S",
-          options = "COMPRESS=LZW"
+          datatype = datTyp
         )
       }
     }
   }
 
   return("ok")
+}
+
+#-----------------
+ndec <- function(x){
+  dec <- nchar(strsplit(as.character(x), "\\.")[[1]][2])
+  if(is.na(dec)) dec <- 0
+  return(as.numeric(dec))
 }

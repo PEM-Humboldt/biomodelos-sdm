@@ -1,6 +1,7 @@
 
 currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, foldersp,
-                             tim, esc.nm, crs.proyect, extent.ensembles, transf.biomo.ext) {
+                             tim, esc.nm, crs.proyect, extent.ensembles, transf.biomo.ext,
+                             areas = NULL, proj.models = NULL, compute.F = compute.F) {
   if (is.null(ras.Stack)) {
     message("any model")
   } else {
@@ -18,10 +19,19 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       #
       if (tim == "current") {
         esc.nm <- "_"
-      } else {
+      } 
+      
+      if (tim == "future") {
         esc.nm <- paste0("_", esc.nm, "_")
+        if (compute.F == FALSE){
+          if (proj.models == "M-M"){
+            ras.Stack <- raster::mask(ras.Stack, areas$shape_M)
+          }
+          if (proj.models == "M_G"){
+            ras.Stack <- raster::mask(ras.Stack, areas$shape_G)
+          }
+        }
       }
-
 
       # comparing extent with "biomodelos" extent}
 
@@ -178,9 +188,10 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
 }
 
 #------------------------
-# variation coeficient function
+# variation coeficient function6
 CV <- function(x, na.rm = TRUE) {
-  sd(x, na.rm = na.rm) / mean(x, na.rm = na.rm)
+  x1 <- sd(x, na.rm = na.rm) / median(x, na.rm = na.rm)
+  x2 <- x1*100
 }
 
 #------------------------------
@@ -193,7 +204,7 @@ do.bin <- function(Ras, dat, lon, lat, thresh) {
     sort()
 
   # percentile data of E
-  TData <- ceiling((nrow(dat) * thresh) / 100)
+  TData <- round(((nrow(dat) * thresh) / 100), 0)
 
   # value for each model to binarize to E
   TValue <- rasvalueT[TData]

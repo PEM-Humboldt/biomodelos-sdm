@@ -64,9 +64,9 @@ dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias, env.
   
   # Assigning occurrences to train and test by groups
   
-  occ_train <- dplyr::filter(bins.data, bins == 2 |bins == 4| bins == 1)[, c("longitude","latitude")]
+  occ_train <- dplyr::filter(bins.data, bins == 1 |bins == 3| bins == 4)[, c("longitude","latitude")]
 
-  occ_test <- dplyr::filter(bins.data, bins == 3)[, c("longitude","latitude")]
+  occ_test <- dplyr::filter(bins.data, bins == 2)[, c("longitude","latitude")]
 
   occ_joint <- rbind(occ_train, occ_test)[, c("longitude","latitude")]
 

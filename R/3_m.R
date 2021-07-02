@@ -2,7 +2,7 @@ inte_areas <- function(polygon.data = polygon_data, raster.data = raster_data, o
                        col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
                        drop.out = drop_out, method.M = method_M, method.G = method_G,
                        method.F = method_F, area.G = area_G, area.F = area.F, freq.percent = freq_percent,
-                       proj.models = proj_models, do.future = do_future) {
+                       proj.models = proj_models, do.future = do_future, compute.F = compute_F) {
 
   # freq layer doesn't work to cut as it hast a lot of self intersection errors
   
@@ -48,42 +48,39 @@ inte_areas <- function(polygon.data = polygon_data, raster.data = raster_data, o
           }
         }
       )
-      if (!exists("F.")) stop("if you do not provide a method for F at least provide a valid raster/shape path file ")
+      if (!exists("G")) stop("if you do not provide a method for G at least provide a valid raster/shape path file ")
     }
   }
 
 
   if (do.future == TRUE) {
-    if (is.null(area.F)) {
-      if (!is.null(method.F)) {
-        if (method.F == "points_buffer") F. <- gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov) %>% as_Spatial()
-        if (method.F == "points_MCP") F. <- gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)) %>% as_Spatial()
-        if (method.F == "points_MCP_buffer") F. <- gen.st.buffer(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
-
-        if (grepl(method.F, pattern = "polygon")) {
-          if (grepl(method.F, pattern = "polygon_points")) F. <- gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
-          if (grepl(method.F, pattern = "polygon_buffer")) F. <- gen.st.buffer(gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ), distMov = dist.Mov) %>% as_Spatial()
-          if (grepl(method.F, pattern = "polygon_points_buffer")) F. <- gen.Polygon(gen.st.buffer(gen_st_points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
-          if (grepl(method.F, pattern = "polygon_MCP")) F. <- gen.Polygon(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
-          if (grepl(method.F, pattern = "cut_buffer")) F. <- cut.polygon(M, gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov)) %>% as_Spatial()
-          if (grepl(x = method.F, pattern = "cut_MCP")) F. <- cut.polygon(M, gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat))) %>% as_Spatial()
+    if (compute.F == TRUE){
+      if (is.null(area.F)) {
+        if (!is.null(method.F)) {
+          if (method.F == "points_buffer") F. <- gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov) %>% as_Spatial()
+          if (method.F == "points_MCP") F. <- gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)) %>% as_Spatial()
+          if (method.F == "points_MCP_buffer") F. <- gen.st.buffer(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
+          
+          if (grepl(method.F, pattern = "polygon")) {
+            if (grepl(method.F, pattern = "polygon_points")) F. <- gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+            if (grepl(method.F, pattern = "polygon_buffer")) F. <- gen.st.buffer(gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ), distMov = dist.Mov) %>% as_Spatial()
+            if (grepl(method.F, pattern = "polygon_points_buffer")) F. <- gen.Polygon(gen.st.buffer(gen_st_points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+            if (grepl(method.F, pattern = "polygon_MCP")) F. <- gen.Polygon(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+            if (grepl(method.F, pattern = "cut_buffer")) F. <- cut.polygon(M, gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov)) %>% as_Spatial()
+            if (grepl(x = method.F, pattern = "cut_MCP")) F. <- cut.polygon(M, gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat))) %>% as_Spatial()
+          }
+        } else {
+          if (proj.models == "M-M") F. <- M
+          if (proj.models == "M-G") F. <- G
         }
       } else {
-        if (proj.models == "M-M") F. <- M
-        if (proj.models == "M-G") F. <- G
+        finalstr <- tail(unlist(strsplit(area.F, "\\.")), n = 1)
+        if (finalstr == "shp") F. <- raster::shapefile(area.F)
+        if (finalstr == "tif") F. <- raster::raster(area.F)
+        if (!exists("F.")) stop("if you do not provide a method for F at least provide a valid raster/shape path file ")
       }
-    } else {
-      try(
-        exp = {
-          finalstr <- tail(unlist(strsplit(area.F, "\\.")), n = 1)
-          if (finalstr == "shp") {
-            F. <- raster::shapefile(area.F)
-          } else {
-            F. <- raster::raster(area.F)
-          }
-        }
-      )
-      if (!exists("F.")) stop("if you do not provide a method for F at least provide a valid raster/shape path file ")
+    }else{
+      F. <- NULL  
     }
   }
   

@@ -512,7 +512,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         dist.Mov = dist_MOV, drop.out = drop_out, method.M = method_M,
         method.G = method_G, area.G = area_G, method.F = method_F,
         area.F = area_F, freq.percent = freq_percent, proj.models = proj_models, 
-        do.future = do_future
+        do.future = do_future, compute.F = compute_F
       )
       write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
       paste("Accesible area: ok.", "\n")
@@ -566,7 +566,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         clim.dataset = clim_vars, clim.dir = dir_clim, exten = extension_vars,
         crs.proyect = crs_proyect, shape.M = M_$shape_M, shape.G = M_$shape_G,
         shape.F = M_$shape_F, env.other = dir_other, folder.sp = folder_sp, 
-        dofuture = do_future, proj.models = proj_models, compute.G = compute_G, 
+        do.future = do_future, proj.models = proj_models, compute.G = compute_G, 
         compute.F = compute_F, dir.G = dir_G, dir.F = dir_F
       )
       paste0(
@@ -679,7 +679,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
                 ras.Stack = layersF[[f]], data. = M_$occurrences,
                 collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
-                crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext
+                crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
+                areas = M_, proj.models = proj_models, compute.F = compute_F
               )
             }
           }
@@ -770,7 +771,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
                 ras.Stack = layersF[[f]], data. = M_$occurrences,
                 collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
-                crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext
+                crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
+                areas = M_, proj.models = proj_models, compute.F = compute_F # missing at biomod chunk
               )
             }
           }
