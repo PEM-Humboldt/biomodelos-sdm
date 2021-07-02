@@ -1,7 +1,7 @@
 
 currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, foldersp,
                              tim, esc.nm, crs.proyect, extent.ensembles, transf.biomo.ext,
-                             areas = NULL, proj.models = NULL, compute.F = compute.F) {
+                             areas = M_, proj.models = proj_models, compute.F = compute_F) {
   if (is.null(ras.Stack)) {
     message("any model")
   } else {

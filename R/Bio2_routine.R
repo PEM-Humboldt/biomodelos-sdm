@@ -252,8 +252,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   if (is.null(beta_25)) beta_25 <- seq(1, 6, 1)
   if (is.null(fc_25)) {
     fc_25 <- c(
-      "lq", "lp", "lt", "lh", "qp", "qt", "qh", "pt", "ph", "th", "lqp",
-      "lqt", "lqh", "lpt", "lph", "qpt", "qph", "qth", "pth", "lqpt",
+      "lq", "lp", "lt", "lh", "qp", "qt", "qh", "lqp",
+      "lqt", "lqh", "lpt", "lph", "qpt", "qph", "qth", "lqpt",
       "lqph", "lqth", "lpth", "lqpth"
     )
   }
@@ -680,7 +680,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
                 collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                 crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                areas = M_, proj.models = proj_models, compute.F = compute_F
+                areas = M_, compute.F = compute_F, proj.models = proj_models
               )
             }
           }
@@ -728,7 +728,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         expr = {
           PathBMaxent <- do.kuenm(
             occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
-            biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
+            biasfile = "BiasfileM.asc", beta.mult = c(5,6), fc.clas = c("lp", "lpt", "lqp"), kept. = kept,
             maxent.path = getwd(), proj.models = proj_models, E = E,
             do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
             env.Gdir = paste0(folder_sp, "/G_variables"),
@@ -765,14 +765,14 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
 
           if (do_future == TRUE) {
             layersF <- futAuxiliar(fut.list.ras = PathBMaxent$f_proj)
-
+            
             for (f in 1:length(layersF)) {
               currentEns_byAlg(
                 ras.Stack = layersF[[f]], data. = M_$occurrences,
                 collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                 crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                areas = M_, proj.models = proj_models, compute.F = compute_F # missing at biomod chunk
+                areas = M_, compute.F = compute_F, proj.models = proj_models
               )
             }
           }
