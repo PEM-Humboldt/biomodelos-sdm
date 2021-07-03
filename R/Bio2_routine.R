@@ -728,7 +728,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
         expr = {
           PathBMaxent <- do.kuenm(
             occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
-            biasfile = "BiasfileM.asc", beta.mult = c(5,6), fc.clas = c("lp", "lpt", "lqp"), kept. = kept,
+            biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
             maxent.path = getwd(), proj.models = proj_models, E = E,
             do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
             env.Gdir = paste0(folder_sp, "/G_variables"),
