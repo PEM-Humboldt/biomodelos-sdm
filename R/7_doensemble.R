@@ -17,12 +17,14 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       sp_hyphen <- gsub(foldersp, pattern = "\\.", replacement = "_")
 
       #
-      if (tim == "current") {
-        esc.nm <- "_"
-      } 
+      if (tim == "current") esc.nm <- "_"
+      if (tim == "future")  esc.nm <- paste0("_", esc.nm, "_")
       
-      if (tim == "future") {
-        esc.nm <- paste0("_", esc.nm, "_")
+
+      # comparing extent with "biomodelos" extent}
+
+      if (transf.biomo.ext == TRUE) {
+        
         if (compute.F == FALSE){
           if (proj.models == "M-M"){
             ras.Stack <- raster::mask(ras.Stack, areas$shape_M)
@@ -31,18 +33,14 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
             ras.Stack <- raster::mask(ras.Stack, areas$shape_G)
           }
         }
-      }
-
-      # comparing extent with "biomodelos" extent}
-
-      if (transf.biomo.ext == TRUE) {
+        
         biomodelos.ext <- c(-83, -60, -14, 13)
         equ.ext <- equal.extent(a = ras.Stack, b = biomodelos.ext, limit = 0.005)
 
         if (equ.ext == TRUE) {
           extent(ras.Stack) <- extent(biomodelos.ext)
         } else {
-          dir.create(paste0(foldersp, "/Temp/extent.transf"))
+          dir.create(paste0(foldersp, "/Temp/extent.transf"), showWarnings = F)
           for (i in 1:nlayers(ras.Stack)) {
             writeRaster(ras.Stack[[i]], paste0(foldersp, "/Temp/extent.transf/", names(ras.Stack[[i]]), ".tif"), overwrite = TRUE)
           }
@@ -204,8 +202,9 @@ do.bin <- function(Ras, dat, lon, lat, thresh) {
     sort()
 
   # percentile data of E
-  TData <- round(((nrow(dat) * thresh) / 100), 0)
-
+  if(TData < 1) ceiling(((nrow(dat) * thresh) / 100))
+  if(TData >= 1) round(((nrow(dat) * thresh) / 100), 0)
+    
   # value for each model to binarize to E
   TValue <- rasvalueT[TData]
   names(TValue) <- names(thresh)
