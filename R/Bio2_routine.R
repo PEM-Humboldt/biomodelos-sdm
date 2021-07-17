@@ -669,7 +669,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
             foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            compute.F = compute_F, proj.models = proj_models, areas = M_
+            areas = M_, compute.F = compute_F, proj.models = proj_models
           )
 
           if (do_future == TRUE) {
@@ -762,7 +762,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
             foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            compute.F = compute_F, proj.models = proj_models, areas = M_
+            compute.F = compute_F
           )
 
           if (do_future == TRUE) {

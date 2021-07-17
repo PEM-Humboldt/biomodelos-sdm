@@ -202,8 +202,9 @@ do.bin <- function(Ras, dat, lon, lat, thresh) {
     sort()
 
   # percentile data of E
-  if(TData < 1) ceiling(((nrow(dat) * thresh) / 100))
-  if(TData >= 1) round(((nrow(dat) * thresh) / 100), 0)
+  Data <- nrow(dat) * thresh / 100
+  if (Data < 1) TData <- ceiling(Data)
+  if (Data >= 1) TData <- round(Data, 0)
     
   # value for each model to binarize to E
   TValue <- rasvalueT[TData]
