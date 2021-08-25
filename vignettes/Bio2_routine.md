@@ -12,7 +12,15 @@ This is a function to automate the fitting of Species Distribution Models (SDM) 
 ### Usage
 
 ```
-Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL, drop_out = NULL, IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL, extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, method_M = NULL, dist_MOV = NULL, proj_models, method_G = NULL, area_G = NULL, compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL, area_F = NULL, compute_F = NULL, dir_F = NULL, polygon_data = NULL, raster_data = NULL, freq_percent = NULL, algos = NULL, beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL, predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL, keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL # mxnt.pckg = NULL, other.pckg = NULL Future develop
+Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL, drop_out = NULL, 
+IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL, extension_vars = NULL, uniq1k_method = NULL, 
+dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, method_M = NULL, dist_MOV = NULL, proj_models, 
+method_G = NULL, area_G = NULL, compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL, area_F = NULL, 
+compute_F = NULL, dir_F = NULL, polygon_data = NULL, raster_data = NULL, freq_percent = NULL, algos = NULL, 
+beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL, predic = NULL, 
+crs_proyect = NULL, 
+tipo = NULL, kept = NULL, keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL 
+# mxnt.pckg = NULL, other.pckg = NULL Future develop
 )
 ```
 ### Arguments
