@@ -18,8 +18,7 @@ dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, method_M = NULL, dist_MOV 
 method_G = NULL, area_G = NULL, compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL, area_F = NULL, 
 compute_F = NULL, dir_F = NULL, polygon_data = NULL, raster_data = NULL, freq_percent = NULL, algos = NULL, 
 beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL, predic = NULL, 
-crs_proyect = NULL, 
-tipo = NULL, kept = NULL, keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL 
+crs_proyect = NULL, tipo = NULL, kept = NULL, keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL 
 # mxnt.pckg = NULL, other.pckg = NULL Future develop
 )
 ```
