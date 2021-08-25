@@ -7,7 +7,7 @@
 
 ### Details
 
-This is a function to automate the fitting of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. "BioModelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
+This is a function to automate the fitting of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. BioModelos follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
 
 ### Usage
 
@@ -71,11 +71,11 @@ Spatial bias usually leads to environmental bias because of the over-representat
 
 #### Interest areas
 
-Methods to construct geographical areas to calibrate and project the models. Three areas are defined: M stands for calibration area, G and F where is projected the model as it would be needed. Each of those areas a
+Methods to construct geographical areas to calibrate and project the models. Three areas are defined: M stands for calibration area, G and F where is projected the model as it would be needed. Each of those areas have spatial methods to be constructed.
 
 
-* **method_M** character
-* **dist_MOV** numeric
+* **method_M** character:
+* **dist_MOV** numeric: distance in kilometers of 
 * **proj_models** character
 * **method_G** character
 * **area_G** character

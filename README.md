@@ -15,7 +15,7 @@ Dependencies to install, choose the version depending on your operating system a
 * [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
 * [Java Development Kit](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
 * [Maxent](https://biodiversityinformatics.amnh.org/open_source/maxent/)
-* [BioModelos 2 repositiry](https://github.com/cmunozr/16kproject_IAVH) update to the permanent repository
+* [BioModelos 2 repository](https://github.com/cmunozr/16kproject_IAVH) update to the permanent repository
 
 ### Libraries
 Libraries required and their versions
