@@ -12,17 +12,7 @@ This is a function to automate the fitting of Species Distribution Models (SDM) 
 ### Usage
 
 ```
-Bio2_routine(
-  occ, col_sp = "acceptedNameUsage", col_lat = "decimalLatitude", col_lon = "decimalLongitude", 
-  do_clean = FALSE, drop_out = "any", IQR_mtpl = NULL, freq_percent = NULL, clim_vars,
-  dir_clim = "Data/env_vars/", dir_other = "Data/env_vars/other/", extension_vars = "*.tif$",
-  uniq1k_method = NULL, dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, 
-  MCP_buffer = NULL, polygon_select = NULL, points_Buffer = NULL, dist_MOV = NULL, 
-  polygon_M = NULL, raster_M = NULL, proj_models, area_G = NULL, compute_G = NULL, 
-  dir_G = NULL, do_future = NULL, compute_F = NULL, dir_F = NULL, algos = NULL, 
-  beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
-  predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL, keep_files = NULL,
-  write_intfiles = NULL, transf_biomo_ext = NULL
+Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_clean = NULL, drop_out = NULL, IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL, extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, method_M = NULL, dist_MOV = NULL, proj_models, method_G = NULL, area_G = NULL, compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL, area_F = NULL, compute_F = NULL, dir_F = NULL, polygon_data = NULL, raster_data = NULL, freq_percent = NULL, algos = NULL, beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL, predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL, keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL # mxnt.pckg = NULL, other.pckg = NULL Future develop
 )
 ```
 ### Arguments
@@ -103,3 +93,49 @@ package format and those that can be read via rgdal (see [raster formats](https:
 * **keep_files**
 * **write_intfiles**
 * **transf_biomo_ext**
+
+
+#' @param occ 
+#' @param col_sp 
+#' @param col_lat 
+#' @param col_lon 
+#' @param do_clean 
+#' @param drop_out 
+#' @param IQR_mtpl 
+#' @param clim_vars 
+#' @param dir_clim 
+#' @param dir_other 
+#' @param extension_vars 
+#' @param uniq1k_method 
+#' @param dist_uniq 
+#' @param use_bias 
+#' @param TGS_kernel 
+#' @param method_M 
+#' @param dist_MOV 
+#' @param proj_models 
+#' @param method_G 
+#' @param area_G 
+#' @param compute_G 
+#' @param dir_G 
+#' @param do_future 
+#' @param method_F 
+#' @param area_F 
+#' @param compute_F 
+#' @param dir_F 
+#' @param polygon_data 
+#' @param raster_data 
+#' @param freq_percent 
+#' @param algos 
+#' @param beta_5.25 
+#' @param fc_5.25 
+#' @param beta_25 
+#' @param fc_25 
+#' @param E 
+#' @param extrapo 
+#' @param predic 
+#' @param crs_proyect 
+#' @param tipo 
+#' @param kept 
+#' @param keep_files 
+#' @param write_intfiles 
+#' @param transf_biomo_ext 
