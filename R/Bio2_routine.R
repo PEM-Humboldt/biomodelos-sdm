@@ -13,7 +13,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
                          raster_data = NULL, freq_percent = NULL, algos = NULL, beta_5.25 = NULL, 
                          fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
                          predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL,
-                         keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL
+                         keep_files = NULL, transf_biomo_ext = NULL
                          # mxnt.pckg = NULL, other.pckg = NULL
 ) {
 
@@ -216,7 +216,6 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
   if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
   if (is.null(kept)) kept <- FALSE
   if (is.null(keep_files)) keep_files <- "essential"
-  if (is.null(write_intfiles)) write_intfiles <- FALSE
   if (is.null(transf_biomo_ext)) transf_biomo_ext <- TRUE
 
   # to reorganize
@@ -321,7 +320,6 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
     "\n",
     "Final data", "\n",
     "Store files ", keep_files, "\n",
-    "Store intermediate ASC files ", write_intfiles, "\n",
     "#############################################################################", "\n"
   )
 
@@ -595,7 +593,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic,
-            write.intfiles = write_intfiles
+            write.intfiles = FALSE
           )
           paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
         },

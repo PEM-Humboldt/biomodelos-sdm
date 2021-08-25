@@ -18,7 +18,7 @@ dist_uniq = NULL, use_bias = NULL, TGS_kernel = NULL, method_M = NULL, dist_MOV 
 method_G = NULL, area_G = NULL, compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL, area_F = NULL, 
 compute_F = NULL, dir_F = NULL, polygon_data = NULL, raster_data = NULL, freq_percent = NULL, algos = NULL, 
 beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL, predic = NULL, 
-crs_proyect = NULL, tipo = NULL, kept = NULL, keep_files = NULL, write_intfiles = NULL, transf_biomo_ext = NULL 
+crs_proyect = NULL, tipo = NULL, kept = NULL, keep_files = NULL, transf_biomo_ext = NULL 
 # mxnt.pckg = NULL, other.pckg = NULL Future develop
 )
 ```
@@ -51,7 +51,9 @@ Example:
 
 #### Environmental variables
 
-* **clim_vars** character: filename of climatic data set to use. It is useful when you want to compare fit of different climatic data sets. No Default assigned.
+Environmental variables characterizes the environment asociated to distribution records. This description can be made because those variables are stored as raster images. Those raster are geo-referenced matrix structures containing information by each cell. The information can be extracted using Geographical Information Tools (Petersonet al., 2011).
+
+* **clim_vars** character: filename of climatic data set to use. It is useful when you want to compare fit of different climatic data sets. No Default assigned. More information in the [Bio2routine readme](https://github.com/cmunozr/16kproject_IAVH)
 * **dir_clim** character: path in where is stored the climatic data set specified. Default: "Data/env_vars/".
 * **dir_other**  character: path in where is stored the other environmental variables. Default: "Data/env_vars/other/".
 * **extension_vars** character: regular expression to find the environmental raster layers to load. Supported file types are the 'native' raster
@@ -69,20 +71,23 @@ Spatial bias usually leads to environmental bias because of the over-representat
 
 #### Interest areas
 
-* **method_M** 
-* **dist_MOV** 
-* **proj_models** 
-* **method_G** 
-* **area_G** 
-* **compute_G** 
-* **dir_G** 
-* **do_future** 
-* **method_F** 
-* **area_F** 
-* **compute_F** 
-* **dir_F** 
+Methods to construct geographical areas to calibrate and project the models. Three areas are defined: M stands for calibration area, G and F where is projected the model as it would be needed. Each of those areas a
+
+
+* **method_M** character
+* **dist_MOV** numeric
+* **proj_models** character
+* **method_G** character
+* **area_G** character
+* **compute_G** logical
+* **dir_G** character
+* **do_future** logical
+* **method_F** character
+* **area_F** character
+* **compute_F** logical
+* **dir_F** character
 * **polygon_data** character, path to spatial data to construct interest areas .
-* **raster_data** 
+* **raster_data** character, path
 
 #### Algorithms
 
@@ -94,12 +99,13 @@ Spatial bias usually leads to environmental bias because of the over-representat
 * **E**
 * **extrapo**
 * **predic**
+* **mxnt.pckg = NULL** Future develop
+* **other.pckg = NULL** Future develop
 
 #### Miscellaneous
 
-* **crs_proyect**
-* **tipo**
-* **kept**
-* **keep_files**
-* **write_intfiles**
-* **transf_biomo_ext**
+* **crs_proyect** character: final output spatial reference. Default: "+proj=longlat +datum=WGS84 +no_defs +type=crs"
+* **tipo** character: adds a suffix to the species main folder in, useful in experimental or comparative settings. Default: ""
+* **kept** logical: removes the candidate models folder and files created by the package kuenm. Default: TRUE.
+* **keep_files** character: certain files from the species main folder are kept in order to reduce disk usage. Three methods allowed. "all" keeps every file and folder creates in the process of setting SDM. "essential" keeps evaluation, final, ensembles, processed occurrences and geographical areas constructed folders and files. "none" keeps only ensembles, processed occurrences and geographical areas constructed.     
+* **transf_biomo_ext** logical: if TRUE extends the model to the BioModelos extension with NA data. It is usful to make operations between SDMs. Default: TRUE.
