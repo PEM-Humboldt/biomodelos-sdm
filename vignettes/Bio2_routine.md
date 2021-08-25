@@ -41,10 +41,6 @@ Example:
 |Anisognathus melanogenys| ...   | 11.1024       | -74.0616             | ...   |
 | ...                    | ...   | ...           | ...                  | ...   |
 
-
-#' @param do_clean 
-
-
 * **col_sp** character: containing the species name column. Default: "acceptedNameUsage". 
 * **col_lat** character: containing the latitude coordinate name column. Default: "decimalLatitude".
 * **col_lon** character: containing the longitude coordinate name column. Default: "decimalLongitude".
@@ -59,25 +55,17 @@ Example:
 * **dir_clim** character: path in where is stored the climatic data set specified. Default: "Data/env_vars/".
 * **dir_other**  character: path in where is stored the other environmental variables. Default: "Data/env_vars/other/".
 * **extension_vars** character: regular expression to find the environmental raster layers to load. Supported file types are the 'native' raster
-package format and those that can be read via rgdal (see [raster formats](https://www.rdocumentation.org/packages/raster/versions/3.4-10/topics/writeFormats)) Default: "*.tif$".
+package format and those that can be read via rgdal (see [raster formats](https://www.rdocumentation.org/packages/raster/versions/3.4-10/topics/writeFormats)) Default: "*.tif$". 
 
 #### Bias management
 
-Spatial bias usually leads to environmental bias because of the over-representation of certain environmental features of the more accessible and extensively surveyed areas. Sampling bias can be addressed by: spatial thinning or the inclusion of so-called bias files.
-
-Spatial thinning of species occurrence records can help address problems associated with spatial sampling biases. Ideally, thinning removes the fewest records necessary to substantially reduce the effects of sampling bias, while simultaneously retaining the greatest amount of useful information.
+Spatial bias usually leads to environmental bias because of the over-representation of certain environmental features of the more accessible and extensively surveyed areas. Sampling bias can be addressed by: spatial thinning or the inclusion of so-called bias files. Spatial thinning of species occurrence records can help address problems associated with spatial sampling biases. Ideally, thinning removes the fewest records necessary to substantially reduce the effects of sampling bias, while simultaneously retaining the greatest amount of useful information. Bias files allow the user to choose background data with the same bias as occurrence data.
 
 * **uniq1k_method** character: two methods are available: "sqkm" and "spthin". The former divides the geographical extent in squares of an user select distance and let one (1) occurrence record by each of those squares, it uses the function [clean_dup](https://github.com/luismurao/nichetoolbox/blob/master/R/clean_dup.R) from the package [nichetoolbox](https://www.google.com/search?q=nichetoolbox&rlz=1C1CHBF_esCO935CO935&oq=nichetoolbox&aqs=chrome..69i57j0i19i30j69i60l2j69i61.2307j1j4&sourceid=chrome&ie=UTF-8). The latter uses a randomization algorithm to create a data set in which each record is at least an user select distance apart, it uses the function [thin](https://github.com/cran/spThin/blob/master/R/thin.R) from the [spThin](https://cran.r-project.org/web/packages/spThin/spThin.pdf) package. Default: "sqkm".
 * **dist_uniq** numeric: distance in kilometers to be used as threshold in the spatial thinning process.
+* **use_bias** logical: correcting bias using a bias layer enable or disabled. Default: FALSE.
 
-Bias files allow the user to choose background data with the same bias as occurrence data.
-
-* **use_bias** logical: correcting bias using a bias layer enable or disabled. Default: FALSE  
-
-* **TGS_kernel**
-
-
-
+* **TGS_kernel** character: path to pre-processed bias layer file. Target Group Sampling (TGS; Ponder etal. 2001, Phillips etal. 2009). TGS uses the presence locations of taxonomically related species observed using the same techniques as the focal species (usually from the same database) to estimate sampling, under the assumption that those surveys would have recorded the focal species had it occurred there (Phillips etal. 2009). For a begginer guide see the [Scott Rinann's blog](https://scottrinnan.wordpress.com/2015/08/31/how-to-construct-a-bias-file-with-r-for-use-in-maxent-modeling/) 
 
 #### Interest areas
 
