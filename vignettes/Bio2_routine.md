@@ -41,17 +41,21 @@ Example:
 |Anisognathus melanogenys| ...   | 11.1024       | -74.0616             | ...   |
 | ...                    | ...   | ...           | ...                  | ...   |
 
+
+#' @param do_clean 
+
+
 * **col_sp** character: containing the species name column. Default: "acceptedNameUsage". 
 * **col_lat** character: containing the latitude coordinate name column. Default: "decimalLatitude".
 * **col_lon** character: containing the longitude coordinate name column. Default: "decimalLongitude".
-* **do_clean** logical: occurrence data cleaning. If FALSE only a searching and removing for strange characters ("@[>!¿<#?&/\\]") and duplicated data is performed on latitude and longitude columns. If TRUE, apart from the last, records falling in capitals, gbif headquarters or research institutions coordinates, regional or national centroids, having equal latitude and longitude or zero-zero at both, as well as seas data. Here is uded the function [clean_coordinates](https://github.com/ropensci/CoordinateCleaner/blob/master/R/clean_coordinates.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) Default: FALSE.
+* **do_clean** logical: occurrence data cleaning. If FALSE only searching and removing for strange characters ("@[>!¿<#?&/\\]") and duplicated data is performed on latitude and longitude columns from occurrence data frame. If TRUE, aditionally records falling in capitals, gbif headquarters or research institutions coordinates, regional or national centroids, having equal latitude and longitude or zero-zero at both, as well as seas data are removed. Here is used the function [clean_coordinates](https://github.com/ropensci/CoordinateCleaner/blob/master/R/clean_coordinates.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) Default: FALSE.
 * **drop_out** character: method for dropping geographical outliers out from occurrence database. Valid strings are "any", "IQR", ""freq". For no action, "any" string. The "IQR" method stands by outlier detection based on an interquantile range test using the function [cc_outl](https://github.com/ropensci/CoordinateCleaner/blob/master/R/cc_outl.R) from [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html). The "freq" method removes occurrence records from bio-geographical polygons under represented in the distribution of the species. It calculates the frequency of registers in each region extracting the region information by each record. Next, the regions with a relative frequency below an user threshold percentage are removed. The method uses a rasterized layer created from a polygon file and geographical records. Default: "any".
 * **IQR_mtpl** numeric: value of the interquantile range to use with "IQR" dropping outlier method. Default: NULL.
 * **freq_percent** numeric: value of relative frequency threshold to use with "freq" dropping outlier method. Default: NULL.
 
-#### Environmental varialbles
+#### Environmental variables
 
-* **clim_vars** character: filename of climatic data set to use. It is useful when you want to compare fit of different climatic data sets. No Default.
+* **clim_vars** character: filename of climatic data set to use. It is useful when you want to compare fit of different climatic data sets. No Default assigned.
 * **dir_clim** character: path in where is stored the climatic data set specified. Default: "Data/env_vars/".
 * **dir_other**  character: path in where is stored the other environmental variables. Default: "Data/env_vars/other/".
 * **extension_vars** character: regular expression to find the environmental raster layers to load. Supported file types are the 'native' raster
@@ -59,27 +63,38 @@ package format and those that can be read via rgdal (see [raster formats](https:
 
 #### Bias management
 
-* **uniq1k_method** character: Spatial thinning of species occurrence records can help address problems associated with spatial sampling biases. Ideally, thinning removes the fewest records necessary to substantially reduce the effects of sampling bias, while simultaneously retaining the greatest amount of useful information. Two methods are available: "sqkm" and "spthin". The former divides the geographical extent in squares of an user select distance and let one (1) occurrence record by each of those squares, it uses the function [clean_dup](https://github.com/luismurao/nichetoolbox/blob/master/R/clean_dup.R) from the package [nichetoolbox](https://www.google.com/search?q=nichetoolbox&rlz=1C1CHBF_esCO935CO935&oq=nichetoolbox&aqs=chrome..69i57j0i19i30j69i60l2j69i61.2307j1j4&sourceid=chrome&ie=UTF-8). The latter uses a randomization algorithm to create a data set in which each record is at least an user select distance apart, it uses the function [thin](https://github.com/cran/spThin/blob/master/R/thin.R) from the [spThin](https://cran.r-project.org/web/packages/spThin/spThin.pdf) package. Default: "sqkm".    
-* **dist_uniq** 
-* **use_bias**
+Spatial bias usually leads to environmental bias because of the over-representation of certain environmental features of the more accessible and extensively surveyed areas. Sampling bias can be addressed by: spatial thinning or the inclusion of so-called bias files.
+
+Spatial thinning of species occurrence records can help address problems associated with spatial sampling biases. Ideally, thinning removes the fewest records necessary to substantially reduce the effects of sampling bias, while simultaneously retaining the greatest amount of useful information.
+
+* **uniq1k_method** character: two methods are available: "sqkm" and "spthin". The former divides the geographical extent in squares of an user select distance and let one (1) occurrence record by each of those squares, it uses the function [clean_dup](https://github.com/luismurao/nichetoolbox/blob/master/R/clean_dup.R) from the package [nichetoolbox](https://www.google.com/search?q=nichetoolbox&rlz=1C1CHBF_esCO935CO935&oq=nichetoolbox&aqs=chrome..69i57j0i19i30j69i60l2j69i61.2307j1j4&sourceid=chrome&ie=UTF-8). The latter uses a randomization algorithm to create a data set in which each record is at least an user select distance apart, it uses the function [thin](https://github.com/cran/spThin/blob/master/R/thin.R) from the [spThin](https://cran.r-project.org/web/packages/spThin/spThin.pdf) package. Default: "sqkm".
+* **dist_uniq** numeric: distance in kilometers to be used as threshold in the spatial thinning process.
+
+Bias files allow the user to choose background data with the same bias as occurrence data.
+
+* **use_bias** logical: correcting bias using a bias layer enable or disabled. Default: FALSE  
+
 * **TGS_kernel**
 
-#### Accessible Area or M Area
 
-* **MCP_buffer**
-* **polygon_select**
-* **points_Buffer**
-* **dist_MOV**
-* **polygon_M** Spatial data to construct M composed, must be inside project file
-* **raster_M**
 
-* **proj_models**
-* **area_G**
-* **compute_G**
-* **dir_G**
-* **do_future**
-* **compute_F**
-* **dir_F**
+
+#### Interest areas
+
+* **method_M** 
+* **dist_MOV** 
+* **proj_models** 
+* **method_G** 
+* **area_G** 
+* **compute_G** 
+* **dir_G** 
+* **do_future** 
+* **method_F** 
+* **area_F** 
+* **compute_F** 
+* **dir_F** 
+* **polygon_data** character, path to spatial data to construct interest areas .
+* **raster_data** 
 
 #### Algorithms
 
@@ -100,49 +115,3 @@ package format and those that can be read via rgdal (see [raster formats](https:
 * **keep_files**
 * **write_intfiles**
 * **transf_biomo_ext**
-
-
-#' @param occ 
-#' @param col_sp 
-#' @param col_lat 
-#' @param col_lon 
-#' @param do_clean 
-#' @param drop_out 
-#' @param IQR_mtpl 
-#' @param clim_vars 
-#' @param dir_clim 
-#' @param dir_other 
-#' @param extension_vars 
-#' @param uniq1k_method 
-#' @param dist_uniq 
-#' @param use_bias 
-#' @param TGS_kernel 
-#' @param method_M 
-#' @param dist_MOV 
-#' @param proj_models 
-#' @param method_G 
-#' @param area_G 
-#' @param compute_G 
-#' @param dir_G 
-#' @param do_future 
-#' @param method_F 
-#' @param area_F 
-#' @param compute_F 
-#' @param dir_F 
-#' @param polygon_data 
-#' @param raster_data 
-#' @param freq_percent 
-#' @param algos 
-#' @param beta_5.25 
-#' @param fc_5.25 
-#' @param beta_25 
-#' @param fc_25 
-#' @param E 
-#' @param extrapo 
-#' @param predic 
-#' @param crs_proyect 
-#' @param tipo 
-#' @param kept 
-#' @param keep_files 
-#' @param write_intfiles 
-#' @param transf_biomo_ext 
