@@ -3,11 +3,7 @@
 
 ### Description
 
-`Bio2_routine` automates the fitting of Species Distribution Models from occurrence and environmental data.
-
-### Details
-
-This is a function to automate the fitting of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. BioModelos follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necesary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
+`Bio2_routine` is a wrapper function that allows an automatized and flexible SDM general routine. that automates the fitting of Species Distribution Models from occurrence and environmental data.
 
 ### Usage
 

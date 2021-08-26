@@ -1,6 +1,6 @@
-# BioModelos
+# BioModelos: Species Distribution Maps from Colombian species 
 
-BioModelos is an effort to automate the construction of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). This repository stores useful functions to  follow an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necessary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
+BioModelos is a collaborative online system to map species distributions (Velásquez-Tibata et al, 2019). This repository stores functions to automate the construction of Species Distribution Models (SDM) from databases gathered, managed and curated by The Alexander Von Humboldt Institute and a network of experts in order to be evaluated and refined. The functions follow an automatized and flexible SDM general routine. First, it cleans occurrence data when is necessary and construct geographical areas in which those models will be trained. Second, they crops and masks current and future environmental variables. Third, the functions train  SDM's using one or several algorithms, then evaluate them quantitatively and ensemble the best of each one. Fourth, they project to different scenarios at user discretion.
 
 Current state: in development.
 
