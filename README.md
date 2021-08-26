@@ -202,21 +202,21 @@ Once you run the last script, you would monitor the process in the console (left
 
 ## Authors and contact
 
-* **[Carlos Jair Muñoz Rodriguez](cmunoz@humboldt.org.co)**
+* **[Carlos Jair Muñoz Rodriguez](mailto:cmunoz@humboldt.org.co)**
 
-* **[María Helena Olaya](molaya@humboldt.org.co )**
+* **[María Helena Olaya](mailto:molaya@humboldt.org.co )**
 
-* **[Gabriel Alejandro Perilla Suarez](gperilla@humboldt.org.co )** 
+* **[Gabriel Alejandro Perilla Suarez](mailto:gperilla@humboldt.org.co )** 
 
-* **[Héctor Manuel Arango Martínez](harango@humboldt.org.co )**
+* **[Héctor Manuel Arango Martínez](mailto:harango@humboldt.org.co )**
 
-* **[Cristian Alexander Cruz Rodriguez](ccruz@humboldt.org.co )** 
+* **[Cristian Alexander Cruz Rodriguez](mailto:ccruz@humboldt.org.co )** 
 
-* **[Luis Hernando Romero Jiménez](lromero@humboldt.org.co )**   
+* **[Luis Hernando Romero Jiménez](mailto:lromero@humboldt.org.co )**   
 
-* **[Andrés Felipe Suárez Castro](felipesuarezca@gmail.com )**
+* **[Andrés Felipe Suárez Castro](mailto:felipesuarezca@gmail.com )**
 
-* **[Elkin Alexi Noguera Urbano](enoguera@humboldt.org.co)**
+* **[Elkin Alexi Noguera Urbano](mailto:enoguera@humboldt.org.co)**
 
 
 ## License
