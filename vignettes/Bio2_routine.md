@@ -1,5 +1,5 @@
 # Bio2_routine
-## Going deep inside BioModelos 2
+## Going deep inside of BioModelos
 
 ### Description
 

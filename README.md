@@ -1,8 +1,8 @@
-# BioModelos 2
+# BioModelos
 
-BioModelos 2 is an effort to automate the construction of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). It is attached to BioModelos initiative from the IAvH. "BioModelos 2" follows an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necessary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
+BioModelos is an effort to automate the construction of Species Distribution Models (SDM) from databases gathered and managed by the Instituto de Investigación de Recursos Biológicos Alexander von Humboldt (IAvH). This repository stores useful functions to  follow an automatized SDM general routine. First, it cleans occurrence data and constructs the accessible area when is necessary. Second, it crops and masks current and future environmental variables. Third, it creates SDM's using one or several algorithms and then ensemble the best of each one. Fourth, it projects to different scenarios at user discretion.
 
-Current state: in development. Version 0.0.1
+Current state: in development.
 
 ## Prerequisites
 
@@ -202,21 +202,21 @@ Once you run the last script, you would monitor the process in the console (left
 
 ## Authors and contact
 
-* **Carlos Jair Muñoz Rodriguez** - *Initial development* - [cmunoz@humboldt.org.co](cmunoz@humboldt.org.co)
+* **[Carlos Jair Muñoz Rodriguez](cmunoz@humboldt.org.co)**
 
-* **María Helena Olaya** - *Initial development* -
+* **[María Helena Olaya](molaya@humboldt.org.co )**
 
-* **Gabriel Alejandro Perilla Suarez** - *Initial development* - 
+* **[Gabriel Alejandro Perilla Suarez](gperilla@humboldt.org.co )** 
 
-* **Héctor Manuel Arango Martínez** - *Initial development* - 
+* **[Héctor Manuel Arango Martínez](harango@humboldt.org.co )**
 
-* **Cristian Alexander Cruz Rodriguez** - *Initial development* - 
+* **[Cristian Alexander Cruz Rodriguez](ccruz@humboldt.org.co )** 
 
-* **Luis Hernando Romero Jiménez** - *Initial development* - 
+* **[Luis Hernando Romero Jiménez](lromero@humboldt.org.co )**   
 
-* **Andrés Felipe Suárez Castro** - *Initial development* - 
+* **[Andrés Felipe Suárez Castro](felipesuarezca@gmail.com )**
 
-* **Elkin Alexi Noguera Urbano** - *Initial development* - [enoguera@humboldt.org.co](enoguera@humboldt.org.co) 
+* **[Elkin Alexi Noguera Urbano](enoguera@humboldt.org.co)**
 
 
 ## License
