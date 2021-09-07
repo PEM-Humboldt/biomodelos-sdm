@@ -1,5 +1,5 @@
 do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, env.Fdir, do.future,
-                       folder.sp, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias,
+                       folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias,
                        extrap, predic, write.intfiles) {
 
   # MISSING user choose function to predict
@@ -228,7 +228,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   if (predic == "kuenm") {
     if (proj.models == "M-M"){
       if(proj == TRUE){
-        current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(folder.sp, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
+        current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(sp.name, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
       }else{
         current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(".asc$"), full.names = T, include.dirs = T, recursive = T)
       }

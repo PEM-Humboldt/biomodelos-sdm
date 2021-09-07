@@ -593,7 +593,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic,
-            write.intfiles = FALSE
+            write.intfiles = FALSE, sp.name = sp_name
           )
           paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
         },

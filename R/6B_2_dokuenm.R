@@ -68,7 +68,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
   best <- eval1$`All models`
   best <- na.omit(best)
 
-  # AUC greater than 0.7
+  # proc greater than 1 and pvalue less than 0.1
   
   best1 <- best[which(best$Mean_AUC_ratio >= 1 & best$pval_pROC <= 0.1), ]
   
@@ -135,9 +135,9 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
   
   if (proj.models == "M-M"){
     if(proj.mod == TRUE){
-      current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(folder.sp, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
+      current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
     }else{
-      current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(folder.sp, ".asc$"), full.names = T, include.dirs = T, recursive = T)
+      current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, ".asc$"), full.names = T, include.dirs = T, recursive = T)
     }
   }
   

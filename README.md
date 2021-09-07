@@ -202,7 +202,7 @@ Once you run the last script, you would monitor the process in the console (left
 
 ## Authors and contact
 
-* **[Carlos Jair Muñoz Rodriguez](mailto:cmunoz@humboldt.org.co)**
+* **[Carlos Jair Muñoz Rodriguez](mailto:cmunozbiol@gmail.com)**
 
 * **[María Helena Olaya](mailto:molaya@humboldt.org.co )**
 
@@ -218,6 +218,12 @@ Once you run the last script, you would monitor the process in the console (left
 
 * **[Elkin Alexi Noguera Urbano](mailto:enoguera@humboldt.org.co)**
 
+
+## References and packages
+
+
+
+## Acknowledgment
 
 ## License
 
