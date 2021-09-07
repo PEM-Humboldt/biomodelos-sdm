@@ -69,7 +69,7 @@ clean_char_unique <- function(col.id, data., sppcol, collon, collat) { # , colda
   # and date columns
 
   data.small <- data.[, c(col.id, sppcol, collon, collat)] # , coldate
-
+  
   data.small <- completeFun(data.small, c(collon, collat))
 
   data.small[, sppcol] <- gsub("@[>!¿<#?&/\\]", "", data.small[, sppcol])

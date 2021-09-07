@@ -682,7 +682,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
             do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
             env.Gdir = paste0(folder_sp, "/G_variables"),
             crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo,
-            write.intfiles = write_intfiles
+            write.intfiles = FALSE
             # MISSING for Unix and macOs the automated input of biasfile, ready for windows
           )
           paste0(
