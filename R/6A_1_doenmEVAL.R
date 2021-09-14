@@ -59,7 +59,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
       Sbg <- M.points[
         sample(
           x = seq(1:nrow(M.points)),
-          size = ceiling(nrow(M.points) * 0.3),
+          size = ceiling(nrow(M.points) * 0.2),
           replace = F
         ),
         1:2
