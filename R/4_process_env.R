@@ -13,7 +13,6 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
     full.names = T
   )
 
-
   # other variables apart from the climatic ones
   other_files <- list.files(
     path = paste0(env.other, "/current/"),
@@ -122,8 +121,10 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
         )
       }
     } else {
-
+      
+      # compute.G == FALSE
       # as was not computed G vars, is necessary to copy them from directory used
+      
       Gfiles <- list.files(dir.G, pattern = ".asc", full.names = T, recursive = F)
 
       for (a in 1:length(Gfiles)) {

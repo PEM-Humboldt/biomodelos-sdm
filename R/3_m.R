@@ -1,23 +1,42 @@
 inte_areas <- function(polygon.data = polygon_data, raster.data = raster_data, occ. = occ_thin,
                        col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
                        drop.out = drop_out, method.M = method_M, method.G = method_G,
-                       method.F = method_F, area.G = area_G, area.F = area.F, freq.percent = freq_percent,
+                       method.F = method_F, area.M = area_M, area.G = area_G, area.F = area.F, freq.percent = freq_percent,
                        proj.models = proj_models, do.future = do_future, compute.F = compute_F) {
 
   # freq layer doesn't work to cut as it hast a lot of self intersection errors
-  
-  if (method.M == "points_buffer") M <- gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov) %>% as_Spatial()
-  if (method.M == "points_MCP") M <- gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)) %>% as_Spatial()
-  if (method.M == "points_MCP_buffer") M <- gen.st.buffer(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
-
-  if (grepl(method.M, pattern = "polygon")) {
-    if (grepl(method.M, pattern = "polygon_points")) M <- gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
-    if (grepl(method.M, pattern = "polygon_buffer")) M <- gen.st.buffer(gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ), distMov = dist.Mov) %>% as_Spatial()
-    if (grepl(method.M, pattern = "polygon_points_buffer")) M <- gen.Polygon(gen.st.buffer(gen_st_points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
-    if (grepl(method.M, pattern = "polygon_MCP")) M <- gen.Polygon(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
-    if (grepl(method.M, pattern = "cut_buffer")) M <- cut.polygon(M, gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
-    if (grepl(x = method.M, pattern = "cut_MCP")) M <- cut.polygon(M, gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat))) %>% as_Spatial()
+  if (is.null(area.M)) {
+    if (!is.null(method.M)) {
+      if (method.M == "points_buffer") M <- gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov) %>% as_Spatial()
+      if (method.M == "points_MCP") M <- gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)) %>% as_Spatial()
+      if (method.M == "points_MCP_buffer") M <- gen.st.buffer(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
+      
+      if (grepl(method.M, pattern = "polygon")) {
+        if (grepl(method.M, pattern = "polygon_points")) M <- gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+        if (grepl(method.M, pattern = "polygon_buffer")) M <- gen.st.buffer(gen.Polygon(gen.st.points(dat = occ., collon = col.lon, collat = col.lat), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ), distMov = dist.Mov) %>% as_Spatial()
+        if (grepl(method.M, pattern = "polygon_points_buffer")) M <- gen.Polygon(gen.st.buffer(gen_st_points(dat = occ., collon = col.lon, collat = col.lat), distMov = dist.Mov), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+        if (grepl(method.M, pattern = "polygon_MCP")) M <- gen.Polygon(gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), polygondata = polygon.data, dropout = drop.out, freqperc = freq.percent, rasterdata = raster.data, occurrences = occ) %>% as_Spatial()
+        if (grepl(method.M, pattern = "cut_buffer")) M <- cut.polygon(M, gen.st.buffer(gen.st.points(dat = occ., collon = col.lon, collat = col.lat)), distMov = dist.Mov) %>% as_Spatial()
+        if (grepl(x = method.M, pattern = "cut_MCP")) M <- cut.polygon(M, gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat))) %>% as_Spatial()
+      }
+    } else {
+      stop("Provide a method for G area")
+    }
+  } else {
+    try(
+      exp = {
+        finalstr <- tail(unlist(strsplit(area.M, "\\.")), n = 1)
+        if (finalstr == "shp") {
+          M <- raster::shapefile(area.M)
+        } else {
+          M <- raster::raster(area.M)
+        }
+      }
+    )
+    if (!exists("M")) stop("if you do not provide a method for M at least provide a valid raster/shape path file ")
   }
+  
+  
 
   if (proj.models == "M-G") {
     if (is.null(area.G)) {
@@ -123,8 +142,10 @@ gen.st.points <- function(dat, collon = col.lon, collat = col.lat) {
 # Generate buffer around sf object
 
 gen.st.buffer <- function(stobject, distMov = dist.Mov) {
-  st_buffer(stobject, units::set_units(distMov, km)) %>%
+  stobject_transform <- st_transform(stobject, crs = 7801)
+  stbuffer_transform <- st_buffer(stobject_transform, units::set_units(distMov, km)) %>%
     st_union()
+  stbuffer <- st_transform(stbuffer_transform, crs = st_crs(stobject))
 }
 
 #--------------------------------

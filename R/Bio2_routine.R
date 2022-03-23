@@ -7,7 +7,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
                          drop_out = NULL, IQR_mtpl = NULL, clim_vars, dir_clim = NULL, dir_other = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
                          use_bias = NULL, TGS_kernel = NULL, method_M = NULL, 
-                         dist_MOV = NULL, proj_models, method_G = NULL, area_G = NULL,
+                         dist_MOV = NULL, proj_models, method_G = NULL, area_M = NULL, area_G = NULL,
                          compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL,
                          area_F = NULL, compute_F = NULL, dir_F = NULL, polygon_data = NULL,
                          raster_data = NULL, freq_percent = NULL, algos = NULL, beta_5.25 = NULL, 
@@ -457,7 +457,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, do_
       M_ <- inte_areas(
         polygon.data = polygon_data, raster.data = raster_data,
         occ. = occ_thin, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp,
-        dist.Mov = dist_MOV, drop.out = drop_out, method.M = method_M,
+        dist.Mov = dist_MOV, drop.out = drop_out, method.M = method_M, area.M = area_M,
         method.G = method_G, area.G = area_G, method.F = method_F,
         area.F = area_F, freq.percent = freq_percent, proj.models = proj_models, 
         do.future = do_future, compute.F = compute_F
