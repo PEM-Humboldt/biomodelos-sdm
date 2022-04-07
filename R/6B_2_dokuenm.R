@@ -48,7 +48,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
   rand_percent <- 50
   iterations. <- 500
   paral_proc <- FALSE
-  threshold. <- 10
+  threshold. <- E
   select <- "OR_AICc"
   
   # evaluate
@@ -134,17 +134,19 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
 
   
   if (proj.models == "M-M"){
-    if(proj.mod == TRUE){
+    if(proj.mod == TRUE & do.future == F){
       current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
     }else{
       current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, ".asc$"), full.names = T, include.dirs = T, recursive = T)
     }
   }
   
-  if (proj.models == "M-G") current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
+  if (proj.models == "M-G"){
+    current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
+  }   
   
-    current_proj <- raster::stack(current_proj_files)
-    names(current_proj) <- best3$Model
+  current_proj <- raster::stack(current_proj_files)
+  names(current_proj) <- best3$Model
 
     for (i in 1:nlayers(current_proj)) {
       fileNm <- unlist(strsplit(x = current_proj_files[i], split = "/"))

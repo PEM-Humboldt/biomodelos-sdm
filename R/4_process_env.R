@@ -121,10 +121,8 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
         )
       }
     } else {
-      
-      # compute.G == FALSE
+
       # as was not computed G vars, is necessary to copy them from directory used
-      
       Gfiles <- list.files(dir.G, pattern = ".asc", full.names = T, recursive = F)
 
       for (a in 1:length(Gfiles)) {
@@ -211,8 +209,8 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
   if (computeF == FALSE) {
 
     # as was not computed F vars, is necessary to copy them from directory in which them are stored
-    Fdirs <- list.dirs(dirF, recursive = F, full.names = T)
-
+    Fdirs <- base::list.dirs(path = dirF, recursive = T, full.names = T)
+    
     for (a in 1:length(Fdirs)) {
       file.copy(
         from = Fdirs[a],
@@ -227,7 +225,7 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
     # Start
 
     # future climatic folders/ directories
-    fut_dir <- list.dirs(
+    fut_dir <- base::list.dirs(
       path = paste0(climdir, climdataset, "/future"),
       recursive = T,
       full.names = T

@@ -8,7 +8,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   # in which in will be read G_variables folder, they are in .asc extension
 
   # M reading
-  env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)
+  env.Mfiles <- list.files(env.Mdir, ".asc$", recursive = T, full.names = T)
   env.M <- raster::stack(env.Mfiles)
 
   # G reading
@@ -98,7 +98,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
 
   # selecting from the table the best enmeval models
   # AUC greater than 0.7
-  best1 <- eval_results[which(eval_results$avg.test.AUC >= 0.7), ] %>% na.omit()
+  best1 <- eval_results[which(eval_results$train.AUC >= 0.7), ] %>% na.omit()
   
   if (nrow(best1) == 0) stop("any model met the test criterion")
 
