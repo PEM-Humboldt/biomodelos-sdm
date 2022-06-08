@@ -1,8 +1,8 @@
 inte_areas <- function(polygon.data = polygon_data, raster.data = raster_data, occ. = occ_thin,
                        col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
-                       drop.out = drop_out, method.M = method_M, method.G = method_G,
-                       method.F = method_F, area.M = area_M, area.G = area_G, area.F = area.F, freq.percent = freq_percent,
-                       proj.models = proj_models, do.future = do_future, compute.F = compute_F) {
+                       method.M = method_M, method.G = method_G, method.F = method_F, area.M = area_M, 
+                       area.G = area_G, area.F = area.F, proj.models = proj_models, 
+                       do.future = do_future, compute.F = compute_F) {
 
   # freq layer doesn't work to cut as it hast a lot of self intersection errors
   if (is.null(area.M)) {

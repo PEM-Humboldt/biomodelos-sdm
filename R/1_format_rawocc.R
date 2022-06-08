@@ -1,4 +1,4 @@
-clean_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, # col.date, date,
+format_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, # col.date, date,
                          IQR.mtpl, do.clean) {
 
   # Function to clean conflicting, erroneous and duplicate characters
@@ -10,54 +10,7 @@ clean_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, # col.date, 
     collat = col.lat
   )
 
-  if (do.clean == TRUE) {
-
-    # flagging and removing occurrences failing in political centroids, biod institution coordinates,
-    # and in the sea, 0-0 coordinates, and more than +180 or less tan 180 in lon as well +90 or -90
-    # latitude
-    flags <- CoordinateCleaner::clean_coordinates(
-      x = occ.noChar.uniq,
-      species = spp.col,
-      lon = col.lon,
-      lat = col.lat,
-      capitals_rad = 100,
-      centroids_rad = 100,
-      tests = c("capitals", "centroids", "equal", "gbif", "institutions", "seas", "zeros")
-    )
-
-    occ.flaged <- occ.noChar.uniq[flags$.summary, ]
-
-    if (drop.out == "IQR") {
-      if (nrow(occ.flaged) >= 7) {
-
-        # finding outliers and throwing them out
-
-        occ.flaged <- CoordinateCleaner::cc_outl(
-          x = occ.flaged,
-          lon = col.lon,
-          lat = col.lat,
-          species = spp.col,
-          method = "quantile",
-          mltpl = IQR.mtpl
-        )
-      }
-    }
-    rm(flags)
-
-    # Module for fitting occurrences date with raster date
-
-    # dates <- occ.flaged[, col.date]
-    # index.Date <- which(is.na(dates) | dates < date)
-
-    # if(length(index.Date) != 0){
-    #  occurrences <- occ.flaged[-index.Date, ]
-    # }else{
-    #  occurrences <- occ.flaged
-    # }
-
-    return(occ.flaged)
-  }
-  return(occ.noChar.uniq)
+ return(occ.noChar.uniq)
 }
 
 # Rafael Moreno function
@@ -101,4 +54,20 @@ duplicatedFun <- function(data, cols) {
   return(data[!dupVec, ])
 }
 
+#----------------------
 # MISSING alternative filtering dates
+
+# Module for fitting occurrences date with raster date
+
+# dates <- occ.flaged[, col.date]
+# index.Date <- which(is.na(dates) | dates < date)
+
+# if(length(index.Date) != 0){
+#  occurrences <- occ.flaged[-index.Date, ]
+# }else{
+#  occurrences <- occ.flaged
+# }
+
+# to reorganize
+# if (is.null(date_period)) date_period <- "1970-01-01" # "From" date to limit chronologically occurrence data "year-month-day"
+# if (is.null(event_date)) event_date <- "eventDate"

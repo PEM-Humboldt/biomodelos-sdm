@@ -1,0 +1,2 @@
+java -mx1000m -cp "/C:/humboldt/biomodelos-sdm/maxent.jar;C:\humboldt\biomodelos-sdm\maxent.jar" density.Explain -l C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\final_models_kuenm\M_5_F_lq_Set_1\Chlorochrysa.nitidissima.lambdas C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\final_models_kuenm\M_5_F_lq_Set_1\Chlorochrysa.nitidissima.asc C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\M_variables\Set_1
+@if errorlevel 1 pause
