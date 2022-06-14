@@ -1,6 +1,6 @@
 do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias,
-                       extrap, predic, write.intfiles) {
+                       extrap, predic, write.intfiles, redo., redo.path) {
 
   # MISSING user choose function to predict
 
@@ -78,62 +78,71 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
   #--------------------
 
   # competitor models
-  eval1 <- ENMevaluate(
-    occ = data., env = env.M, bg.coords = Sbg, method = partitionMethod,
-    RMvalues = beta.mult, fc = toupper(f.class), algorithm = "maxent.jar"
-  )
-
-  dir.create(paste0(folder.sp, "/eval_results_enmeval"), showWarnings = FALSE)
-
-  # table of evaluation results
-  eval_results <- eval1@results
-  write.csv(eval_results, paste0(folder.sp, "/eval_results_enmeval/eval_models.csv"), row.names = F)
-
-  # writing all enmeval modelling objects
-  save(eval1, file = paste0(folder.sp, "/eval_results_enmeval/eval_models.RData"))
+  if(redo. == F){
+    eval1 <- ENMevaluate(
+      occ = data., env = env.M, bg.coords = Sbg, method = partitionMethod,
+      RMvalues = beta.mult, fc = toupper(f.class), algorithm = "maxent.jar"
+    )
+    
+    dir.create(paste0(folder.sp, "/eval_results_enmeval"), showWarnings = FALSE)
+    
+    # table of evaluation results
+    eval_results <- eval1@results
+    write.csv(eval_results, paste0(folder.sp, "/eval_results_enmeval/eval_models.csv"), row.names = F)
+    
+    # writing all enmeval modelling objects
+    save(eval1, file = paste0(folder.sp, "/eval_results_enmeval/eval_models.RData"))  
+  }
+  
 
   #--------------------
   # 3. select models made by enmeval: meet project evaluation criterion
   #--------------------
-
-  # selecting from the table the best enmeval models
-  # AUC greater than 0.7
-  best1 <- eval_results[which(eval_results$train.AUC >= 0.7), ] %>% na.omit()
   
-  if (nrow(best1) == 0) stop("any model met the test criterion")
-
-  # model with the OR10 less minimun value
-  if (nrow(best1) != 0)  best2 <- best1[which(best1$avg.test.or10pct == min(best1$avg.test.or10pct)), ]
-  
-  if (nrow(best2) != 0) {
-    if (nrow(best2) > 1) {
-      # delta aic criterion
-      best2$delta.AICc <- best2$AICc - min(best2$AICc)
-      best3 <- best2[which(best2$delta.AICc <= 2), ]
-    } else {
-      best3 <- best2
+  if(redo. == F){
+    # selecting from the table the best enmeval models
+    # AUC greater than 0.7
+    best1 <- eval_results[which(eval_results$train.AUC >= 0.7), ] %>% na.omit()
+    
+    if (nrow(best1) == 0) stop("any model met the test criterion")
+    
+    # model with the OR10 less minimun value
+    if (nrow(best1) != 0)  best2 <- best1[which(best1$avg.test.or10pct == min(best1$avg.test.or10pct)), ]
+    
+    if (nrow(best2) != 0) {
+      if (nrow(best2) > 1) {
+        # delta aic criterion
+        best2$delta.AICc <- best2$AICc - min(best2$AICc)
+        best3 <- best2[which(best2$delta.AICc <= 2), ]
+      } else {
+        best3 <- best2
+      }
     }
-  }
-
-  # select best models
-  index_select <- as.numeric()
-  for (i in 1:nrow(best3)) {
-    indexi <- which(eval_results$settings == best3$settings[i])
-    index_select <- c(index_select, indexi)
-  }
-
-  eval1_models <- eval1@models[index_select]
-
-  # write best models data frame
-  write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/selected_models.csv"), row.names = F)
-
-  # writing best modelling objects
-  save(eval1_models, file = paste0(folder.sp, "/eval_results_enmeval/selected_models.RData"))
-
-  # best models table kuenm style
-  if (predic == "kuenm") {
-    best_kuenm_style <- data.frame(Model = paste0("M_", best3$rm, "_F_", tolower(best3$features), "_Set_1"))
-    write.csv(best_kuenm_style, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
+    
+    # select best models
+    index_select <- as.numeric()
+    for (i in 1:nrow(best3)) {
+      indexi <- which(eval_results$settings == best3$settings[i])
+      index_select <- c(index_select, indexi)
+    }
+    
+    eval1_models <- eval1@models[index_select]
+    
+    # write best models data frame
+    write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/selected_models.csv"), row.names = F)
+    
+    # writing best modelling objects
+    save(eval1_models, file = paste0(folder.sp, "/eval_results_enmeval/selected_models.RData"))
+  
+    # best models table kuenm style
+    if (predic == "kuenm") {
+      best_kuenm_style <- data.frame(Model = paste0("M_", best3$rm, "_F_", tolower(best3$features), "_Set_1"))
+      write.csv(best_kuenm_style, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
+    }  
+  }else{
+    best3 <- read.csv(redo.path)
+    dir.create(paste0(folder.sp, "/eval_results_enmeval/"))
+    write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
   }
 
   #--------------------

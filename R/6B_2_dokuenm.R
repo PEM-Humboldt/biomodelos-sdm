@@ -1,7 +1,8 @@
 
 do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
                      folder.sp, biasfile, kept., proj.models, do.future, env.Mdir, env.Gdir,
-                     crs.proyect, use.bias, extrap, write.intfiles) {
+                     crs.proyect, use.bias, extrap, write.intfiles, redo., 
+                     redo.path ) {
 
   #--------------------
   # 1. Formatting occurrences to Kuenm package
@@ -30,13 +31,16 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
 
   wait <- FALSE
   run <- TRUE
-
-  kuenm::kuenm_cal(
-    occ.joint = occjoint, occ.tra = occtra, M.var.dir = M_var_dir,
-    batch = batch_cal, out.dir = out_dir, reg.mult = beta.mult,
-    f.clas = fc.clas, args = biasarg, maxent.path = maxent.path,
-    wait = wait, run = run
-  )
+  
+  if(redo. == F){
+    kuenm::kuenm_cal(
+      occ.joint = occjoint, occ.tra = occtra, M.var.dir = M_var_dir,
+      batch = batch_cal, out.dir = out_dir, reg.mult = beta.mult,
+      f.clas = fc.clas, args = biasarg, maxent.path = maxent.path,
+      wait = wait, run = run
+    )  
+  }
+  
 
   #--------------------
   # 3. evaluation of calibrated models
@@ -52,43 +56,51 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
   select <- "OR_AICc"
   
   # evaluate
-  eval1 <- kuenm::kuenm_ceval(
-    path = out_dir, occ.joint = occjoint, occ.tra = occtra,
-    occ.test = occtest, batch = batch_cal, out.eval = out_eval,
-    threshold = threshold., rand.percent = rand_percent,
-    iterations = iterations., kept = kept.,
-    selection = "OR_AICc", parallel.proc = paral_proc
-  )
+  if(redo. == F){
+    eval1 <- kuenm::kuenm_ceval(
+      path = out_dir, occ.joint = occjoint, occ.tra = occtra,
+      occ.test = occtest, batch = batch_cal, out.eval = out_eval,
+      threshold = threshold., rand.percent = rand_percent,
+      iterations = iterations., kept = kept.,
+      selection = "OR_AICc", parallel.proc = paral_proc
+    )
+  }
 
   #--------------------
   # 4. selected models by kuenm met project evaluation criterion
   #--------------------
 
   # conditional statements to ensure that best kuenm gets fitted models
-  best <- eval1$`All models`
-  best <- na.omit(best)
-
-  # proc greater than 1 and pvalue less than 0.1
+  if(redo. == F){
+    
+    best <- eval1$`All models`
+    best <- na.omit(best)
   
-  best1 <- best[which(best$Mean_AUC_ratio >= 1 & best$pval_pROC <= 0.1), ]
-  
-  if (nrow(best1) == 0) stop("any model met the test criterion")
-  
-  # model with the OR10 less minimun value
-  if (nrow(best1) != 0)  best2 <- best1[which(best1$`Omission_rate_at_10%` == min(best1$`Omission_rate_at_10%`)), ]
-  
-  if (nrow(best2) != 0) {
-    best2$delta_AICc <- best2$delta_AICc - min(best2$delta_AICc)
-    if (nrow(best2) > 1) {
-      # delta aic criterion
-      best3 <- best2[which(best2$delta_AICc <= 2), ]
-    } else {
-      best3 <- best2
+    # proc greater than 1 and pvalue less than 0.1
+    
+    best1 <- best[which(best$Mean_AUC_ratio >= 1 & best$pval_pROC <= 0.1), ]
+    
+    if (nrow(best1) == 0) stop("any model met the test criterion")
+    
+    # model with the OR10 less minimun value
+    if (nrow(best1) != 0)  best2 <- best1[which(best1$`Omission_rate_at_10%` == min(best1$`Omission_rate_at_10%`)), ]
+    
+    if (nrow(best2) != 0) {
+      best2$delta_AICc <- best2$delta_AICc - min(best2$delta_AICc)
+      if (nrow(best2) > 1) {
+        # delta aic criterion
+        best3 <- best2[which(best2$delta_AICc <= 2), ]
+      } else {
+        best3 <- best2
+      }
     }
+  
+    write.csv(best3, paste0(out_eval, "/best_candidate_models_OR_AICc.csv"), row.names = F)
+  }else{
+    best3 <- read.csv(redo.path)
+    dir.create(out_eval)
+    write.csv(best3, paste0(out_eval, "/best_candidate_models_OR_AICc.csv"), row.names = F)
   }
-
-  write.csv(best3, paste0(out_eval, "/best_candidate_models_OR_AICc.csv"), row.names = F)
-
   #--------------------
   # 5. current predictions
   #--------------------
@@ -119,8 +131,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
   } 
   
   if (proj.models == "M-G") {
-    # only use with raster and shape of the same original extent, at this moment (feb-2021)
-    # is impossible to use with IQR outlier dropping method, only with freq method.
+    # only use with raster and shape of the same original extent (feb-2021)
     proj.mod <- T
     G.var <- paste0(env.Gdir, "/")
   }

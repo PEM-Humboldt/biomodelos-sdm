@@ -1,4 +1,4 @@
-inte_areas <- function(polygon.data = polygon_data, raster.data = raster_data, occ. = occ_thin,
+inte_areas <- function(occ. = occ_thin,
                        col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
                        method.M = method_M, method.G = method_G, method.F = method_F, area.M = area_M, 
                        area.G = area_G, area.F = area.F, proj.models = proj_models, 
@@ -20,7 +20,7 @@ inte_areas <- function(polygon.data = polygon_data, raster.data = raster_data, o
         if (grepl(x = method.M, pattern = "cut_MCP")) M <- cut.polygon(M, gen.MCP(gen.st.points(dat = occ., collon = col.lon, collat = col.lat))) %>% as_Spatial()
       }
     } else {
-      stop("Provide a method for G area")
+      stop("Provide a method for M area")
     }
   } else {
     try(

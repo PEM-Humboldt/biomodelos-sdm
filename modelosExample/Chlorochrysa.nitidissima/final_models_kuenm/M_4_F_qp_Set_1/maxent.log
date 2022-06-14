@@ -1,0 +1,96 @@
+Mon Jun 13 10:33:28 COT 2022
+MaxEnt version 3.4.4
+Checking header of C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\M_variables\Set_1\elev.asc
+Checking header of C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\M_variables\Set_1\wc2.1_10m_bio_10_s.asc
+Checking header of C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\M_variables\Set_1\wc2.1_10m_bio_1_s.asc
+Reading samples from occ_joint_kuenm.csv
+Read samples: max memory 1048576000, total allocated 134217728, free 124817224, used 9400504, increment 9400504
+Extractor: max memory 1048576000, total allocated 134217728, free 124295112, used 9922616, increment 522112
+Extracting random background and sample data
+319 points with values for all grids
+Adding samples to background in feature space
+Command line used:  environmentallayers=C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\M_variables\Set_1 samplesfile=C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\occurrences\occ_joint_kuenm.csv outputdirectory=C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\final_models_kuenm\\M_4_F_qp_Set_1 betamultiplier=4 autofeature=false linear=false quadratic=true product=true threshold=false hinge=false replicates=1 replicatetype=Bootstrap jackknife=false outputformat=logistic extrapolate=false doclamp=false writeclampgrid=false writemess=false responsecurves=true warnings=false visible=false redoifexists autorun
+Command line to repeat: java density.MaxEnt nowarnings noprefixes responsecurves outputformat=logistic outputdirectory=C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\final_models_kuenm\\M_4_F_qp_Set_1 samplesfile=C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\occurrences\occ_joint_kuenm.csv environmentallayers=C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\M_variables\Set_1 nowarnings noaskoverwrite nowriteclampgrid nowritemess betamultiplier=4.0 replicatetype=bootstrap nolinear nohinge autorun noextrapolate novisible noautofeature nodoclamp
+Species: Chlorochrysa.nitidissima
+Layers: elev wc2.1_10m_bio_10_s wc2.1_10m_bio_1_s
+Layertypes: Continuous Continuous Continuous
+responsecurves: true
+outputformat: logistic
+outputdirectory: C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\final_models_kuenm\\M_4_F_qp_Set_1
+samplesfile: C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\occurrences\occ_joint_kuenm.csv
+environmentallayers: C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\M_variables\Set_1
+warnings: false
+askoverwrite: false
+writeclampgrid: false
+writemess: false
+betamultiplier: 4.0
+replicatetype: bootstrap
+linear: false
+hinge: false
+autorun: true
+extrapolate: false
+visible: false
+autofeature: false
+doclamp: false
+
+getSamples: max memory 1048576000, total allocated 134217728, free 124295112, used 9922616, increment 0
+Making features
+makeFeatures: max memory 1048576000, total allocated 134217728, free 124295112, used 9922616, increment 0
+Chlorochrysa.nitidissima: 
+Regularization values: linear/quadratic/product: 0.529, categorical: 0.250, threshold: 1.670, hinge: 0.500
+33 samples
+Density: max memory 1048576000, total allocated 134217728, free 123783912, used 10433816, increment 511200
+linearPredictor: max memory 1048576000, total allocated 134217728, free 123783912, used 10433816, increment 0
+FeaturedSpace: max memory 1048576000, total allocated 134217728, free 123783912, used 10433816, increment 0
+Sequential: max memory 1048576000, total allocated 134217728, free 123783912, used 10433816, increment 0
+Initial loss: 5.765191102784844
+60: time = 0,027000 loss = 5,654777
+Resulting gain: 0.11041451375701516
+Time since start: 1.247
+Projecting...
+Writing file C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\final_models_kuenm\M_4_F_qp_Set_1\Chlorochrysa.nitidissima.asc
+Writing C:\humboldt\biomodelos-sdm\Chlorochrysa.nitidissima\final_models_kuenm\M_4_F_qp_Set_1\plots\Chlorochrysa.nitidissima.png
+Chlorochrysa.nitidissima response curves
+Response curve: only elev
+Making features
+makeFeatures: max memory 1048576000, total allocated 134217728, free 92582400, used 41635328, increment 31201512
+Chlorochrysa.nitidissima elev: 
+Regularization values: linear/quadratic/product: 0.529, categorical: 0.250, threshold: 1.670, hinge: 0.500
+33 samples
+Density: max memory 1048576000, total allocated 134217728, free 92582400, used 41635328, increment 0
+linearPredictor: max memory 1048576000, total allocated 134217728, free 92582400, used 41635328, increment 0
+FeaturedSpace: max memory 1048576000, total allocated 134217728, free 92582400, used 41635328, increment 0
+Sequential: max memory 1048576000, total allocated 134217728, free 92582400, used 41635328, increment 0
+Initial loss: 5.765191102784844
+20: time = 0,003000 loss = 5,765191
+Resulting gain: 0.0
+Chlorochrysa.nitidissima response curves
+Response curve: only wc2.1_10m_bio_10_s
+Making features
+makeFeatures: max memory 1048576000, total allocated 134217728, free 88388096, used 45829632, increment 4194304
+Chlorochrysa.nitidissima wc2.1_10m_bio_10_s: 
+Regularization values: linear/quadratic/product: 0.529, categorical: 0.250, threshold: 1.670, hinge: 0.500
+33 samples
+Density: max memory 1048576000, total allocated 134217728, free 88388096, used 45829632, increment 0
+linearPredictor: max memory 1048576000, total allocated 134217728, free 88388096, used 45829632, increment 0
+FeaturedSpace: max memory 1048576000, total allocated 134217728, free 88388096, used 45829632, increment 0
+Sequential: max memory 1048576000, total allocated 134217728, free 88388096, used 45829632, increment 0
+Initial loss: 5.765191102784844
+60: time = 0,012000 loss = 5,740794
+Resulting gain: 0.024396873383503603
+Chlorochrysa.nitidissima response curves
+Response curve: only wc2.1_10m_bio_1_s
+Making features
+makeFeatures: max memory 1048576000, total allocated 134217728, free 115046216, used 19171512, increment -26658120
+Chlorochrysa.nitidissima wc2.1_10m_bio_1_s: 
+Regularization values: linear/quadratic/product: 0.529, categorical: 0.250, threshold: 1.670, hinge: 0.500
+33 samples
+Density: max memory 1048576000, total allocated 134217728, free 115046216, used 19171512, increment 0
+linearPredictor: max memory 1048576000, total allocated 134217728, free 115046216, used 19171512, increment 0
+FeaturedSpace: max memory 1048576000, total allocated 134217728, free 115046216, used 19171512, increment 0
+Sequential: max memory 1048576000, total allocated 134217728, free 115046216, used 19171512, increment 0
+Initial loss: 5.765191102784844
+60: time = 0,007000 loss = 5,741927
+Resulting gain: 0.023264389653951945
+Chlorochrysa.nitidissima response curves
+Ending
