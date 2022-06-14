@@ -1,0 +1,96 @@
+Mon Jun 13 10:51:47 COT 2022
+MaxEnt version 3.4.4
+Checking header of C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\M_variables\Set_1\elev.asc
+Checking header of C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\M_variables\Set_1\wc2.1_10m_bio_10_s.asc
+Checking header of C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\M_variables\Set_1\wc2.1_10m_bio_1_s.asc
+Reading samples from occ_joint_kuenm.csv
+Read samples: max memory 1048576000, total allocated 134217728, free 124842336, used 9375392, increment 9375392
+Extractor: max memory 1048576000, total allocated 134217728, free 124842336, used 9375392, increment 0
+Extracting random background and sample data
+196 points with values for all grids
+Adding samples to background in feature space
+Command line used:  environmentallayers=C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\M_variables\Set_1 samplesfile=C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\occurrences\occ_joint_kuenm.csv outputdirectory=C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\final_models_kuenm\\M_4_F_lq_Set_1 betamultiplier=4 autofeature=false linear=true quadratic=true product=false threshold=false hinge=false replicates=1 replicatetype=Bootstrap jackknife=false outputformat=logistic extrapolate=false doclamp=false writeclampgrid=false writemess=false responsecurves=true warnings=false visible=false redoifexists autorun
+Command line to repeat: java density.MaxEnt nowarnings noprefixes responsecurves outputformat=logistic outputdirectory=C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\final_models_kuenm\\M_4_F_lq_Set_1 samplesfile=C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\occurrences\occ_joint_kuenm.csv environmentallayers=C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\M_variables\Set_1 nowarnings noaskoverwrite nowriteclampgrid nowritemess betamultiplier=4.0 replicatetype=bootstrap noproduct nohinge autorun noextrapolate novisible noautofeature nodoclamp
+Species: Cistothorus.apolinari
+Layers: elev wc2.1_10m_bio_10_s wc2.1_10m_bio_1_s
+Layertypes: Continuous Continuous Continuous
+responsecurves: true
+outputformat: logistic
+outputdirectory: C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\final_models_kuenm\\M_4_F_lq_Set_1
+samplesfile: C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\occurrences\occ_joint_kuenm.csv
+environmentallayers: C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\M_variables\Set_1
+warnings: false
+askoverwrite: false
+writeclampgrid: false
+writemess: false
+betamultiplier: 4.0
+replicatetype: bootstrap
+product: false
+hinge: false
+autorun: true
+extrapolate: false
+visible: false
+autofeature: false
+doclamp: false
+
+getSamples: max memory 1048576000, total allocated 134217728, free 124296112, used 9921616, increment 546224
+Making features
+makeFeatures: max memory 1048576000, total allocated 134217728, free 124296112, used 9921616, increment 0
+Cistothorus.apolinari: 
+Regularization values: linear/quadratic/product: 0.442, categorical: 0.250, threshold: 1.800, hinge: 0.500
+20 samples
+Density: max memory 1048576000, total allocated 134217728, free 124296112, used 9921616, increment 0
+linearPredictor: max memory 1048576000, total allocated 134217728, free 124296112, used 9921616, increment 0
+FeaturedSpace: max memory 1048576000, total allocated 134217728, free 124296112, used 9921616, increment 0
+Sequential: max memory 1048576000, total allocated 134217728, free 123812728, used 10405000, increment 483384
+Initial loss: 5.278114659230517
+100: time = 0,036000 loss = 4,647169
+Resulting gain: 0.6309455755941213
+Time since start: 1.197
+Projecting...
+Writing file C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\final_models_kuenm\M_4_F_lq_Set_1\Cistothorus.apolinari.asc
+Writing C:\humboldt\biomodelos-sdm\Cistothorus.apolinari\final_models_kuenm\M_4_F_lq_Set_1\plots\Cistothorus.apolinari.png
+Cistothorus.apolinari response curves
+Response curve: only elev
+Making features
+makeFeatures: max memory 1048576000, total allocated 134217728, free 90034688, used 44183040, increment 33778040
+Cistothorus.apolinari elev: 
+Regularization values: linear/quadratic/product: 0.442, categorical: 0.250, threshold: 1.800, hinge: 0.500
+20 samples
+Density: max memory 1048576000, total allocated 134217728, free 90034688, used 44183040, increment 0
+linearPredictor: max memory 1048576000, total allocated 134217728, free 90034688, used 44183040, increment 0
+FeaturedSpace: max memory 1048576000, total allocated 134217728, free 90034688, used 44183040, increment 0
+Sequential: max memory 1048576000, total allocated 134217728, free 90034688, used 44183040, increment 0
+Initial loss: 5.278114659230517
+60: time = 0,005000 loss = 4,702861
+Resulting gain: 0.575253661903619
+Cistothorus.apolinari response curves
+Response curve: only wc2.1_10m_bio_10_s
+Making features
+makeFeatures: max memory 1048576000, total allocated 134217728, free 86366720, used 47851008, increment 3667968
+Cistothorus.apolinari wc2.1_10m_bio_10_s: 
+Regularization values: linear/quadratic/product: 0.442, categorical: 0.250, threshold: 1.800, hinge: 0.500
+20 samples
+Density: max memory 1048576000, total allocated 134217728, free 86366720, used 47851008, increment 0
+linearPredictor: max memory 1048576000, total allocated 134217728, free 86366720, used 47851008, increment 0
+FeaturedSpace: max memory 1048576000, total allocated 134217728, free 86366720, used 47851008, increment 0
+Sequential: max memory 1048576000, total allocated 134217728, free 86366720, used 47851008, increment 0
+Initial loss: 5.278114659230517
+60: time = 0,006000 loss = 4,650049
+Resulting gain: 0.6280656010197658
+Cistothorus.apolinari response curves
+Response curve: only wc2.1_10m_bio_1_s
+Making features
+makeFeatures: max memory 1048576000, total allocated 134217728, free 112465680, used 21752048, increment -26098960
+Cistothorus.apolinari wc2.1_10m_bio_1_s: 
+Regularization values: linear/quadratic/product: 0.442, categorical: 0.250, threshold: 1.800, hinge: 0.500
+20 samples
+Density: max memory 1048576000, total allocated 134217728, free 112465680, used 21752048, increment 0
+linearPredictor: max memory 1048576000, total allocated 134217728, free 112465680, used 21752048, increment 0
+FeaturedSpace: max memory 1048576000, total allocated 134217728, free 112465680, used 21752048, increment 0
+Sequential: max memory 1048576000, total allocated 134217728, free 112465680, used 21752048, increment 0
+Initial loss: 5.278114659230517
+60: time = 0,004000 loss = 4,647169
+Resulting gain: 0.6309455755941213
+Cistothorus.apolinari response curves
+Ending

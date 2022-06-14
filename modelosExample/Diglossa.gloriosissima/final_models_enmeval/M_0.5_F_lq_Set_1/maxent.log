@@ -1,0 +1,96 @@
+Mon Jun 13 11:03:27 COT 2022
+MaxEnt version 3.4.4
+Checking header of C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\M_variables\Set_1\elev.asc
+Checking header of C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\M_variables\Set_1\wc2.1_10m_bio_10_s.asc
+Checking header of C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\M_variables\Set_1\wc2.1_10m_bio_1_s.asc
+Reading samples from occ_joint_kuenm.csv
+Read samples: max memory 2097152000, total allocated 134217728, free 125344640, used 8873088, increment 8873088
+Extractor: max memory 2097152000, total allocated 134217728, free 124862240, used 9355488, increment 482400
+Extracting random background and sample data
+140 points with values for all grids
+Adding samples to background in feature space
+Command line used:  environmentallayers=C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\M_variables\Set_1 samplesfile=C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\occurrences\occ_joint_kuenm.csv outputdirectory=C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\final_models_enmeval\M_0.5_F_lq_Set_1 betamultiplier=0.5 autofeature=false linear=true quadratic=true product=false threshold=false hinge=false replicates=1 replicatetype=Bootstrap jackknife=false outputformat=logistic extrapolate=false doclamp=false writeclampgrid=false writemess=false responsecurves=true warnings=false visible=false redoifexists autorun
+Command line to repeat: java density.MaxEnt nowarnings noprefixes responsecurves outputformat=logistic outputdirectory=C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\final_models_enmeval\M_0.5_F_lq_Set_1 samplesfile=C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\occurrences\occ_joint_kuenm.csv environmentallayers=C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\M_variables\Set_1 nowarnings noaskoverwrite nowriteclampgrid nowritemess betamultiplier=0.5 replicatetype=bootstrap noproduct nohinge autorun noextrapolate novisible noautofeature nodoclamp
+Species: Diglossa.gloriosissima
+Layers: elev wc2.1_10m_bio_10_s wc2.1_10m_bio_1_s
+Layertypes: Continuous Continuous Continuous
+responsecurves: true
+outputformat: logistic
+outputdirectory: C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\final_models_enmeval\M_0.5_F_lq_Set_1
+samplesfile: C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\occurrences\occ_joint_kuenm.csv
+environmentallayers: C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\M_variables\Set_1
+warnings: false
+askoverwrite: false
+writeclampgrid: false
+writemess: false
+betamultiplier: 0.5
+replicatetype: bootstrap
+product: false
+hinge: false
+autorun: true
+extrapolate: false
+visible: false
+autofeature: false
+doclamp: false
+
+getSamples: max memory 2097152000, total allocated 134217728, free 124293312, used 9924416, increment 568928
+Making features
+makeFeatures: max memory 2097152000, total allocated 134217728, free 124293312, used 9924416, increment 0
+Diglossa.gloriosissima: 
+Regularization values: linear/quadratic/product: 0.671, categorical: 0.393, threshold: 1.870, hinge: 0.500
+13 samples
+Density: max memory 2097152000, total allocated 134217728, free 124293312, used 9924416, increment 0
+linearPredictor: max memory 2097152000, total allocated 134217728, free 124293312, used 9924416, increment 0
+FeaturedSpace: max memory 2097152000, total allocated 134217728, free 124293312, used 9924416, increment 0
+Sequential: max memory 2097152000, total allocated 134217728, free 124293312, used 9924416, increment 0
+Initial loss: 4.941642422609304
+80: time = 0,023000 loss = 4,424568
+Resulting gain: 0.5170747189610108
+Time since start: 1.002
+Projecting...
+Writing file C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\final_models_enmeval\M_0.5_F_lq_Set_1\Diglossa.gloriosissima.asc
+Writing C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\final_models_enmeval\M_0.5_F_lq_Set_1\plots\Diglossa.gloriosissima.png
+Diglossa.gloriosissima response curves
+Response curve: only elev
+Making features
+makeFeatures: max memory 2097152000, total allocated 134217728, free 97379840, used 36837888, increment 26913472
+Diglossa.gloriosissima elev: 
+Regularization values: linear/quadratic/product: 0.671, categorical: 0.393, threshold: 1.870, hinge: 0.500
+13 samples
+Density: max memory 2097152000, total allocated 134217728, free 97379840, used 36837888, increment 0
+linearPredictor: max memory 2097152000, total allocated 134217728, free 97379840, used 36837888, increment 0
+FeaturedSpace: max memory 2097152000, total allocated 134217728, free 97379840, used 36837888, increment 0
+Sequential: max memory 2097152000, total allocated 134217728, free 97379840, used 36837888, increment 0
+Initial loss: 4.941642422609304
+100: time = 0,008000 loss = 4,538776
+Resulting gain: 0.40286622959001317
+Diglossa.gloriosissima response curves
+Response curve: only wc2.1_10m_bio_10_s
+Making features
+makeFeatures: max memory 2097152000, total allocated 134217728, free 93069968, used 41147760, increment 4309872
+Diglossa.gloriosissima wc2.1_10m_bio_10_s: 
+Regularization values: linear/quadratic/product: 0.671, categorical: 0.393, threshold: 1.870, hinge: 0.500
+13 samples
+Density: max memory 2097152000, total allocated 134217728, free 93069968, used 41147760, increment 0
+linearPredictor: max memory 2097152000, total allocated 134217728, free 93069968, used 41147760, increment 0
+FeaturedSpace: max memory 2097152000, total allocated 134217728, free 93069968, used 41147760, increment 0
+Sequential: max memory 2097152000, total allocated 134217728, free 93069968, used 41147760, increment 0
+Initial loss: 4.941642422609304
+60: time = 0,004000 loss = 4,424568
+Resulting gain: 0.5170747189610108
+Diglossa.gloriosissima response curves
+Response curve: only wc2.1_10m_bio_1_s
+Making features
+makeFeatures: max memory 2097152000, total allocated 134217728, free 88991232, used 45226496, increment 4078736
+Diglossa.gloriosissima wc2.1_10m_bio_1_s: 
+Regularization values: linear/quadratic/product: 0.671, categorical: 0.393, threshold: 1.870, hinge: 0.500
+13 samples
+Density: max memory 2097152000, total allocated 134217728, free 88991232, used 45226496, increment 0
+linearPredictor: max memory 2097152000, total allocated 134217728, free 88991232, used 45226496, increment 0
+FeaturedSpace: max memory 2097152000, total allocated 134217728, free 88991232, used 45226496, increment 0
+Sequential: max memory 2097152000, total allocated 134217728, free 88991232, used 45226496, increment 0
+Initial loss: 4.941642422609304
+60: time = 0,003000 loss = 4,428984
+Resulting gain: 0.512658208208717
+Diglossa.gloriosissima response curves
+Ending

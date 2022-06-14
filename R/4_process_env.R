@@ -209,10 +209,10 @@ process_env.future <- function(climdataset, climdir, otherfiles, extension, crsp
   if (computeF == FALSE) {
 
     # as was not computed F vars, is necessary to copy them from directory in which them are stored
-    Fdirs <- base::list.dirs(path = dirF, recursive = T, full.names = T)
+    Fdirs <- base::list.dirs(path = dirF, recursive = F, full.names = T)
     
     for (a in 1:length(Fdirs)) {
-      file.copy(
+      base::file.copy(
         from = Fdirs[a],
         to = paste0(foldersp, "/G_variables/Set_1/"),
         overwrite = T, recursive = T
