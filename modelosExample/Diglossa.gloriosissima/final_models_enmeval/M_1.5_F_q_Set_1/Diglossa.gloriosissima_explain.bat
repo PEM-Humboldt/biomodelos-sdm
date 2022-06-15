@@ -1,2 +1,0 @@
-java -mx2000m -cp "/C:/humboldt/biomodelos-sdm/maxent.jar;C:\humboldt\biomodelos-sdm\maxent.jar" density.Explain -l C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\final_models_enmeval\M_1.5_F_q_Set_1\Diglossa.gloriosissima.lambdas C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\final_models_enmeval\M_1.5_F_q_Set_1\Diglossa.gloriosissima.asc C:\humboldt\biomodelos-sdm\Diglossa.gloriosissima\M_variables\Set_1
-@if errorlevel 1 pause
