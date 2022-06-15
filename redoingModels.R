@@ -1,6 +1,8 @@
 # 06-14-2022
 # Testing redoing models flow work
 
+# please extract manually the Example.zip folder
+
 # loading functions
 source("setup.R")
 do.load(vector.packages)
