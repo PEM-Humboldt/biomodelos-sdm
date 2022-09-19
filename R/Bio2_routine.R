@@ -8,6 +8,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
                          use_bias = NULL, TGS_kernel = NULL, method_M = NULL, 
                          dist_MOV = NULL, proj_models, method_G = NULL, area_M = NULL, area_G = NULL,
+                         col_eval = NULL, col_method = NULL, col_detail = NULL,
                          compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL,
                          area_F = NULL, compute_F = NULL, dir_F = NULL, algos = NULL, beta_5.25 = NULL, 
                          fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
@@ -44,17 +45,17 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     }
   }
 
-  if (!is.null(uniq1k_method)) {
-    if (uniq1k_method != "sqkm") {
-      if (uniq1k_method != "spthin") {
-        stop("Provide a valid method to thin the database, either be \"sqkm\" or \"spthin\".")
-      } else {
-        if (!is.null(dist_uniq)) {
-          if (!is.numeric(dist_uniq)) stop("Provide a distance to thin the database, only numeric data.")
-        }
-      }
-    }
-  }
+  # if (!is.null(uniq1k_method)) {
+  #   if (uniq1k_method != "sqkm") {
+  #     if (uniq1k_method != "spthin") {
+  #       stop("Provide a valid method to thin the database, either be \"sqkm\" or \"spthin\".")
+  #     } else {
+  #       if (!is.null(dist_uniq)) {
+  #         if (!is.numeric(dist_uniq)) stop("Provide a distance to thin the database, only numeric data.")
+  #       }
+  #     }
+  #   }
+  # }
 
   if (!exists("clim_vars")) {
     stop("Provide a climatic variable folder to use. Pre-processed by the user.")
@@ -150,7 +151,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   # Bias management
   if (is.null(uniq1k_method)) uniq1k_method <- "sqkm"
-  if (is.null(dist_uniq)) dist_uniq <- 10
+  if (is.null(dist_uniq)) dist_uniq <- NULL
   if (is.null(use_bias)) use_bias <- FALSE
 
   # Areas and projections of interest
@@ -165,6 +166,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   
   # Algorithms
   if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
+  
+  # Maxent details
   if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
   if (is.null(fc_5.25)) fc_5.25 <- c("l", "q", "lq")
   if (is.null(beta_25)) beta_25 <- seq(1, 6, 1)
@@ -178,7 +181,14 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 10
   if (is.null(predic)) predic <- "kuenm"
-
+  
+  # Colineality
+  if (is.null(col_eval)) col_eval <- FALSE
+  if(isTRUE(col_eval)){ # as we have only one method now, get defaults
+    if (is.null(col_method)) col_method <- "VIF"
+    if (is.null(col_detail)) col_detail <- 3  
+  }
+  
   # other arguments
   if (is.null(tipo)) tipo <- ""
   if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
@@ -355,15 +365,16 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   try(
     exp = {
       if (nrow(occ_thin) <= 5) {
-        do.DE.MCP(
-          occ. = occ_thin, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp,
-          dist.Mov = dist_MOV
-        )
+        # do.DE.MCP(
+        #   occ. = occ_thin, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp,
+        #   dist.Mov = dist_MOV
+        # )
         linestime <- give.msg.time(time.1 = time1)
         #------- tracking file
         writeLines(
           text = paste(paste0(
-            "Not enough occurrences. Distribution estimated by rasterize a MCP", "\n",
+            # "Not enough occurrences. Distribution estimated by rasterize a MCP", "\n",
+            "Not enough occurrences.", "\n",
             "Stop"
           ), linestime),
           con = filelog, sep = "\n"
@@ -416,7 +427,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         crs.proyect = crs_proyect, shape.M = M_$shape_M, shape.G = M_$shape_G,
         shape.F = M_$shape_F, env.other = dir_other, folder.sp = folder_sp, 
         do.future = do_future, proj.models = proj_models, compute.G = compute_G, 
-        compute.F = compute_F, dir.G = dir_G, dir.F = dir_F
+        compute.F = compute_F, dir.G = dir_G, dir.F = dir_F, col.eval = col_eval,
+        col.method = col_method, col.detail = col_detail
       )
       paste0(
         "Processing environmental layers: ok.", "\n",
@@ -454,7 +466,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         paste("Bias file development: ok", "\n")
       } else {
         BiasSp <- NULL
-        paste("Bias file NO developed", "\n")
+        paste("Bias file NOT developed", "\n")
       }
     },
     error = function(error_message) {

@@ -2,7 +2,8 @@
 
 process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shape.M,
                                 shape.G, shape.F, env.other, folder.sp, do.future,
-                                proj.models, compute.G, compute.F, dir.G, dir.F) {
+                                proj.models, compute.G, compute.F, dir.G, dir.F,
+                                col.eval, col.method, col.detail) {
   
   # climatic folder paths
 
@@ -29,7 +30,18 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect, shap
   }
   
   envras <- raster::stack(envfiles)
-
+  
+  if(isTRUE(col.eval)){  # esta funcion ya usa terra y sf, se necesita que el resto tambien
+    if("VIF" %in% col.method){
+      source("R/Vif_secb.R")
+      envras2 <- terra::rast(envras)
+      col.result <- vif_apply(shapeM = shape.M, envars = envras2, vifdetails = col.detail)
+      rm(envras2)
+      indexCol <- which((names(envras) %in% col.result) == TRUE)
+      envras <- envras[[indexCol]]
+    }
+  }
+  
   envMstack <- envras %>%
     raster::crop(shape.M) %>%
     raster::mask(shape.M)

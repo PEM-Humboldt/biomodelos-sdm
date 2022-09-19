@@ -56,7 +56,7 @@ do.folder.structure <- function(clim.datasets) {
 vector.packages <- c(
   "plyr", "dplyr", "automap", "PresenceAbsence", "devtools",
   "CoordinateCleaner", "sf", "spThin", "raster", "dismo", "biomod2", "ENMeval", "rgdal",
-  "rJava", "kuenm"
+  "rJava", "kuenm", "terra"
 )
 
 # Installing

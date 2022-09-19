@@ -1,35 +1,40 @@
 do.uniq1km <- function(occ., col.lon, col.lat, sp.col, sp.name, uniq1k.method, uniqDist) {
   
-  if (uniq1k.method == "sqkm") {
-    dropUniq <- clean_dup(
-      data = occ., longitude = col.lon, latitude = col.lat, threshold = uniqDist / 120 #missing let user choice
-    )
-  }
-
-  if (uniq1k.method == "spthin") {
-    thinned <- spThin::thin(
-      loc.data = occ., lat.col = col.lat, long.col = col.lon, spec.col = sp.col, thin.par = uniqDist,
-      reps = 20, verbose = TRUE, locs.thinned.list.return = TRUE, write.files = FALSE
-      # thin.par parameter should be setting according to species natural history
-    )
-    
-    thindf <- thinned[[1]]
-    thindf[, sp.col] <- rep(sp.name, nrow(thindf))
-    
-    lonlatThinned <- paste0(thindf$Longitude, thindf$Latitude)
-    
-    lonlatnothinned <- paste0(occ.[ , col.lon], occ.[ , col.lat])
-    
-    indexV <- as.numeric()
-    
-    for(i in 1:length(lonlatThinned)){
-      val1 <- which(lonlatThinned[i] == lonlatnothinned)
-      indexV[i] <- val1
+  if (is.na(uniq1k.method) == T){
+    dropUniq <- occ.
+  }else{
+    if (uniq1k.method == "sqkm") {
+      dropUniq <- clean_dup(
+        data = occ., longitude = col.lon, latitude = col.lat, threshold = uniqDist / 120 #missing let user choice
+      )
     }
     
-    dropUniq <- occ.[indexV, ]
+    if (uniq1k.method == "spthin") {
+      thinned <- spThin::thin(
+        loc.data = occ., lat.col = col.lat, long.col = col.lon, spec.col = sp.col, thin.par = uniqDist,
+        reps = 20, verbose = TRUE, locs.thinned.list.return = TRUE, write.files = FALSE
+        # thin.par parameter should be setting according to species natural history
+      )
+      
+      thindf <- thinned[[1]]
+      thindf[, sp.col] <- rep(sp.name, nrow(thindf))
+      
+      lonlatThinned <- paste0(thindf$Longitude, thindf$Latitude)
+      
+      lonlatnothinned <- paste0(occ.[ , col.lon], occ.[ , col.lat])
+      
+      indexV <- as.numeric()
+      
+      for(i in 1:length(lonlatThinned)){
+        val1 <- which(lonlatThinned[i] == lonlatnothinned)
+        indexV[i] <- val1
+      }
+      
+      dropUniq <- occ.[indexV, ]
+    }
+    
   }
-
+  
   return(dropUniq)
 }
 
