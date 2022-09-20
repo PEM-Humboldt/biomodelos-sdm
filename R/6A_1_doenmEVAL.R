@@ -104,18 +104,22 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, 
     # AUC greater than 0.7
     best1 <- eval_results[which(eval_results$train.AUC >= 0.7), ] %>% na.omit()
     
-    if (nrow(best1) == 0) stop("any model met the test criterion")
-    
-    # model with the OR10 less minimun value
-    if (nrow(best1) != 0)  best2 <- best1[which(best1$avg.test.or10pct == min(best1$avg.test.or10pct)), ]
-    
-    if (nrow(best2) != 0) {
-      if (nrow(best2) > 1) {
-        # delta aic criterion
-        best2$delta.AICc <- best2$AICc - min(best2$AICc)
-        best3 <- best2[which(best2$delta.AICc <= 2), ]
-      } else {
-        best3 <- best2
+    if (nrow(best1) == 0){
+      stop("any model met the test criterion")
+    }else{
+      # model with the OR10 less minimun value
+      best2 <- best1[which(best1$avg.test.or10pct == min(best1$avg.test.or10pct)), ]
+      
+      if (nrow(best2) != 0) {
+        if (nrow(best2) > 1) {
+          # delta aic criterion
+          best2$delta.AICc <- best2$AICc - min(best2$AICc)
+          best3 <- best2[which(best2$delta.AICc <= 2), ]
+        } else {
+          best3 <- best2
+        }
+      }else{
+        best3 <- best1
       }
     }
     

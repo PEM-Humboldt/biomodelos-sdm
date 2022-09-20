@@ -80,21 +80,24 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
     
     best1 <- best[which(best$Mean_AUC_ratio >= 1 & best$pval_pROC <= 0.1), ]
     
-    if (nrow(best1) == 0) stop("any model met the test criterion")
-    
-    # model with the OR10 less minimun value
-    if (nrow(best1) != 0)  best2 <- best1[which(best1$`Omission_rate_at_10%` == min(best1$`Omission_rate_at_10%`)), ]
-    
-    if (nrow(best2) != 0) {
-      best2$delta_AICc <- best2$delta_AICc - min(best2$delta_AICc)
-      if (nrow(best2) > 1) {
-        # delta aic criterion
-        best3 <- best2[which(best2$delta_AICc <= 2), ]
-      } else {
-        best3 <- best2
+    if (nrow(best1) == 0){
+      stop("any model met the test criterion")
+    }else{
+      # model with the OR10 less minimun value
+      best2 <- best1[which(best1$`Omission_rate_at_10%` == min(best1$`Omission_rate_at_10%`)), ]
+      if (nrow(best2) != 0) {
+        best2$delta_AICc <- best2$delta_AICc - min(best2$delta_AICc)
+        if (nrow(best2) > 1) {
+          # delta aic criterion
+          best3 <- best2[which(best2$delta_AICc <= 2), ]
+        } else {
+          best3 <- best2
+        }
+      }else{
+        best3 <- best1
       }
     }
-  
+
     write.csv(best3, paste0(out_eval, "/best_candidate_models_OR_AICc.csv"), row.names = F)
   }else{
     best3 <- read.csv(redo.path)
