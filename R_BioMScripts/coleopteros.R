@@ -24,9 +24,9 @@ m_data <- read.csv("Data/biogeographic_shp/M_data_spp.csv")
 source("R/Bio2_routine.R")
 
 for(i in 1:length(listCol)){
-  spp_nm <- names(listCol[1])
+  spp_nm <- names(listCol[i])
   path_M <- m_data[which(m_data$acceptedNameUsage == spp_nm), "M"]
-  Bio2_routine(occ = listCol[[1]],
+  Bio2_routine(occ = listCol[[i]],
                col_lat = "decimalLatitude",
                col_lon = "decimalLongitude",
                proj_models = "M-M",
@@ -39,10 +39,43 @@ for(i in 1:length(listCol)){
                algos = "MAXENT",
                keep_files = "essential",
                transf_biomo_ext = TRUE,
-               extrapo = "no_ext"
+               extrapo = "no_ext",
+               fc_25 = c("l", "q", "lq", "lp", "lqp", "qp"),
+               beta_25 =  seq(1, 6, 1)
+              
   )
   
   closeAllConnections()
   gc()
+}
+
+# rutina
+source("R/Bio2_routine_bioclim.R")
+
+for(i in 1:length(listCol)){
+  num_data <- listCol[[i]] %>% nrow()
+  if(num_data >= 3 & num_data < 6){
+    spp_nm <- names(listCol[i])
+    path_M <- m_data[which(m_data$acceptedNameUsage == spp_nm), "M"]
+    Bio2_routine(occ = listCol[[i]],
+                 col_lat = "decimalLatitude",
+                 col_lon = "decimalLongitude",
+                 proj_models = "M-M",
+                 clim_vars = "worldclim",
+                 dir_clim = "Data/env_vars/",
+                 dir_other = "Data/env_vars/other/",
+                 uniq1k_method = NA,
+                 col_eval = T,
+                 area_M = path_M,
+                 algos = "BIOCLIM",
+                 keep_files = "essential",
+                 transf_biomo_ext = TRUE,
+                 extrapo = "no_ext", col_detail = 2
+    )
+    
+     closeAllConnections()
+    gc()  
+  }
+  
 }
 
