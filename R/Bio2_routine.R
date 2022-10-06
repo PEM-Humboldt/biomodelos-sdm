@@ -13,7 +13,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                          area_F = NULL, compute_F = NULL, dir_F = NULL, algos = NULL, beta_5.25 = NULL, 
                          fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
                          predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL,
-                         keep_files = NULL, transf_biomo_ext = NULL, redo = NULL, redo_path = NULL
+                         keep_files = NULL, transf_biomo_ext = NULL, redo = NULL, redo_path = NULL,
+                         polygon_data = NULL, drop_out = NULL
                           # mxnt.pckg = NULL, other.pckg = NULL
 ) {
 
@@ -143,7 +144,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   if (is.null(col_sp)) col_sp <- "acceptedNameUsage"
   if (is.null(col_lat)) col_lat <- "decimalLatitude"
   if (is.null(col_lon)) col_lon <- "decimalLongitude"
-
+  if (is.null(drop_out)) drop_out <- "any"
+ 
   # Environmental variables
   if (is.null(dir_clim)) dir_clim <- "Data/env_vars/"
   if (is.null(dir_clim)) dir_other <- "Data/env_vars/other/"
@@ -399,7 +401,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         occ. = occ_thin, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
         method.M = method_M, area.M = area_M, method.G = method_G, area.G = area_G, 
         method.F = method_F, area.F = area_F, proj.models = proj_models, do.future = do_future, 
-        compute.F = compute_F
+        compute.F = compute_F, polygon.data = polygon_data, drop.out = drop_out
       )
       write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
       paste("Accesible area: ok.", "\n")
