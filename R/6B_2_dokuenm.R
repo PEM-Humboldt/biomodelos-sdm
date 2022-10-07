@@ -153,9 +153,42 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
     }else{
       current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, ".asc$"), full.names = T, include.dirs = T, recursive = T)
     }
+    BinsDf <- NULL
   }
   
   if (proj.models == "M-G"){
+    current_M_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
+    current_M <- raster::stack(current_M_files)
+    
+    current_M.med <- raster::calc(x = current_M, median)
+    
+    biomodelos.thresh <- c(E, 1, 10, 20, 30)
+    names(biomodelos.thresh) <- c("E", "0", "10", "20", "30")
+    
+    # converting to binary the median ensemble for each biomodelos threshold
+    Bins <- list()
+    for (i in 1:length(biomodelos.thresh)) {
+      Binsi <- do.bin(
+        Ras = current_M.med, dat = occ.$occ_joint, lon = "longitude",
+        lat = "latitude", thresh = biomodelos.thresh[i]
+      )
+      Bins[[i]] <- Binsi
+    }
+    
+    # extracting threshold value from list of binaries. Bins file is a list o sub-list. Each sub-list
+    # refers to one threshold conversion. Inside each sub-list there are two files, the binary raster
+    # and the value of threshold
+    BinsDf <- list()
+    for (i in 1:length(Bins)) {
+      listi <- Bins[[i]]
+      Df <- listi[[2]]
+      BinsDf[[i]] <- Df
+    }
+    # convert list to a vector
+    BinsDf <- data.frame(BinsDf)
+    # giving names to the Df
+    names(BinsDf) <- names(biomodelos.thresh)
+    
     current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
   }   
   
@@ -167,6 +200,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
 
       Ras <- current_proj[[i]]
       raster::crs(Ras) <- sp::CRS(crs.proyect)
+      
       if (write.intfiles == TRUE) {
         writeRaster(Ras, paste0(
           folder.sp, "/final_models_kuenm/", fileNm[3], "/", unlist(strsplit(fileNm[4], ".asc$")),
@@ -232,12 +266,12 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
 
     # results in case of do.future = FALSE
 
-    return(list(c_proj = current_proj, f_proj = fut_proj_list, best = best3))
+    return(list(c_proj = current_proj, f_proj = fut_proj_list, best = best3, Bins = BinsDf))
   }
 
   # results in case of do.future = FALSE
 
-  return(list(c_proj = current_proj, f_proj = NULL, best = best3))
+  return(list(c_proj = current_proj, f_proj = NULL, best = best3, Bins = BinsDf))
 }
 
 #--------------------------
