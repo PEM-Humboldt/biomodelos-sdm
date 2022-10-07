@@ -212,7 +212,7 @@ do.bin <- function(Ras, dat, lon, lat, thresh) {
 
   ## Converting continuous prediction to binary according to bin_threshold
 
-  binT <- Ras > TValue
+  binT <- Ras >= TValue
   names(binT) <- names(thresh)
 
   return(list(binT, TValue))

@@ -1,40 +1,35 @@
 sf::sf_use_s2(F)
 source("setup.R")
-# do.install(vector.packages)
-# do.check(vector.packages)
 do.load(vector.packages)
-# do.folder.structure(clim.datasets = "worldclim")
-# file_names <- dir("Depurados por expertos/procambarus/", full.names = TRUE)
-
+do.check()
 
 dataSp <- read.csv("occurrences/Procambarus clarkiiCol_4000m_mov.csv")
-list <- split(dataSp, f  =dataSp$species)
 source("R/Bio2_routine.R")
 
-for (i in 1:length(list)){
 Bio2_routine(
-  occ = list[[i]],########
+  occ = dataSp,########
   col_sp = "species",
   col_lat = "lat", #######
   col_lon = "lon",########
-  clim_vars = "clim_rios",#########
-  dir_clim = "Data/env_vars/clim_rios/", #######
-  dir_other = "Data/env_vars/other_rios/",#######
+  clim_vars = "worldclim",#########
+  dir_clim = "Example/Data/env_vars/", #######
+  dir_other = "Example/Data/env_vars/other/",#######
   TGS_kernel = NULL,#######,
   uniq1k_method = "sqkm",#########
-  area_G = NULL,
-  compute_G = FALSE,
+  area_M = "Data/biogeographic_shp/nacional_wgs84.shp",
+  area_G = "Data/biogeographic_shp/Basins/Cacutirostris.shp",
+  compute_G = T,
   method_M = "polygon_buffer", 
   dist_MOV = 50, 
-  proj_models = "M-M", ##########
+  proj_models = "M-G", ##########
   algos = "MAXENT", 
   use_bias = FALSE,
   keep_files = "essential",
   extrapo = "no_ext",
   dist_uniq = 1, 
-  polygon_data = "Data/biogeographic_shp/Basins/hybas_sa_lev04_v1c.shp",
-  
+  polygon_data = "Data/biogeographic_shp/Basins/hybas_sa_lev04_v1c.shp", 
+  fc_25 = c("l", "lq"), 
+  beta_25 = seq(1, 3, 1)
     ########
 ) 
-}
 closeAllConnections()

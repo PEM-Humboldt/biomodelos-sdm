@@ -7,7 +7,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                          clim_vars, dir_clim = NULL, dir_other = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
                          use_bias = NULL, TGS_kernel = NULL, method_M = NULL, 
-                         dist_MOV = NULL, proj_models, method_G = NULL, area_M = NULL, area_G = NULL,
+                         dist_MOV = NULL, proj_models, method_G = NULL, area_M = NULL, 
+                         area_G = NULL,
                          col_eval = NULL, col_method = NULL, col_detail = NULL,
                          compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL,
                          area_F = NULL, compute_F = NULL, dir_F = NULL, algos = NULL, beta_5.25 = NULL, 
@@ -474,7 +475,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   
   print("Calibrating and evaluating SDM's")
   
-  if (nrow(M_$occurrences) < 6 ) {
+  if (nrow(M_$occurrences) <= 6 ) {
     if (length(which(algos == "BIOCLIM")) != 0) {
       
       print("Path, calibrating and evaluating bioclim models")
