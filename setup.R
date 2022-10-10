@@ -66,24 +66,24 @@ do.install <- function(x = vector.packages, repository = "https://www.icesi.edu.
     install.packages("devtools")
   }
 
-  # Version of ENMeval now is 2.0.0 This routine works with 0.3.1
+  # Version of ENMeval now is 2.0.3 this routine will work with 2.0.3
   # make sure user has 0.3.1 and give a warning
   missing_enmeval <- !"ENMeval" %in% installed.packages()
 
   # if enmeval is not installed
-  if (missing_enmeval == TRUE) {
-    devtools::install_version("ENMeval", version = "0.3.1", repos = "http://cran.us.r-project.org")
-  } else {
-    # if enmeval is already installed, check the version, uninstall if it is not 0.3.1
-
-    enmevalversion <- paste0(unlist(packageVersion("ENMeval")), collapse = ".")
-
-    if (enmevalversion != "0.3.1") {
-      remove.packages("ENMeval")
-      devtools::install_version("ENMeval", version = "0.3.1", repos = "http://cran.us.r-project.org")
-      warning(paste0("ENMeval was changed from ", enmevalversion, ", to 0.3.1"))
-    }
-  }
+   if (missing_enmeval == TRUE) {
+     devtools::install_version("ENMeval", version = "2.0.3", repos = "http://cran.us.r-project.org")
+   }else{
+     # if enmeval is already installed, check the version, uninstall if it is not 0.3.1
+  # 
+     enmevalversion <- paste0(unlist(packageVersion("ENMeval")), collapse = ".")
+   
+     if (enmevalversion != "2.0.3") {
+       remove.packages("ENMeval")
+       devtools::install_version("ENMeval", version = "2.0.3", repos = "http://cran.us.r-project.org")
+       warning(paste0("ENMeval was changed from ", enmevalversion, ", to 2.0.3"))
+     }
+   }
 
   # kuenm needs to be installed from github as it doesn't have link to CRAN
   if (!require(kuenm, warn.conflicts = FALSE)) {
@@ -110,9 +110,10 @@ do.check <- function(x = vector.packages) {
   # table of packages
   dfpcks <- data.frame("package" = vector.packages, "successfully_installed" = x %in% rownames(installed.packages()))
   # enmeval version
-  enmevalversion <- paste0(unlist(packageVersion("ENMeval")), collapse = ".") == "0.3.1"
+  #enmevalversion <- paste0(unlist(packageVersion("ENMeval")), collapse = ".") == "0.3.1"
+  enmevalversion <- paste0(unlist(packageVersion("ENMeval")), collapse = ".") == "2.0.3"
   # message showing user results
-  message(paste0(capture.output(dfpcks), collapse = "\n"), paste0("\n\nENMeval version 0.3.1 is ", enmevalversion))
+  message(paste0(capture.output(dfpcks), collapse = "\n"), paste0("\n\nENMeval version 2.0.3 is ", enmevalversion))
 }
 
 do.load <- function(x) {

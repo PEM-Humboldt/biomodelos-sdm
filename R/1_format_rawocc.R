@@ -1,8 +1,8 @@
-format_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, # col.date, date,
-                         IQR.mtpl, do.clean) {
+format_rawocc <- function(occ. = occ, col.lon = col_lon, col.lat = col_lat,
+                          spp.col = col_sp) {
 
   # Function to clean conflicting, erroneous and duplicate characters
-  occ.noChar.uniq <- clean_char_unique(
+  occ. <- clean_data(
     col.id = "occ.ID",
     data. = occ.,
     sppcol = spp.col,
@@ -10,19 +10,21 @@ format_rawocc <- function(occ., col.lon, col.lat, spp.col, drop.out, # col.date,
     collat = col.lat
   )
 
- return(occ.noChar.uniq)
+  return(occ.)
+
+  write.csv(occ., paste0(folder.sp, "/occurrences/occ_no_dup.csv"), row.names = F)
 }
 
 # Rafael Moreno function
 # Function to clean conflicting, erroneous and duplicate characters
 
-clean_char_unique <- function(col.id, data., sppcol, collon, collat) { # , coldate
+clean_data <- function(col.id, data., sppcol, collon, collat) { # , coldate
 
-  # removing conflicting characters in species, longitude, latitude 
+  # removing conflicting characters in species, longitude, latitude
   # and date columns
 
   data.small <- data.[, c(col.id, sppcol, collon, collat)] # , coldate
-  
+
   data.small <- completeFun(data.small, c(collon, collat))
 
   data.small[, sppcol] <- gsub("@[>!¿<#?&/\\]", "", data.small[, sppcol])
@@ -55,7 +57,7 @@ duplicatedFun <- function(data, cols) {
 }
 
 #----------------------
-# MISSING alternative filtering dates
+# deprecated alternative filtering dates
 
 # Module for fitting occurrences date with raster date
 

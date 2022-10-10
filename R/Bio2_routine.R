@@ -1,28 +1,28 @@
 # Biomodelos 2 Routine
 #
-# `Bio2_routine` automates the fitting of Species Distribution Models from occurrence 
+# `Bio2_routine` automates the fitting of Species Distribution Models from occurrence
 # and environmental data.
 
 Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                          clim_vars, dir_clim = NULL, dir_other = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL,
-                         use_bias = NULL, TGS_kernel = NULL, method_M = NULL, 
+                         use_bias = NULL, TGS_kernel = NULL, method_M = NULL,
                          dist_MOV = NULL, proj_models, method_G = NULL, area_M = NULL, area_G = NULL,
-                         col_eval = NULL, col_method = NULL, col_detail = NULL,
+                         cor_eval = NULL, cor_method = NULL, cor_detail = NULL,
                          compute_G = NULL, dir_G = NULL, do_future = NULL, method_F = NULL,
-                         area_F = NULL, compute_F = NULL, dir_F = NULL, algos = NULL, beta_5.25 = NULL, 
+                         area_F = NULL, compute_F = NULL, dir_F = NULL, algos = NULL, beta_5.25 = NULL,
                          fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, E = NULL, extrapo = NULL,
                          predic = NULL, crs_proyect = NULL, tipo = NULL, kept = NULL,
                          keep_files = NULL, transf_biomo_ext = NULL, redo = NULL, redo_path = NULL,
                          polygon_data = NULL, drop_out = NULL
-                          # mxnt.pckg = NULL, other.pckg = NULL
+                         # mxnt.pckg = NULL, other.pckg = NULL
 ) {
 
   # checking concatenated arguments and format of files
 
   if (!exists("occ")) {
     stop("Provide an occurrence database as a data.frame at least with species name,
-        longitud and latitud. You can use arguments col_sp, col_lat and col_lon 
+        longitud and latitud. You can use arguments col_sp, col_lat and col_lon
         to provide the column names of each one.")
   } else {
     if (!is.data.frame(occ)) {
@@ -44,19 +44,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         }
       }
     }
-  }
-
-  # if (!is.null(uniq1k_method)) {
-  #   if (uniq1k_method != "sqkm") {
-  #     if (uniq1k_method != "spthin") {
-  #       stop("Provide a valid method to thin the database, either be \"sqkm\" or \"spthin\".")
-  #     } else {
-  #       if (!is.null(dist_uniq)) {
-  #         if (!is.numeric(dist_uniq)) stop("Provide a distance to thin the database, only numeric data.")
-  #       }
-  #     }
-  #   }
-  # }
+  } # close occ
 
   if (!exists("clim_vars")) {
     stop("Provide a climatic variable folder to use. Pre-processed by the user.")
@@ -71,43 +59,45 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         if (!dir.exists(dir_other)) stop("Other directory does not exist, please provide a valid one.")
       }
     }
-  }
+  } # close climatic
 
-  # if (!exists("proj_models")) {
-  #    stop("You need to provide a method to calibrate and project the models, either be M-M or M-G.")
-  #  } else {
-  #    if (proj_models == "M-G") {
-  #      if (compute_G == TRUE) {
-  #        if (is.null(area_G) & is.null(method_G)) {
-  #          stop("Provide a raster file of an area diferent to M or a constructing method for G in order to project the models.")
-  #        } else {
-  #          try(rtemp <- raster::raster(area_G))
-  #          try(rtemp <- raster::shapefile(area_G))
-  #           if (!exists("rtemp")){
-  #              stop("Provide a raster file supported by the raster package. See documentation.")
-  #            }else{
-  #              rm(rtemp)
-  #            } 
-  #            if (!exists(method_G)){
-  #              stop("Provide a r file supported by the raster package. See documentation.")
-  #            }
-  #        }
-  #      } else {
-  #        if (is.null(dir_G)) {
-  #          stop("Provide a path directory in which are stored the variables pre-processed using G as geographic extent.")
-  #        } else {
-  #          if (!dir.exists(dir_G)) {
-  #            stop("Directory of G variables does not exist, please provide a valid one.")
-  #          } else {
-  #            dir_GFiles <- list.files(dir_G)
-  #            if (length(length(dir_GFiles)) == 0) {
-  #              stop("Any file inside dir_G path. Are the files located there?")
-  #            }
-  #          }
-  #        }
-  #      }
-  #    }
-  #  }
+  if (!exists("proj_models")) {
+    stop("You need to provide a method to calibrate and project the models, either be M-M or M-G.")
+  } else {
+    if (proj_models == "M-G") {
+      if (compute_G == TRUE) {
+        if (is.null(area_G) & is.null(method_G)) {
+          stop("Provide a raster file of an area different to M or a constructing method for G in order to project the models.")
+        } else {
+          Gstr <- tail(unlist(strsplit(area_G, "\\.")), n = 1)
+          if (Gstr == "shp") rtemp <- raster::shapefile(area_G)
+          if (Gstr == "tif") rtemp <- raster::raster(area_G)
+
+          if (!exists("rtemp")) {
+            stop("Provide a raster file supported by the raster package. See documentation.")
+          } else {
+            rm(rtemp)
+          }
+          if (!exists("method_G")) {
+            stop("Provide a r file supported by the raster package. See documentation.")
+          }
+        }
+      } else {
+        if (is.null(dir_G)) {
+          stop("Provide a path directory in which are stored the variables pre-processed using G as geographic extent.")
+        } else {
+          if (!dir.exists(dir_G)) {
+            stop("Directory of G variables does not exist, please provide a valid one.")
+          } else {
+            dir_GFiles <- list.files(dir_G)
+            if (length(length(dir_GFiles)) == 0) {
+              stop("Any file inside dir_G path. Are the variables located there?")
+            }
+          }
+        }
+      }
+    }
+  } # close proj models
 
   if (!is.null(extrapo)) {
     if (extrapo != "all") {
@@ -119,7 +109,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     }
   }
 
-  if (!is.null(do_future)){
+  if (!is.null(do_future)) {
     if (do_future == TRUE) {
       if (compute_F == FALSE) {
         if (is.null(dir_F)) {
@@ -135,9 +125,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
           }
         }
       }
-    }  
+    }
   }
-  
+
 
   # ellipsis arguments
   # occurrence arguments
@@ -145,15 +135,13 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   if (is.null(col_lat)) col_lat <- "decimalLatitude"
   if (is.null(col_lon)) col_lon <- "decimalLongitude"
   if (is.null(drop_out)) drop_out <- "any"
- 
+
   # Environmental variables
   if (is.null(dir_clim)) dir_clim <- "Data/env_vars/"
   if (is.null(dir_clim)) dir_other <- "Data/env_vars/other/"
   if (is.null(extension_vars)) extension_vars <- "*.tif$"
 
   # Bias management
-  if (is.null(uniq1k_method)) uniq1k_method <- "sqkm"
-  if (is.null(dist_uniq)) dist_uniq <- NULL
   if (is.null(use_bias)) use_bias <- FALSE
 
   # Areas and projections of interest
@@ -165,11 +153,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   if (is.null(compute_G)) compute_G <- FALSE
   if (is.null(do_future)) do_future <- FALSE
   if (is.null(compute_F)) compute_F <- FALSE
-  
-  # Algorithms
+
+  ########################################################### Algorithms
   if (is.null(algos)) algos <- c("MAXENT", "GBM", "ANN")
-  
-  # Maxent details
+
+  ########################################################## Maxent details
   if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
   if (is.null(fc_5.25)) fc_5.25 <- c("l", "q", "lq")
   if (is.null(beta_25)) beta_25 <- seq(1, 6, 1)
@@ -183,14 +171,14 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 10
   if (is.null(predic)) predic <- "kuenm"
-  
+
   # Colineality
-  if (is.null(col_eval)) col_eval <- FALSE
-  if(isTRUE(col_eval)){ # as we have only one method now, get defaults
-    if (is.null(col_method)) col_method <- "VIF"
-    if (is.null(col_detail)) col_detail <- 3  
+  if (is.null(cor_eval)) col_eval <- FALSE
+  if (isTRUE(cor_eval)) { # as we have only one method now, get defaults
+    if (is.null(cor_method)) col_method <- "VIF"
+    if (is.null(cor_detail)) col_detail <- 3
   }
-  
+
   # other arguments
   if (is.null(tipo)) tipo <- ""
   if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
@@ -199,7 +187,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   if (is.null(transf_biomo_ext)) transf_biomo_ext <- TRUE
   if (is.null(redo)) redo <- FALSE
   if (is.null(redo_path)) redo_path <- NULL
-  
+
   # to develop
   #  if (is.null(mxnt.pckg)) mxnt.pckg <- "kuenm" # kuenm, enmeval, sdmtune [MISSING] develop an structure in which the user can choose the package needed, it can be made by create an intermediary function heading to each method and sourcing the needed functions
   #  if (is.null(other.pckg)) other.pckg <- "biomod" # biomod, sdmtune [MISSING]
@@ -234,30 +222,30 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   # 0.3 set and create species folder
 
   # extract the name of the species
-  
+
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
-  
+
   if (tipo != "") {
     folder_sp <- paste0(sp_name, ".", tipo)
   } else {
     folder_sp <- sp_name
   }
-  
+
   dir.create(folder_sp, showWarnings = F)
-  
+
   # 0.4 writing occurrences data withouth processing, aka raw occurrences.
-  
+
   dir.create(paste0(folder_sp, "/occurrences"), showWarnings = F)
-  
+
   occ$occ.ID <- 1:nrow(occ)
-  
+
   write.csv(occ, paste0(folder_sp, "/occurrences/occ_raw.csv"), row.names = F)
-  
-  
+
+
   # ----- tracking file
-  
+
   filelog <- file(paste0(folder_sp, "/log_file.txt"), "w")
-  
+
   linesmsg0 <- paste0(
     time1, "\n",
     "Species name: ", sp_name, "\n",
@@ -296,30 +284,25 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     "Store files ", keep_files, "\n",
     "#############################################################################", "\n"
   )
-  
+
   writeLines(text = linesmsg0, con = filelog, sep = "\n")
-  
+
   # Raster setup
-  
+
   dir.create(paste0(folder_sp, "/Temp"), showWarnings = FALSE)
   rasterOptions(tmpdir = paste0(folder_sp, "/Temp"))
-  
+
   #--------------------------------------
   # 1. formating data
   #--------------------------------------
   print("formating data")
-  
+
   linesmsg1 <- tryCatch(
     exp = {
-      occClean <- format_rawocc(
-        occ. = occ, col.lon = col_lon, col.lat = col_lat, spp.col = col_sp
-        # col.date = event_date, date = date_period,
-      )
-      
-      write.csv(occClean, paste0(folder_sp, "/occurrences/occ_cleanCoord.csv"), row.names = F)
+      occ_no_dup <- format_rawocc(occ. = occ)
       paste0(
         "Handling occurrences", "\n",
-        "Number of not duplicated occurrences: ", nrow(occClean), "\n"
+        "Number of not duplicated occurrences: ", nrow(occ_no_dup), "\n"
       )
     },
     error = function(error_message) {
@@ -327,25 +310,23 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       return(paste0("Clean occurrences: fail.\nError R: ", e))
     }
   )
-  
+
   #------- tracking file
   writeLines(
     text = linesmsg1,
     con = filelog, sep = "\n"
   )
-  
+
   #--------------------------------------
   # 2. Unique occurrences to x km
   #--------------------------------------
   print(paste0("Thining database to ", dist_uniq, "km, using  ", uniq1k_method))
-  
+
   linesmsg2 <- tryCatch(
     expr = {
       occ_thin <- do.uniq1km(
-        occ. = occClean, col.lon = col_lon, col.lat = col_lat, sp.col = col_sp,
-        sp.name = sp_name, uniq1k.method = uniq1k_method, uniqDist = dist_uniq
+        occ. = occ_no_dup, uniq1k.method = uniq1k_method, uniqDist = dist_uniq
       )
-      write.csv(occ_thin, paste0(folder_sp, "/occurrences/occ_thin.csv"), row.names = F)
       paste0(
         "Unique occurrences to ", dist_uniq, "km, using  ", uniq1k_method, "\n",
         "Unique occurrences: ok.", "\n",
@@ -354,28 +335,23 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     },
     error = function(error_message) {
       e <- conditionMessage(error_message)
-      return(paste0("Dropping bias: fail.\nError R: ", e))
+      return(paste0("Thining database: fail.\nError R: ", e))
     }
   )
-  
+
   #------- tracking file
-  
+
   writeLines(text = linesmsg2, con = filelog, sep = "\n")
-  
+
   ### -----------------------------
-  
+
   try(
     exp = {
-      if (nrow(occ_thin) <= 5) {
-        # do.DE.MCP(
-        #   occ. = occ_thin, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp,
-        #   dist.Mov = dist_MOV
-        # )
+      if (nrow(occ_thin) <= 2) {
         linestime <- give.msg.time(time.1 = time1)
         #------- tracking file
         writeLines(
           text = paste(paste0(
-            # "Not enough occurrences. Distribution estimated by rasterize a MCP", "\n",
             "Not enough occurrences.", "\n",
             "Stop"
           ), linestime),
@@ -386,24 +362,23 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       }
     }
   )
-  
+
   linestime <- give.msg.time(time.1 = time1)
   writeLines(linestime, filelog)
-  
+
   #--------------------------------------
   # 3. Accessible Area.
   #--------------------------------------
   print("Constructing accesible area")
-  
+
   linesmsg3 <- tryCatch(
     expr = {
       M_ <- inte_areas(
-        occ. = occ_thin, col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
-        method.M = method_M, area.M = area_M, method.G = method_G, area.G = area_G, 
-        method.F = method_F, area.F = area_F, proj.models = proj_models, do.future = do_future, 
-        compute.F = compute_F, polygon.data = polygon_data, drop.out = drop_out
+        occ. = occ_thin, dist.Mov = dist_MOV, method.M = method_M, area.M = area_M,
+        method.G = method_G, area.G = area_G, method.F = method_F, area.F = area_F,
+        proj.models = proj_models, do.future = do_future, compute.F = compute_F,
+        polygon.data = polygon_data
       )
-      write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
       paste("Accesible area: ok.", "\n")
     },
     error = function(error_message) {
@@ -411,12 +386,12 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       return(paste0("\nAccesible area: fail\nError R: ", e))
     }
   )
-  
+
   #------- tracking file
-  
+
   writeLines(text = linesmsg3, con = filelog, sep = "\n")
 
-    
+
   #--------------------------------------
   # 4. Processing environmental layers
   #--------------------------------------
@@ -426,11 +401,8 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     expr = {
       envars <- process_env.current(
         clim.dataset = clim_vars, clim.dir = dir_clim, exten = extension_vars,
-        crs.proyect = crs_proyect, shape.M = M_$shape_M, shape.G = M_$shape_G,
-        shape.F = M_$shape_F, env.other = dir_other, folder.sp = folder_sp, 
-        do.future = do_future, proj.models = proj_models, compute.G = compute_G, 
-        compute.F = compute_F, dir.G = dir_G, dir.F = dir_F, col.eval = col_eval,
-        col.method = col_method, col.detail = col_detail
+        compute.G = compute_G, compute.F = compute_F, dir.G = dir_G, dir.F = dir_F,
+        cor.eval = cor_eval, cor.method = cor_method, cor.detail = cor_detail
       )
       paste0(
         "Processing environmental layers: ok.", "\n",
@@ -444,11 +416,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       return(paste0("Processing environmental layers: fail.\nError R: ", e))
     }
   )
-  
+
   #------- tracking file
 
   writeLines(text = linesmsg4, con = filelog, sep = "\n")
-  
+
   linestime <- give.msg.time(time.1 = time1)
   writeLines(linestime, filelog)
 
@@ -460,11 +432,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     expr = {
       if (use_bias == TRUE) {
         print("Procesing bias layer")
-        BiasSp <- get_BiasSp(
-          data. = M_$occurrences, TGS.kernel = "bias_layer/aves.tif", shape.M = M_$shape_M, env.M = envars$M,
-          ext = "*.asc", folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat,
-          col.sp = col_sp
-        )
+        BiasSp <- get_BiasSp()
         paste("Bias file development: ok", "\n")
       } else {
         BiasSp <- NULL
@@ -479,11 +447,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   #------- tracking file
   writeLines(text = linesmsg5, con = filelog, sep = "\n")
-  
+
   linestime <- give.msg.time(time.1 = time1)
   writeLines(linestime, filelog)
-  
-  
+
+
   #--------------------------------------
   # 6. Paths of calibration and evaluation
   #--------------------------------------
@@ -518,7 +486,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       )
 
       writeLines(linestime, filelog)
-      
+
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
       linestime <- give.msg.time(time.1 = time1)
 
@@ -556,10 +524,9 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       )
 
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
-      
+
       linestime <- give.msg.time(time.1 = time1)
       writeLines(linestime, filelog)
-      
     }
   }
 
@@ -610,10 +577,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       )
 
       writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
-      
+
       linestime <- give.msg.time(time.1 = time1)
       writeLines(linestime, filelog)
-      
+
 
       print("\nEnsembles")
 
@@ -630,7 +597,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
           if (do_future == TRUE) {
             layersF <- futAuxiliar(fut.list.ras = PathBMaxent$f_proj)
-            
+
             for (f in 1:length(layersF)) {
               currentEns_byAlg(
                 ras.Stack = layersF[[f]], data. = M_$occurrences,
@@ -651,7 +618,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         }
       )
       writeLines(text = linesmsg6.3, con = filelog, sep = "\n")
-      
+
       linestime <- give.msg.time(time.1 = time1)
       writeLines(linestime, filelog)
     }
@@ -685,7 +652,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       )
 
       writeLines(text = linesmsg6.4, con = filelog, sep = "\n")
-      
+
       linestime <- give.msg.time(time.1 = time1)
       writeLines(linestime, filelog)
 
@@ -714,7 +681,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         }
       )
       writeLines(text = linesmsg6.5, con = filelog, sep = "\n")
-      
+
       linestime <- give.msg.time(time.1 = time1)
       writeLines(linestime, filelog)
     }

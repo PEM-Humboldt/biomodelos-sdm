@@ -15,49 +15,37 @@
 # 4(5): Article 55. This involves creating a probability surface for the study area, with a Kernel
 # Density Estimator (KDE), where higher probability values are assigned to areas with more locality   # points. Then, pseudo-absences are selected probabilistically, based on that surface.
 
-get_BiasSp <- function(data., TGS.kernel, shape.M, env.M, ext, area.G, folder.sp,
-                       col.lon = col_lon, col.lat = col_lat, col.sp = col_sp) {
+get_BiasSp <- function(data. = M_$occurrences, TGS.kernel = "bias_layer/aves.tif",
+                       shape.M = M_$shape_M, env.M = envars$M, ext = "*.asc",
+                       folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat,
+                       col.sp = col_sp) {
 
   ## import raster(bias_layer) and crop to the extent and shape of M composed
 
-  Biasfile <- raster::raster(TGS.kernel)*1000
-  
+  Biasfile <- raster::raster(TGS.kernel) * 1000
+
   # Bias in M
-  
-  BiasfileM <- Biasfile %>% raster::crop(shape.M) %>%
+
+  BiasfileM <- Biasfile %>%
+    raster::crop(shape.M) %>%
     raster::mask(shape.M)
-  
-  #round(Biasfile, digits = 0) %>% 
-  
+
+  # round(Biasfile, digits = 0) %>%
+
   BiasfileM <- raster::projectRaster(BiasfileM, env.M)
-  #BiasfileM[BiasfileM <= 0] <- 0.000009
-  
+
   raster::writeRaster(BiasfileM, paste0(folder.sp, "/BiasfileM.asc"),
-                      overwrite = T,
-                      NAflag = -9999,
-                      datatype = "FLT4S", 
-                      options="COMPRESS=LZW"
-                      )
-  
-#  if(proj.models == "M-G"){
-#    # Bias in G
-#    ras.G <- raster::raster(area.G)
-#    
-#    BiasfileG <- round(Biasfile, digits = 0) %>% 
-#      raster::crop(ras.G) %>%
-#      raster::mask(ras.G)
-#    
-#    
-#    d <- crop(bias, g)
-#    a <- projectRaster(from = d, to = g)
-#    e <- raster::mask(a, g)
-#    raster::writeRaster(e, paste0("BiasfileG.asc"), overwrite = T)
-#  }
+    overwrite = T,
+    NAflag = -9999,
+    datatype = "FLT4S",
+    options = "COMPRESS=LZW"
+  )
+
 
   data.spat <- data.
 
   data.spat <- sp::SpatialPointsDataFrame(coords = data.[, c(col.lon, col.lat)], data = data.frame(data.[, col.sp]))
-  
+
   # giving a buffer to each occurrence not to get background near to register
 
   data.buffer <- rgeos::gBuffer(data.spat, width = res(env.M)[1])
