@@ -11,8 +11,6 @@ format_rawocc <- function(occ. = occ, col.lon = col_lon, col.lat = col_lat,
   )
 
   return(occ.)
-
-  write.csv(occ., paste0(folder.sp, "/occurrences/occ_no_dup.csv"), row.names = F)
 }
 
 # Rafael Moreno function

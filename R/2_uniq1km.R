@@ -36,7 +36,7 @@ do.uniq1km <- function(occ., col.lon = col_lon, col.lat = col_lat, sp.col = col_
 
   return(dropUniq)
 
-  write.csv(dropUniq, paste0(folder.sp, "/occurrences/occ_thin.csv"), row.names = F)
+ 
 }
 
 #--------------------------

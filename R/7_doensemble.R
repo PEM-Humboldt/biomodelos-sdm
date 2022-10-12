@@ -21,7 +21,6 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       if (tim == "current") esc.nm <- "_"
       if (tim == "future")  esc.nm <- paste0("_", esc.nm, "_")
       
-
       # comparing extent with "biomodelos" extent}
 
       if (transf.biomo.ext == TRUE) {
@@ -43,7 +42,7 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         } else {
           dir.create(paste0(foldersp, "/Temp/extent.transf"), showWarnings = F)
           for (i in 1:nlayers(ras.Stack)) {
-            writeRaster(ras.Stack[[i]], paste0(foldersp, "/Temp/extent.transf/", names(ras.Stack[[i]]), ".tif"), overwrite = TRUE)
+            raster::writeRaster(ras.Stack[[i]], paste0(foldersp, "/Temp/extent.transf/", names(ras.Stack[[i]]), ".tif"), overwrite = TRUE)
           }
           ras.list <- list.files(paste0(foldersp, "/Temp/extent.transf/"), pattern = ".tif$", full.names = T)
           if (length(ras.list) == 1) {
@@ -51,9 +50,15 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
           } else {
             ras.Stack <- raster::stack(ras.list)
           }
-          ras.Stack <- extend(ras.Stack, biomodelos.ext)
-          extent(ras.Stack) <- extent(biomodelos.ext)
-
+          
+          if(raster::extent(biomodelos.ext) > raster::extent(ras.Stack)){
+            ras.Stack <- raster::extend(ras.Stack, biomodelos.ext)
+          }else{
+            ras.Stack <- raster::crop(ras.Stack, biomodelos.ext)
+          }
+          
+          raster::extent(ras.Stack) <- raster::extent(biomodelos.ext)
+          
           for (i in 1:length(ras.list)) {
             unlink(ras.list[i], recursive = T, force = T)
           }
@@ -76,7 +81,7 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
           Ras.sum <- raster::calc(x = ras.Stack, sum)
 
           # stacking results of ensembles
-          Resensembles <- stack(Ras.med, Ras.devstd, Ras.cv, Ras.sum)
+          Resensembles <- raster::stack(Ras.med, Ras.devstd, Ras.cv, Ras.sum)
           names(Resensembles) <- c(
             paste0(sp_hyphen, esc.nm, algorithm), paste0(sp_hyphen, "_devstd", esc.nm, algorithm),
             paste0(sp_hyphen, "_CV", esc.nm, algorithm), paste0(sp_hyphen, "_sum", esc.nm, algorithm)
@@ -108,9 +113,8 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         Ras.med <- ras.Stack
         names(Ras.med) <- paste0(sp_hyphen, esc.nm, algorithm)
         raster::crs(Ras.med) <- sp::CRS(crs.proyect)
-        lyer.01 <- rasterToPoints(Ras.med)
         # writing pseudo median
-        writeRaster(Ras.med, paste0(
+        raster::writeRaster(Ras.med, paste0(
           foldersp, "/ensembles/", tim, "/", algorithm, "/",
           names(Ras.med), ".tif"
         ),
@@ -123,41 +127,47 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
       }
 
       # thresholds
-
-      biomodelos.thresh <- c(e, 1, 10, 20, 30)
-      names(biomodelos.thresh) <- c("E", "0", "10", "20", "30")
-
-      # converting to binary the median ensemble for each biomodelos threshold
-      Bins <- list()
-      for (i in 1:length(biomodelos.thresh)) {
-        Binsi <- do.bin(
-          Ras = Ras.med, dat = data., lon = collon,
-          lat = collat, thresh = biomodelos.thresh[i]
-        )
-        Bins[[i]] <- Binsi
-      }
-
-      # extracting threshold value from list of binaries. Bins file is a list o sub-list. Each sub-list
-      # refers to one threshold conversion. Inside each sub-list there are two files, the binary raster
-      # and the value of threshold
-      BinsDf <- list()
-      for (i in 1:length(Bins)) {
-        listi <- Bins[[i]]
-        Df <- listi[[2]]
-        BinsDf[[i]] <- Df
-      }
-      # convert list to a vector
-      BinsDf <- data.frame(BinsDf)
-      # giving names to the Df
-      names(BinsDf) <- names(biomodelos.thresh)
-
+      
+      # if(proj.models == "M-M"){
+        biomodelos.thresh <- c(e, 1, 10, 20, 30)
+        names(biomodelos.thresh) <- c("E", "0", "10", "20", "30")
+        
+        # converting to binary the median ensemble for each biomodelos threshold
+        Bins <- list()
+        for (i in 1:length(biomodelos.thresh)) {
+          Binsi <- do.bin(
+            Ras = Ras.med, dat = data., lon = collon,
+            lat = collat, thresh = biomodelos.thresh[i]
+          )
+          Bins[[i]] <- Binsi
+        }
+        
+        # extracting threshold value from list of binaries. Bins file is a list o sub-list. Each sub-list
+        # refers to one threshold conversion. Inside each sub-list there are two files, the binary raster
+        # and the value of threshold
+        BinsDf <- list()
+        for (i in 1:length(Bins)) {
+          listi <- Bins[[i]]
+          Df <- listi[[2]]
+          BinsDf[[i]] <- Df
+        }
+        # convert list to a vector
+        BinsDf <- data.frame(BinsDf)
+        # giving names to the Df
+        names(BinsDf) <- names(biomodelos.thresh)
+      
+      # }else if(proj.models == "M-G"){
+      #   Bins
+      # }
+     
       write.csv(BinsDf, paste0(
         foldersp, "/ensembles/", tim, "/", algorithm, "/",
         "binValues", esc.nm, algorithm, ".csv"
       ),
       row.names = F
       )
-
+      
+      
       #
       BinsRas <- raster::stack()
       for (i in 1:length(Bins)) {

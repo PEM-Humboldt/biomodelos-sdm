@@ -51,6 +51,8 @@ dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias, env.
     }
   }
   
+  Sbg <- occ.[, c(col.lon, col.lat)]
+  names(Sbg) <- c("longitude", "latitude")
   
   # enmeval way to split needs a data frame with longitude and latitude coordinates with these names and this
   # order
@@ -60,7 +62,7 @@ dosplit <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias, env.
   # creating blocks
 
   bins <- ENMeval::get.block(data., Sbg)
-  bins.data <- cbind(data., bins = bins$occ.grp)
+  bins.data <- cbind(data., bins = bins$occs.grp)
   
   # Assigning occurrences to train and test by groups
   
