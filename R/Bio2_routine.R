@@ -493,10 +493,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         } ## MISSING FIXING DISMO PREDIC
       )
 
-      writeLines(linestime, filelog)
-
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
       linestime <- give.msg.time(time.1 = time1)
+      writeLines(linestime, filelog)
+      
 
       message("\nEnsembles")
 
@@ -567,6 +567,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
       linestime <- give.msg.time(time.1 = time1)
+      writeLines(linestime, filelog)
       
       message("\nEnsembles")
       

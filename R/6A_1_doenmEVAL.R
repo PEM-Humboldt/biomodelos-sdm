@@ -120,7 +120,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
       if (nrow(best2) != 0) {
         if (nrow(best2) > 1) {
           # delta aic criterion
-          best2$delta.AICc <- best2$AICc - min(best2$AICc)
+          best2$delta.AICc <- best2$AICc - min(best2$AICc, na.rm = T)
           best3 <- best2[which(best2$delta.AICc <= 2), ]
         } else {
           best3 <- best2

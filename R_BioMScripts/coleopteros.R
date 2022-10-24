@@ -22,7 +22,7 @@ m_data <- read.csv("Data/biogeographic_shp/M_data_spp.csv")
 
 # rutina
 source("R/Bio2_routine.R")
-
+i <- 45
 for(i in 1:length(listCol)){
   spp_nm <- names(listCol[i])
   path_M <- m_data[which(m_data$acceptedNameUsage == spp_nm), "M"]
@@ -34,14 +34,17 @@ for(i in 1:length(listCol)){
                dir_clim = "Data/env_vars/",
                dir_other = "Data/env_vars/other/",
                uniq1k_method = NA,
-               col_eval = T,
-               area_M = path_M,
+               col_eval = F,
+               area_M = path_M, 
+               do_future = T, 
+               area_F = path_M, 
+               compute_F = T,
                algos = "MAXENT",
                keep_files = "essential",
                transf_biomo_ext = TRUE,
                extrapo = "no_ext",
-               fc_25 = c("l", "q", "lq", "lp", "lqp", "qp"),
-               beta_25 =  seq(1, 6, 1)
+               fc_25 = c("l", "q"),
+               beta_25 =  seq(1, 3, 1)
               
   )
   

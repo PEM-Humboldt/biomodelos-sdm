@@ -36,7 +36,7 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect = crs
     if ("VIF" %in% cor.method) {
       source("R/Vif_secb.R")
       envras2 <- terra::rast(envras)
-      col.result <- vif_apply(shapeM = shape.M, envars = envras2, vifdetails = cor.detail)
+      cor.result <- vif_apply(shapeM = shape.M, envars = envras2, vifdetails = cor.detail)
       rm(envras2)
       indexCol <- which((names(envras) %in% cor.result) == TRUE)
       envras <- envras[[indexCol]]

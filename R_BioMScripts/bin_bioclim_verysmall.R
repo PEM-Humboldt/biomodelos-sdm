@@ -2,12 +2,12 @@ library(raster)
 library(dplyr)
 
 fls <- list.dirs("x/", full.names = F, recursive = F)
-fls <- fls[8]
+fls <- fls[1]
 nm <- fls %>% gsub(pattern = "\\.", replacement = "_", x = .)
 
 r <- list.files(paste0("x/", fls, "/ensembles/current/bioclim/"), full.names = T)[6] %>% raster()
 csv <- list.files(paste0("x/", fls, "/ensembles/current/bioclim/"), full.names = T)[1] %>% read.csv()
-dat <- csv$X0 %>% round(2)
+dat <- csv$X30 %>% round(2)
 
 r[r < dat-0.01] <- 0
 r[r >= dat] <- 1

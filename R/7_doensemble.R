@@ -37,31 +37,22 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
         biomodelos.ext <- c(-83, -60, -14, 13)
         equ.ext <- equal.extent(a = ras.Stack, b = biomodelos.ext, limit = 0.005)
 
-        if (equ.ext == TRUE) {
+        if (equ.ext[[1]] == TRUE) {
           extent(ras.Stack) <- extent(biomodelos.ext)
         } else {
+          
           dir.create(paste0(foldersp, "/Temp/extent.transf"), showWarnings = F)
-          for (i in 1:nlayers(ras.Stack)) {
-            raster::writeRaster(ras.Stack[[i]], paste0(foldersp, "/Temp/extent.transf/", names(ras.Stack[[i]]), ".tif"), overwrite = TRUE)
-          }
-          ras.list <- list.files(paste0(foldersp, "/Temp/extent.transf/"), pattern = ".tif$", full.names = T)
-          if (length(ras.list) == 1) {
-            ras.Stack <- raster::raster(ras.list)
-          } else {
-            ras.Stack <- raster::stack(ras.list)
+          
+          if(equ.ext[[2]] == "b-a"){
+            ras.tmp <- raster::extend(ras.Stack, biomodelos.ext)
+          }else if(equ.ext[[2]] == "a-b"){
+            ras.tmp <- raster::crop(ras.Stack, biomodelos.ext)
           }
           
-          if(raster::extent(biomodelos.ext) > raster::extent(ras.Stack)){
-            ras.Stack <- raster::extend(ras.Stack, biomodelos.ext)
-          }else{
-            ras.Stack <- raster::crop(ras.Stack, biomodelos.ext)
-          }
-          
+          rm(ras.Stack)
+          ras.Stack <- ras.tmp
           raster::extent(ras.Stack) <- raster::extent(biomodelos.ext)
           
-          for (i in 1:length(ras.list)) {
-            unlink(ras.list[i], recursive = T, force = T)
-          }
         }
       }
 
@@ -261,21 +252,29 @@ futAuxiliar <- function(fut.list.ras) {
 equal.extent <- function(a, b, limit) { # a must be  a raster and b a vector extent
 
   # extents
-  ext.a <- extent(a)
-  ext.b <- extent(b)
-
+  ext.a <- a %>% raster::extent() %>% as("SpatialPolygons") %>% sf::st_as_sf() %>% 
+    mutate(value = 1)
+  ext.b <- b %>% raster::extent() %>% as("SpatialPolygons") %>% sf::st_as_sf() %>% 
+    mutate(value = 1)
+  
   # differences between extents
-  diff.ext <- matrix(ext.a) - matrix(ext.b)
-  diff.abs <- abs(diff.ext)
+  diff.ext <- st_difference(ext.b, ext.a) %>% st_area()
+  
   # limit to decide if the extents are different, 0.005 grades
-  diff.limit <- diff.abs > limit
-
-  # how many rows are upper of extent limit, if there are more than one use extend
-
-  if (length(which(diff.limit == T)) != 0) {
+  diff.limit <- diff.ext > limit
+  
+  if (which(diff.limit == T)) {
     result <- FALSE
   } else {
     result <- TRUE
   }
-  return(result)
+  
+  if(length(diff.ext) != 0){
+    diff.direction <- "b-a"
+  }else{
+    diff.direction <- "a-b"
+  }
+  
+  
+  return(list(result, diff.direction))
 }
