@@ -1,6 +1,6 @@
 do.uniq1km <- function(occ., col.lon = col_lon, col.lat = col_lat, sp.col = col_sp,
                        sp.name = sp_name, uniq1k.method, uniqDist) {
-  if (is.null(uniq1k.method)) {
+  if (is.null(uniq1k.method) == T) {
     dropUniq <- occ.
   } else {
     if (uniq1k.method == "sqkm") {

@@ -9,7 +9,7 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
     if (nlayers(ras.Stack) == 0) {
       message("any model")
     } else {
-      # folder to save ensembles
+      # folder to save ensembleñs
       dir.create(paste0(foldersp, "/ensembles"), showWarnings = FALSE)
       dir.create(paste0(foldersp, "/ensembles/", tim), showWarnings = F)
       dir.create(paste0(foldersp, "/ensembles/", tim, "/", algorithm), showWarnings = F)
@@ -25,17 +25,18 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
 
       if (transf.biomo.ext == TRUE) {
         
-        if (compute.F == FALSE){
-          if (proj.models == "M-M"){
-            ras.Stack <- raster::mask(ras.Stack, areas$shape_M)
-          }
-          if (proj.models == "M_G"){
-            ras.Stack <- raster::mask(ras.Stack, areas$shape_G)
-          }
-        }
+        # Turn on in case of need extent of future equal to M or G
+        # if (compute.F == FALSE){
+        #   if (proj.models == "M-M"){
+        #     ras.Stack <- raster::mask(ras.Stack, areas$shape_M)
+        #   }
+        #   if (proj.models == "M_G"){
+        #     ras.Stack <- raster::mask(ras.Stack, areas$shape_G)
+        #   }
+        # }
         
         biomodelos.ext <- c(-83, -60, -14, 13)
-        equ.ext <- equal.extent(a = ras.Stack, b = biomodelos.ext, limit = 0.005)
+        equ.ext <- equal.extent(a = ras.Stack, b = biomodelos.ext)
 
         if (equ.ext[[1]] == TRUE) {
           extent(ras.Stack) <- extent(biomodelos.ext)
@@ -43,19 +44,22 @@ currentEns_byAlg <- function(ras.Stack, data., collon, collat, e, algorithm, fol
           
           dir.create(paste0(foldersp, "/Temp/extent.transf"), showWarnings = F)
           
-          if(equ.ext[[2]] == "b-a"){
-            ras.tmp <- raster::extend(ras.Stack, biomodelos.ext)
-          }else if(equ.ext[[2]] == "a-b"){
-            ras.tmp <- raster::crop(ras.Stack, biomodelos.ext)
+          if(equ.ext[[2]] == "b>a"){
+            tmp1 <- ras.Stack %>% terra::rast()
+            ext1 <- terra::ext(biomodelos.ext)
+            ras.tmp <- terra::extend(tmp1, ext1) %>% raster::raster()
+          }else if(equ.ext[[2]] == "a>b"){
+            tmp1 <- ras.Stack %>% terra::rast()
+            ext1 <- terra::ext(biomodelos.ext)
+            ras.tmp <- terra::crop(tmp1, ext1) %>% raster::raster()
           }
           
-          rm(ras.Stack)
           ras.Stack <- ras.tmp
           raster::extent(ras.Stack) <- raster::extent(biomodelos.ext)
           
         }
       }
-
+      
 
       # branch for algorithms with more than one best model
       if (nlayers(ras.Stack) > 1) {
@@ -249,32 +253,37 @@ futAuxiliar <- function(fut.list.ras) {
 #-----------------------------------------
 # auxiliary compare extent
 
-equal.extent <- function(a, b, limit) { # a must be  a raster and b a vector extent
-
+equal.extent <- function(a, b) { # a must be  a raster and b a vector extent
+  
+  # to experiment
+  # a <- biomodelos.ext <- c(-83, -60, -14, 13)
+  # b <- biomodelos.ext <- c(-83, -60, -14, 13)
+   
   # extents
   ext.a <- a %>% raster::extent() %>% as("SpatialPolygons") %>% sf::st_as_sf() %>% 
     mutate(value = 1)
   ext.b <- b %>% raster::extent() %>% as("SpatialPolygons") %>% sf::st_as_sf() %>% 
     mutate(value = 1)
   
-  # differences between extents
-  diff.ext <- st_difference(ext.b, ext.a) %>% st_area()
+  are_same <- (ext.b == ext.a)[1]
   
-  # limit to decide if the extents are different, 0.005 grades
-  diff.limit <- diff.ext > limit
-  
-  if (which(diff.limit == T)) {
-    result <- FALSE
-  } else {
-    result <- TRUE
-  }
-  
-  if(length(diff.ext) != 0){
-    diff.direction <- "b-a"
+  if(are_same){
+    result <-  T
+    diff.direction <- NA
   }else{
-    diff.direction <- "a-b"
+    
+    # differences between extents
+    result <- FALSE
+    
+    # directions
+    # what if b is bigger than a
+    diff.ext <- st_difference(ext.b, ext.a) %>% st_area()
+    diff.direction <- "b>a"
+    
+    if(length(diff.ext) == 0){
+      diff.ext <- st_difference(ext.a, ext.b) %>% st_area() 
+      diff.direction <- "a>b"
+    }
   }
-  
-  
   return(list(result, diff.direction))
 }

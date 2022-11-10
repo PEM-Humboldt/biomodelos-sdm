@@ -467,7 +467,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   
   #pckg <- match.arg(use., c("Dismo", "kuenm", "ENMeval2", "SDMTune", "Biomod"))
 
-  if (nrow(M_$occurrences) >= 5 & nrow(M_$occurrences) <= 25) {
+  if (nrow(M_$occurrences) >= 5 & nrow(M_$occurrences) < 20) {
     
       ##########
       # Path A # Jackknife, enmeval maxent
@@ -537,7 +537,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       writeLines(linestime, filelog)
   }
 
-  if (nrow(M_$occurrences) > 25) {
+  if (nrow(M_$occurrences) >= 20) {
     ##########
     # Path B # split in test and train, kuenm maxent, biomod GBM y ANN
     ##########
@@ -583,7 +583,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
           )
           
           if (do_future == TRUE) {
-            layersF <- futAuxiliar(PathBMaxent$f_proj)
+            layersF <- futAuxiliar(fut.list.ras = PathBMaxent$f_proj)
             
             for (f in 1:length(layersF)) {
               currentEns_byAlg(
@@ -591,7 +591,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                 collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                 crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                areas = M_, compute.F = compute_F, proj.models = proj_models,
+                areas = M_, compute.F = compute_F, proj.models = proj_models
                 #bins = PathBMaxent$Bins
               )
             }

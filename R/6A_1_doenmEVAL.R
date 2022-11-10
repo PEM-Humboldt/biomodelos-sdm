@@ -283,7 +283,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
     }
 
     current_proj <- raster::stack(current_proj_files)
-    names(current_proj) <- best3$Model
+    names(current_proj) <- paste0("M_", best3$rm, "_F_", tolower(best3$fc), "_Set_1")
 
     for (i in 1:nlayers(current_proj)) {
       fileNm <- unlist(strsplit(x = current_proj_files[i], split = "/"))
@@ -359,11 +359,13 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
         # folder of layers of each model
         env.listFolder <- list.files(env.folder[i], pattern = ".asc$", full.names = T, recursive = T, include.dirs = F)
+        env.listnms <- list.files(env.folder[i], pattern = ".asc$", full.names = F, recursive = T, include.dirs = F)
         # no future asc files
         noFRas <- c(grep("*_M.asc$", env.listFolder), grep("*_G.asc$", env.listFolder), grep(paste0(folder.sp, ".asc$"), env.listFolder))
         # removing no future files
         env.FlistRas <- env.listFolder[-noFRas]
         fut_proj <- raster::stack(env.FlistRas)
+        names(fut_proj) <- env.listnms[-noFRas]
 
         # change asc files for tif
         # first search into folder model, read files and create stack, write the layers in tif
@@ -403,7 +405,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 }
 
 
-#
+#--------------------------------------------------------------------------------
 proc <- function(vars) {
   proc <- kuenm::kuenm_proc(vars$occs.val.pred, c(vars$bg.train.pred, vars$bg.val.pred))
   out <- data.frame(
