@@ -61,14 +61,25 @@ do.bioclim <- function(occ. = M_$occurrences, env.Mdir = paste0(folder_sp, "/M_v
         
         mask_points <- rasterToPoints(p1)
         
-        Sbg <- mask_points[
-          sample(
-            x = seq(1:nrow(mask_points)),
-            size = 10000,
-            replace = F
-          ),
-          1:2
+        if (nrow(mask_points) > 10000) {
+          Sbg <- mask_points[
+            sample(
+              x = seq(1:nrow(mask_points)),
+              size = 10000,
+              replace = F
+            ),
+            1:2
           ]
+        } else {
+          Sbg <- mask_points[
+            sample(
+              x = seq(1:nrow(mask_points)),
+              size = ceiling(nrow(mask_points) * 0.3),
+              replace = F
+            ),
+            1:2
+          ]
+        }
         
         # extract background data
         

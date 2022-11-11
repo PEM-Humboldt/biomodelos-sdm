@@ -6,7 +6,7 @@ do.check()
 dataSp <- read.csv("Example/Occurrences/single_species.csv")# %>% 
 #  dplyr::filter(countryCode != "", !is.na(decimalLatitude))
 set.seed(23)
-dataSp <- dataSp[sample(1:nrow(dataSp), 14, replace = F), ]
+dataSp <- dataSp[sample(1:nrow(dataSp), 5, replace = F), ]
 source("R/Bio2_routine.R")
 
 Bio2_routine(
@@ -21,9 +21,9 @@ Bio2_routine(
   uniq1k_method = "sqkm",#########
   #area_G = "Data/biogeographic_shp/nacional_wgs84.shp",
   #compute_G = T,
-  compute_F = T, 
-  do_future = T,
-  area_F = "Data/env_vars_ex/other/current/elev.tif", 
+  #compute_F = T, 
+  #do_future = T,
+  #area_F = "Data/env_vars_ex/other/current/elev.tif", 
   method_M = "points_MCP_buffer", 
   dist_MOV = 50, 
   proj_models = "M-M", ##########
@@ -31,10 +31,10 @@ Bio2_routine(
   keep_files = "all",
   extrapo = "no_ext",
   dist_uniq = 1, 
-  fc_25 = c("l", "lq"), 
-  beta_25 = seq(1, 2, 1),
+  #fc_25 = c("l", "lq"), 
+  #beta_25 = seq(1, 2, 1),
   #tipo = "ENMeval2",
-  pckg = "ENMeval2"
+  #pckg = "ENMeval2"
     ########
 ) 
 closeAllConnections()

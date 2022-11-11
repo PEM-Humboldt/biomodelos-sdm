@@ -212,6 +212,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   source("R/6B_2_dokuenm.R")
   source("R/6B_3_dobiomod.R")
   source("R/6B_doindeva.R")
+  source("R/6C_do.bioclim.R")
   source("R/7_doensemble.R")
   source("R/give.msg.time.R")
   source("R/doDE.MCP.R")
@@ -465,9 +466,73 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   message("Calibrating and evaluating SDM's")
   
+  if (nrow(M_$occurrences) < 6 ) {
+    
+      message("Path, calibrating and evaluating bioclim models")
+      
+      linesmsg6.1 <- tryCatch(
+        expr = {
+          PathBioclim <- do.bioclim(occ. = M_$occurrences, env.Mdir = paste0(folder_sp, "/M_variables"),
+                                    env.Gdir = paste0(folder_sp, "/G_variables"),
+                                    folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat, 
+                                    proj.models = proj_models, crs.proyect = crs_proyect, extrap = extrapo, 
+                                    predic = predic)
+          paste("\nPath, number occ less than 6\nVerySmall samples bioclim modelling: ok.")
+        },
+        error = function(error_message) {
+          e1 <- conditionMessage(error_message)
+          return(paste0("\nPath, number occ less than 6 \nVerySmall samples bioclim modelling fail.\nError R: ", e1))
+        } ## MISSING FIXING DISMO PREDIC
+      )
+      
+      writeLines(linestime, filelog)
+      
+      writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
+      linestime <- give.msg.time(time.1 = time1)
+      
+      message("\nEnsembles")
+      
+      linesmsg6.2 <- tryCatch(
+        expr = {
+          enscurr <- currentEns_byAlg(
+            ras.Stack = PathBioclim$c_proj, data. = M_$occurrences,
+            collon = col_lon, collat = col_lat, e = E, algorithm = "bioclim",
+            foldersp = folder_sp, tim = "current", esc.nm = "",
+            crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
+            areas = M_, compute.F = compute_F, proj.models = proj_models
+          )
+          
+          if (do_future == TRUE) {
+            layersF <- futAuxiliar(PathAMaxent$f_proj)
+            
+            for (f in 1:length(layersF)) {
+              currentEns_byAlg(
+                ras.Stack = layersF[[f]], data. = M_$occurrences,
+                collon = col_lon, collat = col_lat, e = E, algorithm = "bioclim",
+                foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
+                crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
+                areas = M_, compute.F = compute_F, proj.models = proj_models
+              )
+            }
+          }
+          paste("\nEnsembles: ok.")
+        },
+        error = function(error_message) {
+          e1 <- conditionMessage(error_message)
+          return(paste0("\nEnsembles fail.\nError R: ", e1))
+        }
+      )
+      
+      writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
+      
+      linestime <- give.msg.time(time.1 = time1)
+      writeLines(linestime, filelog)
+    
+  }
+  
   #pckg <- match.arg(use., c("Dismo", "kuenm", "ENMeval2", "SDMTune", "Biomod"))
 
-  if (nrow(M_$occurrences) >= 5 & nrow(M_$occurrences) < 20) {
+  if (nrow(M_$occurrences) >= 6 & nrow(M_$occurrences) < 20) {
     
       ##########
       # Path A # Jackknife, enmeval maxent
