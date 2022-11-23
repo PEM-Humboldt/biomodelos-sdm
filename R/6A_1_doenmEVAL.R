@@ -190,7 +190,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         M.var.dir = env.Mdir, out.eval = paste0(folder.sp, "/eval_results_enmeval"),
         batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
-        max.memory = 2000, out.format = "logistic",
+        max.memory = 2000, out.format = "cloglog",
         project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
         write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
       )
@@ -211,7 +211,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         M.var.dir = env.Mdir, out.eval = paste0(folder.sp, "/eval_results_enmeval"),
         batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
-        max.memory = 2000, out.format = "logistic",
+        max.memory = 2000, out.format = "cloglog",
         project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
         write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
       )

@@ -113,7 +113,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
   rep_n <- 1
   rep_type <- "Bootstrap"
   jackknife <- FALSE
-  out_format <- "logistic"
+  out_format <- "cloglog"
   wait1 <- TRUE
   run1 <- TRUE
 
