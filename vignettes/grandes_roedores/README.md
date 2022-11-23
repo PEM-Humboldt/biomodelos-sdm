@@ -2,10 +2,10 @@
 
 ## Archivos necesarios
 
-Registros de distribución (en proceso de disposición al público).
-Variables ambientales: vinculo
-Capa de sesgo: vinculo
-Repositorio de rutinas biomodelos-sdm: version 1.0.0, instalar siguiendo las indicaciones que aparecen en el readme.
+1. Registros de distribución (en proceso de disposición al público).
+2. Variables ambientales: [vinculo](https://www.worldclim.org/) recortar usando esta extensión.
+3. Capa de sesgo: [vinculo](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/R_BioMScripts/grandes_roedores/roedores_bias_file.tif)
+4. Repositorio de rutinas biomodelos-sdm: version 1.0.0, instalar siguiendo las indicaciones que aparecen en el readme.
 
 ## Codigo
 
