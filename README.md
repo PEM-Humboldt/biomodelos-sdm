@@ -1,17 +1,22 @@
-# Deploying: 2.0.0
+# Deploying:
 
 Sprint 1
 Start time: October 10th 2022
-Expected end time: October 14th
+End time: October 20th
 
 * Include ENMeval2 and organize models methods.
 * Remove cleaning occurrences features as it will be part of the preprocessing stage. However, spatial thinning feature will be maintained.
-* The work flow won't be conditioned to occurrences. What algorithm, package and methods will be chosen by users.
+
+Sprint 2, 3, 4
+Start time: January 2023
+Expected end time: February 2023
 
 What is left to deploy
+* The work flow won't be conditioned to occurrences. What algorithm, package and methods will be chosen by users.
 * Revise projection M-M and M-G and future with several case use
 * Documentation: update past documentation, generate additional documents for past features added during 2020 and 2021, new features documents
-* ... 
+* Vignettes for user and developers
+
 
 # BioModelos: Species Distribution Maps from Colombian species
 
