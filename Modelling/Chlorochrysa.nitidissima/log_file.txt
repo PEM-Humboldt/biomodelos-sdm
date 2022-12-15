@@ -1,0 +1,55 @@
+2022-11-17 12:18:09
+Species name: Chlorochrysa.nitidissima
+Number of raw occurrences 211
+Experimental type:
+
+Method for unique records sqkm
+Distance used for unique records 1 km
+
+Accesible area constructed with:points_MCP_bufferMovement distance vector (buffer depends on this vector): 50 km
+
+Projections
+Projecting models from M-G
+Projecting to future FALSE
+CRS projecting +proj=longlat +datum=WGS84 +no_defs +type=crs
+
+Climatic variables: worldclim
+G extent pathData/biogeographic_shp/nacional_wgs84.shp
+Computing G Variables TRUE
+Computing F Variables FALSE
+
+Algorithms used MAXENT
+Bias layer used FALSE
+Path of bias layerbias_layer/aves_set16.tif
+
+Maxent detailed
+Maxent beta multiplier occurrences less than 25 0.5,1,1.5,2,2.5,3,3.5,4
+Maxent beta multiplier occurrences greater than 25 1,2
+Maxent feature classes occurrences less than 25 l,q,lq
+Maxent feature classes occurrences greater than 25 l,lq
+Maxent prediction settings no_ext
+Maxent prediction function kuenm
+
+Final data
+Store files all
+#############################################################################
+
+Handling occurrences
+Number of not duplicated occurrences: 211
+
+Unique occurrences to 1km, using  sqkm
+Unique occurrences: ok.
+Number of unique occurrences: 169
+
+Accesible area: ok. 
+
+Processing environmental layers: ok.
+Path of climatic variables used Data/env_vars_ex/
+Path of other variables used Data/env_vars_ex/other/
+Variables used wc2.1_10m_bio_1_s,wc2.1_10m_bio_10_s,elev
+Completed in  0 hours 0 mins
+
+Bias file NOT developed 
+
+Completed in  0 hours 0 mins
+
