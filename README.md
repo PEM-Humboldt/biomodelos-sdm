@@ -9,13 +9,16 @@ Current state: in development.
 Describe each one
 
 ### Pre-processing
+This repository include routines that produce layers and data necessaries to run ecological niche models. The first implementation correspond to the obtention of mask in GIS format to cut environmental layers.
 
 ### Modelling
+This repository include functions and routines necessaries to run ecological niche models using Maxent. This routines represent the BioModelos backbone used to infer spatial distribution models.
 
 ### Post-Processing
+This repository include functions and routines proposed to clean ecological niche models and to obtain products based on the BioModelos such as spcies richness maps, vulnerability index and another which could be used as indicators. 
 
 ### Study-cases
-
+This repository include functions and routines (Pre-processing, modelling, post-processing) modified to run models to specific cases or biological groups.
 
 ## Authors and contact
 
@@ -37,8 +40,8 @@ Describe each one
 
 ## Acknowledgment
 
-NatGeo
-Natural map
+This development is supported by National Geographic Society Grant #NGS-86896T-21.
+This development was supported by Natural map in its first phase.
 
 ## License
 
