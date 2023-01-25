@@ -72,6 +72,7 @@ do.uniq1km <- function(occ., col.lon = col_lon, col.lat = col_lat, sp.col = col_
 #' dim(ambystoma_tigrinum_clean)
 #' }
 #'
+#' acknowldgement: Luis Osorio NicheToolBox https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R
 clean_dup <- function(data, longitude, latitude, threshold = 0.0) {
   data <- data[!is.na(data[, longitude]), ]
   dat_sp <- sp::SpatialPointsDataFrame(data[, c(

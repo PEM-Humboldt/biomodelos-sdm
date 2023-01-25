@@ -232,5 +232,5 @@ do.bioclim <- function(occ. = M_$occurrences, env.Mdir = paste0(folder_sp, "/M_v
 #   }
 
 
-  return(list(c_proj = eval1_models, f_proj = NULL, best = best2))
+  return(list(c_proj = terra::rast(eval1_models), f_proj = NULL, best = best2))
 }

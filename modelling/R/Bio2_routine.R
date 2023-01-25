@@ -495,11 +495,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       linesmsg6.2 <- tryCatch(
         expr = {
           enscurr <- currentEns_byAlg(
-            ras.Stack = PathBioclim$c_proj, data. = M_$occurrences,
+            rasM.Stack = PathBioclim$c_proj, data. = M_$occurrences,
             collon = col_lon, collat = col_lat, e = E, algorithm = "bioclim",
             foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = M_, compute.F = compute_F, proj.models = proj_models
+            areas = M_, proj.models = proj_models
           )
           
           if (do_future == TRUE) {
@@ -568,11 +568,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       linesmsg6.2 <- tryCatch(
         expr = {
           enscurr <- currentEns_byAlg(
-            ras.Stack = PathAMaxent$c_proj, data. = M_$occurrences,
-            collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
-            foldersp = folder_sp, tim = "current", esc.nm = "",
+            rasM.Stack = PathAMaxent$M_proj, rasG.Stack = PathAMaxent$G_proj, 
+            data. = M_$occurrences, collon = col_lon, collat = col_lat, e = E, 
+            algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = M_, compute.F = compute_F, proj.models = proj_models
+            areas = M_, proj.models = proj_models, bins = NULL 
           )
 
           if (do_future == TRUE) {
@@ -580,11 +580,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
             for (f in 1:length(layersF)) {
               currentEns_byAlg(
-                ras.Stack = layersF[[f]], data. = M_$occurrences,
-                collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
+                rasM.Stack = PathAMaxent$M_proj, rasF.Stack = layersF[[f]], algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                 crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                areas = M_, compute.F = compute_F, proj.models = proj_models
+                proj.models = proj_models, bins = enscurr, e = E
               )
             }
           }
@@ -620,11 +619,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic,
             write.intfiles = FALSE, sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
           )
-          paste("\nPath B, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
+          paste("\nPath B, number occ greater than 25\nLarge sample Maxent modelling: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
-          return(paste0("\nPath B, number occ greater or equal to 25 \nSmall samples Maxent modelling fail.\nError R: ", e1))
+          return(paste0("\nPath B, number occ greater or equal to 25 \nLarge samples Maxent modelling fail.\nError R: ", e1))
         } ## MISSING FIXING DISMO PREDIC
       )
       
@@ -639,12 +638,11 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       linesmsg6.2 <- tryCatch(
         expr = {
           enscurr <- currentEns_byAlg(
-            ras.Stack = PathBMaxent$c_proj, data. = M_$occurrences,
-            collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
-            foldersp = folder_sp, tim = "current", esc.nm = "",
+            rasM.Stack = PathBMaxent$M_proj, rasG.Stack = PathBMaxent$G_proj, 
+            data. = M_$occurrences, collon = col_lon, collat = col_lat, e = E, 
+            algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = M_, compute.F = compute_F, proj.models = proj_models 
-            #bins = PathBMaxent$Bins
+            areas = M_, proj.models = proj_models, bins = NULL 
           )
           
           if (do_future == TRUE) {
@@ -652,12 +650,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
             
             for (f in 1:length(layersF)) {
               currentEns_byAlg(
-                ras.Stack = layersF[[f]], data. = M_$occurrences,
-                collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
+                rasM.Stack = PathBMaxent$M_proj, rasF.Stack = layersF[[f]], algorithm = "MAXENT",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                 crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                areas = M_, compute.F = compute_F, proj.models = proj_models
-                #bins = PathBMaxent$Bins
+                proj.models = proj_models, bins = enscurr, e = E
               )
             }
           }
@@ -726,13 +722,12 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         
         linesmsg6.3 <- tryCatch(
           expr = {
-            currentEns_byAlg(
-              ras.Stack = PathBMaxent$c_proj, data. = M_$occurrences,
-              collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
-              foldersp = folder_sp, tim = "current", esc.nm = "",
+            enscurr <- currentEns_byAlg(
+              rasM.Stack = PathBMaxent$M_proj, rasG.Stack = PathBMaxent$G_proj, 
+              data. = M_$occurrences, collon = col_lon, collat = col_lat, e = E, 
+              algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
               crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-              areas = M_, compute.F = compute_F, proj.models = proj_models,
-              #bins = PathBMaxent$Bins
+              areas = M_, proj.models = proj_models, bins = NULL
             )
             
             if (do_future == TRUE) {
@@ -740,12 +735,10 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
               
               for (f in 1:length(layersF)) {
                 currentEns_byAlg(
-                  ras.Stack = layersF[[f]], data. = M_$occurrences,
-                  collon = col_lon, collat = col_lat, e = E, algorithm = "MAXENT",
+                  rasM.Stack = PathBMaxent$M_proj, rasF.Stack = layersF[[f]], algorithm = "MAXENT",
                   foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                   crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                  areas = M_, compute.F = compute_F, proj.models = proj_models,
-                  #bins = PathBMaxent$Bins
+                  proj.models = proj_models, bins = enscurr, e = E
                 )
               }
             }

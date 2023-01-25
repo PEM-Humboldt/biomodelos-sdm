@@ -149,72 +149,39 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
   
   if (proj.models == "M-M"){
     if(proj.mod == TRUE & do.future == F){
-      current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
+      current_M_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), 
+                                       pattern = paste0(sp.name, "_M.asc"), full.names = T, 
+                                       include.dirs = T, recursive = T)
     }else{
-      current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, ".asc$"), full.names = T, include.dirs = T, recursive = T)
+      current_M_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), 
+                                       pattern = paste0(sp.name, ".asc$"), full.names = T, 
+                                       include.dirs = T, recursive = T)
     }
-    BinsDf <- NULL
+    
+    current_M_proj <- terra::rast(current_M_files)
+    terra::crs(current_M_proj) <- crs.proyect
+    names(current_M_proj) <- best3$Model
+    
+    # Create G object to complete the returned set of data
+    current_G_proj <- NULL
   }
   
   if (proj.models == "M-G"){
-    current_M_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = paste0(sp.name, "_M.asc"), full.names = T, include.dirs = T, recursive = T)
-    current_M <- raster::stack(current_M_files)
+    current_M_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), 
+                                  pattern = paste0(sp.name, "_M.asc"), full.names = T, 
+                                  include.dirs = T, recursive = T)
+    current_M_proj <- terra::rast(current_M_files)
+    terra::crs(current_M_proj) <- crs.proyect
+    names(current_M_proj) <- best3$Model
     
-    current_M.med <- raster::calc(x = current_M, median)
+    current_G_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), 
+                                     pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
     
-    biomodelos.thresh <- c(E, 1, 10, 20, 30)
-    names(biomodelos.thresh) <- c("E", "0", "10", "20", "30")
+    current_G_proj <- terra::rast(current_G_files)
+    terra::crs(current_G_proj) <- crs.proyect
+    names(current_G_proj) <- best3$Model
     
-    # converting to binary the median ensemble for each biomodelos threshold
-    Bins <- list()
-    for (i in 1:length(biomodelos.thresh)) {
-      Binsi <- do.bin(
-        Ras = current_M.med, dat = occ.$occ_joint, lon = "longitude",
-        lat = "latitude", thresh = biomodelos.thresh[i]
-      )
-      Bins[[i]] <- Binsi
-    }
-    
-    # extracting threshold value from list of binaries. Bins file is a list o sub-list. Each sub-list
-    # refers to one threshold conversion. Inside each sub-list there are two files, the binary raster
-    # and the value of threshold
-    BinsDf <- list()
-    for (i in 1:length(Bins)) {
-      listi <- Bins[[i]]
-      Df <- listi[[2]]
-      BinsDf[[i]] <- Df
-    }
-    # convert list to a vector
-    BinsDf <- data.frame(BinsDf)
-    # giving names to the Df
-    names(BinsDf) <- names(biomodelos.thresh)
-    
-    current_proj_files <- list.files(path = paste0(folder.sp, "/final_models_kuenm"), pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T)
-  }   
-  
-  current_proj <- raster::stack(current_proj_files)
-  names(current_proj) <- best3$Model
-
-    for (i in 1:nlayers(current_proj)) {
-      fileNm <- unlist(strsplit(x = current_proj_files[i], split = "/"))
-
-      Ras <- current_proj[[i]]
-      raster::crs(Ras) <- sp::CRS(crs.proyect)
-      
-      if (write.intfiles == TRUE) {
-        writeRaster(Ras, paste0(
-          folder.sp, "/final_models_kuenm/", fileNm[3], "/", unlist(strsplit(fileNm[4], ".asc$")),
-          ".tif"
-        ),
-        format = "GTiff",
-        overwrite = T,
-        NAflag = -9999,
-        datatype = "FLT4S",
-        options = "COMPRESS=LZW"
-        )
-      }
-    }
-  
+  }
 
   #--------------------
   # 6. future predictions
@@ -233,31 +200,7 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
       noFRas <- c(grep("*_M.asc$", env.listFolder), grep("*_G.asc$", env.listFolder), grep(paste0(folder.sp, ".asc$"), env.listFolder))
       # removing no future files
       env.FlistRas <- env.listFolder[-noFRas]
-      fut_proj <- raster::stack(env.FlistRas)
-
-      # change asc files for tif
-      # first search into folder model, read files and create stack, write the layers in tif
-
-      for (a in 1:nlayers(fut_proj)) {
-
-        # getting a vector with name of model and layer
-        fileNm2 <- unlist(strsplit(x = env.FlistRas[a], split = "/"))
-
-        Ras <- fut_proj[[a]]
-        raster::crs(Ras) <- sp::CRS(crs.proyect)
-        if (write.intfiles == TRUE) {
-          writeRaster(Ras, paste0(
-            folder.sp, "/final_models_kuenm/", fileNm2[3], "/", unlist(strsplit(fileNm2[4], ".asc$")),
-            ".tif"
-          ),
-          format = "GTiff",
-          overwrite = T,
-          NAflag = -9999,
-          datatype = "FLT4S",
-          options = "COMPRESS=LZW"
-          )
-        }
-      }
+      fut_proj <- terra::rast(env.FlistRas)
 
       fut_proj_list[[i]] <- fut_proj
     }
@@ -266,12 +209,12 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
 
     # results in case of do.future = FALSE
 
-    return(list(c_proj = current_proj, f_proj = fut_proj_list, best = best3, Bins = BinsDf))
+    return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = fut_proj_list, best = best3))
   }
 
   # results in case of do.future = FALSE
 
-  return(list(c_proj = current_proj, f_proj = NULL, best = best3, Bins = BinsDf))
+  return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = NULL, best = best3))
 }
 
 #--------------------------
@@ -316,3 +259,4 @@ kuenm.path.bias <- function(bias.file = biasfile, foldersp = folder.sp) {
 
   return(complete_bias_path)
 }
+
