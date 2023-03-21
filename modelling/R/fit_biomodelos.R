@@ -1,9 +1,6 @@
-# Biomodelos 2 Routine
-#
-# `Bio2_routine` automates the fitting of Species Distribution Models from occurrence
-# and environmental data.
+# fit_biomodelos automates the fitting of Species Distribution Models from occurrence and environmental data.
 
-Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
+fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                          clim_vars, dir_clim = NULL, dir_other = NULL,
                          extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL, 
                          use_bias = NULL, TGS_kernel = NULL, proj_models,
@@ -201,7 +198,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   # 0.1 Calling individual functions
 
-  source("R/1_format_rawocc.R")
+  source("R/format_occ_data.R")
   source("R/2_uniq1km.R")
   source("R/3_m.R") ## Overlaping occurrences, biogeographic units and Minimun Convex Polygon (MCP) by ENMeval: https://tinyurl.com/y3u3c6fj
   source("R/4_process_env.R")
@@ -300,7 +297,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   linesmsg1 <- tryCatch(
     exp = {
-      occ_no_dup <- format_rawocc(occ. = occ, col.lon = col_lon, col.lat = col_lat,
+      occ_no_dup <- format_occ_data(occ. = occ, col.lon = col_lon, col.lat = col_lat,
                                   spp.col = col_sp)
       write.csv(occ_no_dup, paste0(folder_sp, "/occurrences/occ_no_dup.csv"), row.names = F)
       paste0(
@@ -323,6 +320,7 @@ Bio2_routine <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   #--------------------------------------
   # 2. Unique occurrences to x km
   #--------------------------------------
+  
   message(paste0("Thining database to ", dist_uniq, "km, using  ", uniq1k_method))
 
   linesmsg2 <- tryCatch(
