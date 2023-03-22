@@ -1,17 +1,39 @@
-do.uniq1km <- function(occ., col.lon = col_lon, col.lat = col_lat, sp.col = col_sp,
-                       sp.name = sp_name, uniq1k.method, uniqDist) {
-  if (is.null(uniq1k.method) == T) {
+#' Function to remove spatial duplicates from occurrence data base
+#' 
+#' @description  The `remove_spat_duplicates` function is designed to remove duplicate occurrences of species from a 
+#' data frame. The function offers two methods for removing duplicates: (1) a spatial thinning approach using the 
+#' spThin package, and (2) a distance-based approach using a distance threshold. The function returns a data frame 
+#' with unique occurrences, based on the chosen method and distance threshold.
+#'
+#' @param occ. data frame containing occurrence data with columns for longitude, latitude, and species identification
+#' @param col.lon character string column name for the longitude variable
+#' @param col.lat character string column name for the latitude variable
+#' @param spp.col character string column name for the species identification variable
+#' @param sp.name character string species name (default is sp_name)
+#' @param remove.method character string indicating the method for removing duplicate occurrences. Two options:
+#' "sqkm" uses clean_dup function from ntbox package by Luis Osorio 
+#' https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R or "spthin" uses thin function
+#' https://rdrr.io/cran/spThin/man/thin.html
+#' @param remove.distance: a numeric value indicating the distance threshold in kilometers for considering 
+#' occurrences as duplicates 
+#' 
+#' @return data frame with unique occurrences, based on the specified method and distance threshold.
+
+remove_spat_duplicates <- function(occ., col.lon = col_lon, col.lat = col_lat, sp.col = col_sp,
+                                   sp.name = sp_name, remove.method, remove.distance) {
+  
+  if (is.null(remove.method) == T) {
     dropUniq <- occ.
   } else {
-    if (uniq1k.method == "sqkm") {
+    if (remove.method == "sqkm") {
       dropUniq <- clean_dup(
-        data = occ., longitude = col.lon, latitude = col.lat, threshold = uniqDist / 120 # missing let user choice
+        data = occ., longitude = col.lon, latitude = col.lat, threshold = remove.distance / 120
       )
     }
 
-    if (uniq1k.method == "spthin") {
+    if (remove.method == "spthin") {
       thinned <- spThin::thin(
-        loc.data = occ., lat.col = col.lat, long.col = col.lon, spec.col = sp.col, thin.par = uniqDist,
+        loc.data = occ., lat.col = col.lat, long.col = col.lon, spec.col = sp.col, thin.par = remove.distance,
         reps = 20, verbose = TRUE, locs.thinned.list.return = TRUE, write.files = FALSE
         # thin.par parameter should be setting according to species natural history
       )
@@ -35,8 +57,6 @@ do.uniq1km <- function(occ., col.lon = col_lon, col.lat = col_lat, sp.col = col_
   }
 
   return(dropUniq)
-
- 
 }
 
 #--------------------------

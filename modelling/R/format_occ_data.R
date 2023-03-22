@@ -1,6 +1,7 @@
-#' The `format_occ_data` function takes the input occurrence data `occ.` and column names for longitude, latitude, 
-#' and species. It calls the `clean_occ_chars` function to remove conflicting, erroneous, and duplicate characters 
-#' from the data. The formatted data is returned.
+#' Function to format occurrence data
+#' @description  The `format_occ_data` function takes the input occurrence data `occ.` and column names for longitude, 
+#' latitude, and species. It calls the `clean_occ_chars` function to remove conflicting, erroneous, and duplicate 
+#' characters from the data. The formatted data is returned.
 #'
 #' @param occ. data.frame of occurrence data with column names including at least longitude, latitude and species
 #' name.

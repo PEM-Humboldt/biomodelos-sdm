@@ -2,7 +2,7 @@
 
 fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                          clim_vars, dir_clim = NULL, dir_other = NULL,
-                         extension_vars = NULL, uniq1k_method = NULL, dist_uniq = NULL, 
+                         extension_vars = NULL, remove_method = NULL, remove_distance = NULL, 
                          use_bias = NULL, TGS_kernel = NULL, proj_models,
                          method_M = NULL, dist_MOV = NULL, area_M = NULL, compute_M = NULL, dir_M = NULL,
                          area_G = NULL, method_G = NULL, compute_G = NULL, dir_G = NULL,
@@ -199,8 +199,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   # 0.1 Calling individual functions
 
   source("R/format_occ_data.R")
-  source("R/2_uniq1km.R")
-  source("R/3_m.R") ## Overlaping occurrences, biogeographic units and Minimun Convex Polygon (MCP) by ENMeval: https://tinyurl.com/y3u3c6fj
+  source("R/remove_spat_duplicates.R")
+  source("R/3_m.R") 
   source("R/4_process_env.R")
   source("R/5_Bias.R")
   source("R/6A_1_doenmEVAL.R")
@@ -250,8 +250,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     "Number of raw occurrences ", nrow(occ), "\n",
     "Experimental type:", tipo, "\n",
     "\n",
-    "Method for unique records ", uniq1k_method, "\n",
-    "Distance used for unique records ", dist_uniq, " km", "\n",
+    "Method for unique records ", remove_method, "\n",
+    "Distance used for unique records ", remove_distance, " km", "\n",
     "\n",
     "Accesible area constructed with:", method_M,
     "Movement distance vector (buffer depends on this vector): ", dist_MOV, " km", "\n",
@@ -297,12 +297,12 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   linesmsg1 <- tryCatch(
     exp = {
-      occ_no_dup <- format_occ_data(occ. = occ, col.lon = col_lon, col.lat = col_lat,
+      formated_occ <- format_occ_data(occ. = occ, col.lon = col_lon, col.lat = col_lat,
                                   spp.col = col_sp)
-      write.csv(occ_no_dup, paste0(folder_sp, "/occurrences/occ_no_dup.csv"), row.names = F)
+      write.csv(formated_occ, paste0(folder_sp, "/occurrences/formated_occ.csv"), row.names = F)
       paste0(
         "Handling occurrences", "\n",
-        "Number of not duplicated occurrences: ", nrow(occ_no_dup), "\n"
+        "Number of not duplicated occurrences: ", nrow(formated_occ), "\n"
       )
     },
     error = function(error_message) {
@@ -318,20 +318,20 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   )
 
   #--------------------------------------
-  # 2. Unique occurrences to x km
+  # 2. Remove spatial duplicate occurrences to x km
   #--------------------------------------
   
-  message(paste0("Thining database to ", dist_uniq, "km, using  ", uniq1k_method))
+  message(paste0("Removing spatial duplicate occurrences database to ", remove_distance, "km, using  ", remove_method))
 
   linesmsg2 <- tryCatch(
     expr = {
-      occ_thin <- do.uniq1km(
-        occ. = occ_no_dup, col.lon = col_lon, col.lat = col_lat, sp.col = col_sp,
-        sp.name = sp_name, uniq1k.method = uniq1k_method, uniqDist = dist_uniq
+      removed_spat_occ <- remove_spat_duplicates(
+        occ. = formated_occ, col.lon = col_lon, col.lat = col_lat, sp.col = col_sp,
+        sp.name = sp_name, remove.method = remove_method, remove.distance = remove_distance
       )
-      write.csv(occ_thin, paste0(folder_sp, "/occurrences/occ_thin.csv"), row.names = F)
+      write.csv(removed_spat_occ, paste0(folder_sp, "/occurrences/removed_spat_occ.csv"), row.names = F)
       paste0(
-        "Unique occurrences to ", dist_uniq, "km, using  ", uniq1k_method, "\n",
+        "Unique occurrences to ", remove_distance, "km, using  ", remove_method, "\n",
         "Unique occurrences: ok.", "\n",
         "Number of unique occurrences: ", nrow(occ_thin), "\n"
       )
@@ -350,7 +350,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   try(
     exp = {
-      if (nrow(occ_thin) <= 2) {
+      if (nrow(removed_spat_occ) <= 2) {
         linestime <- give.msg.time(time.1 = time1)
         #------- tracking file
         writeLines(
@@ -366,8 +366,6 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     }
   )
 
-
-
   #--------------------------------------
   # 3. Accessible Area.
   #--------------------------------------
@@ -376,7 +374,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   linesmsg3 <- tryCatch(
     expr = {
       M_ <- inte_areas(
-        occ. = occ_thin,  col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
+        occ. = removed_spat_occ,  col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
         method.M = method_M, method.G = method_G, method.F = method_F, area.M = area_M,
         area.G = area_G, area.F = area_F, proj.models = proj_models,
         do.future = do_future, compute.F = compute_F, polygon.data = polygon_data
