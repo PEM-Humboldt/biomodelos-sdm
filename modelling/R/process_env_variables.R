@@ -1,6 +1,38 @@
+#' Processing environmental variables for ecological niche modelling
+#' @description  This function reads in environmental data files from the specified directories, and merges 
+#' them into a single raster stack. It then crops and masks the raster stack to the specified shapefiles, 
+#' and writes the resulting environmental layers to the specified output directory. The function can also 
+#' perform correlation analysis on the processed data if desired.
+#'
+#' @param clim.dataset character string specifying the name of the dataset to be processed
+#' @param clim.dir character string specifying the directory containing climate data for the current time period
+#' @param file.extension character string specifying the file extension of the data files to be processed
+#' @param crs.proyect optional character string specifying the coordinate reference system to be used for projection 
+#' (default is 'crs_proyect')
+#' @param shape.M shapefile or sf object specifying the accessible area for training models
+#' @param shape.G shapefile or sf object specifying the area for model projection
+#' @param shape.F shapefile or sf object specifying the area for future climate change scenarios
+#' @param env.other optional character string specifying the directory containing other environmental data
+#' @param folder.sp character string specifying the output directory for the processed environmental data
+#' @param do.future logical value indicating whether to process data for future scenarios
+#' @param proj.models character string specifying the type of projection models to be used (either "M-G" or "M-F")
+#' @param compute.G logical value indicating whether to compute data for the "G" projection area
+#' @param compute.F logical value indicating whether to compute data for the "F" future area
+#' @param dir.G character string specifying the directory containing data for the "G" projection area
+#' @param dir.F character string specifying the directory containing data for the "F" future area
+#' @param cor.eval logical value indicating whether to perform correlation analysis on the processed data
+#' @param cor.method character string specifying the method to be used for correlation analysis (e.g. "VIF")
+#' @param cor.detail list specifying additional details for correlation analysis
+#' 
+#' @return this function does not return any value, it simply writes the processed environmental data to the 
+#' specified output directory.
+#' 
+#' @note The function assumes that the required libraries and functions (e.g. raster, sf, terra) have already 
+#' been loaded into the R environment.
+
 # environmental variables
 
-process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect = crs_proyect,
+process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proyect = crs_proyect,
                                 shape.M = M_$shape_M, shape.G = M_$shape_G, shape.F = M_$shape_F,
                                 env.other = dir_other, folder.sp = folder_sp, do.future = do_future,
                                 proj.models = proj_models, compute.G, compute.F, dir.G, dir.F,
@@ -10,7 +42,7 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect = crs
 
   clim_files <- list.files(
     path = paste0(clim.dir, clim.dataset, "/current/"),
-    pattern = exten,
+    pattern = file.extension,
     recursive = F,
     full.names = T
   )
@@ -18,7 +50,7 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect = crs
   # other variables apart from the climatic ones
   other_files <- list.files(
     path = paste0(env.other, "/current/"),
-    pattern = exten,
+    pattern = file.extension,
     recursive = F,
     full.names = T
   )
@@ -32,9 +64,9 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect = crs
 
   envras <- raster::stack(envfiles)
 
-  if (isTRUE(cor.eval)) { # esta funcion ya usa terra y sf, se necesita que el resto tambien
+  # Colinearity evaluation of variables inside each accesible area  
+  if (isTRUE(cor.eval)) {
     if ("VIF" %in% cor.method) {
-      source("R/Vif_secb.R")
       envras2 <- terra::rast(envras)
       cor.result <- vif_apply(shapeM = shape.M, envars = envras2, vifdetails = cor.detail)
       rm(envras2)
@@ -135,7 +167,7 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect = crs
       }
     } else {
 
-      # as was not computed G vars, is necessary to copy them from directory used
+      # Because was not computed G vars, is necessary to copy them from directory used
       Gfiles <- list.files(dir.G, pattern = ".asc", full.names = T, recursive = F)
 
       for (a in 1:length(Gfiles)) {
@@ -162,11 +194,11 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect = crs
   # future
 
   if (do.future == TRUE) {
-    envFstack <- process_env.future(
+    envFstack <- process_env_future(
       climdataset = clim.dataset,
       climdir = clim.dir,
       otherfiles = other_files,
-      extension = exten,
+      extension = file.extension,
       crsproyect = crs.proyect,
       projMod = proj.models,
       envother = env.other,
@@ -199,7 +231,7 @@ process_env.current <- function(clim.dataset, clim.dir, exten, crs.proyect = crs
 }
 
 #-------------------------
-process_env.future <- function(climdataset, climdir, otherfiles, extension, crsproyect,
+process_env_future <- function(climdataset, climdir, otherfiles, extension, crsproyect,
                                envother, foldersp, projMod, names.ras, NclimCurrent,
                                computeF, dirF, shapeM, shapeG, shapeF) {
 

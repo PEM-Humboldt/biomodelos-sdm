@@ -1,3 +1,18 @@
+#' Extracts environmental variable values at sampled points from a shapefile and applies the 
+#' vif_func function to calculate VIF values for each variable based on the extracted values.
+#' 
+#' @description This function takes in a shapefile, a set of environmental variables, 
+#' and VIF (variance inflation factor) details as inputs. It then samples 
+#' a subset of points from the shapefile, extracts the values of the environmental variables at those 
+#' points, and applies the vif_func function (defined below) to calculate the VIF values for the variables. 
+#' Finally, it returns the calculated VIF values. The VIF is calculated by running a linear 
+#' regression on each variable while using all other variables as predictors. The function returns 
+#' the names of the variables that have a VIF value below a specified threshold (vifdetails).
+#' 
+#' @param shapeM spatial data frame containing the data used to calculate the VIF.
+#' @param envars raster file containing the explanatory variables.
+#' @param vifdetails numeric value specifying the VIF threshold.
+
 vif_apply <- function(shapeM, envars, vifdetails){
   
   Mpoints <- shapeM %>% st_as_sf() %>%  terra::vect() %>% rasterize(envars) %>% terra::as.data.frame(xy = T) %>% 
@@ -28,7 +43,19 @@ vif_apply <- function(shapeM, envars, vifdetails){
   return(vifd) # aplicar el vif
 }
 
-# Función para usar VIF menor a un threshold
+#' Calculates VIF values for a set of explanatory variables using linear regression models and iteratively
+#' removes variables with high VIF values until all VIF values are below a specified threshold. 
+#' 
+#' @description This function computes the VIF values for a set of explanatory variables using a data frame 
+#' (in_frame). The VIF is calculated by running a linear regression on each variable while using all other 
+#' variables as predictors. The function returns the names of the variables that have a VIF value below a 
+#' specified threshold (thresh).
+#' 
+#' @param in_frame data frame containing the data used to calculate the VIF.
+#' @param thresh numeric value specifying the VIF threshold.
+#' @param trace logical value indicating whether to print the output of each iteration.
+#' @param ... additional arguments to be passed to the lm() function.
+
 vif_func<-function(in_frame,thresh=10,trace=F,...){
   
   require(fmsb) 

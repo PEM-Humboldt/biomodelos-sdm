@@ -2,7 +2,7 @@
 
 fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                          clim_vars, dir_clim = NULL, dir_other = NULL,
-                         extension_vars = NULL, remove_method = NULL, remove_distance = NULL, 
+                         file_extension = NULL, remove_method = NULL, remove_distance = NULL, 
                          use_bias = NULL, TGS_kernel = NULL, proj_models,
                          method_M = NULL, dist_MOV = NULL, area_M = NULL, compute_M = NULL, dir_M = NULL,
                          area_G = NULL, method_G = NULL, compute_G = NULL, dir_G = NULL,
@@ -65,18 +65,15 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       if (compute_G == TRUE) {
         if (is.null(area_G) & is.null(method_G)) {
           stop("Provide a raster file of an area different to M or a constructing method for G in order to project the models.")
-        } else {
+        } else if (!is.null(area_G)) {
           Gstr <- tail(unlist(strsplit(area_G, "\\.")), n = 1)
           if (Gstr == "shp") rtemp <- raster::shapefile(area_G)
           if (Gstr == "tif") rtemp <- raster::raster(area_G)
 
           if (!exists("rtemp")) {
-            stop("Provide a raster file supported by the raster package. See documentation.")
+            stop("Provide a raster or shapefile supported by the raster package. See documentation.")
           } else {
             rm(rtemp)
-          }
-          if (!exists("method_G")) {
-            stop("Provide a r file supported by the raster package. See documentation.")
           }
         }
       } else {
@@ -135,7 +132,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   # Environmental variables
   if (is.null(dir_clim)) dir_clim <- "Data/env_vars/"
   if (is.null(dir_clim)) dir_other <- "Data/env_vars/other/"
-  if (is.null(extension_vars)) extension_vars <- "*.tif$"
+  if (is.null(file_extension)) file_extension <- "*.tif$"
 
   # Bias management
   if (is.null(use_bias)) use_bias <- FALSE
@@ -200,9 +197,10 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   source("R/format_occ_data.R")
   source("R/remove_spat_duplicates.R")
-  source("R/3_m.R") 
-  source("R/4_process_env.R")
-  source("R/5_Bias.R")
+  source("R/define_interest_areas.R")
+  source("R/apply_vif_analysis.R")
+  source("R/process_env_variables.R")
+  source("R/estimate_sampling_bias.R")
   source("R/6A_1_doenmEVAL.R")
   source("R/6B_1_dosplit.R")
   source("R/6B_2_dokuenm.R")
@@ -211,7 +209,6 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   source("R/6C_do.bioclim.R")
   source("R/7_doensemble.R")
   source("R/give.msg.time.R")
-  source("R/doDE.MCP.R")
 
   # 0.2 Starting time
 
@@ -237,7 +234,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   occ$occ.ID <- 1:nrow(occ)
 
-  write.csv(occ, paste0(folder_sp, "/occurrences/occ_raw.csv"), row.names = F)
+  write.csv(occ, paste0(folder_sp, "/occurrences/raw_occ.csv"), row.names = F)
 
 
   # ----- tracking file
@@ -253,7 +250,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     "Method for unique records ", remove_method, "\n",
     "Distance used for unique records ", remove_distance, " km", "\n",
     "\n",
-    "Accesible area constructed with:", method_M,
+    "Accesible area constructed with:", method_M, "\n",
     "Movement distance vector (buffer depends on this vector): ", dist_MOV, " km", "\n",
     "\n",
     "Projections", "\n",
@@ -333,7 +330,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       paste0(
         "Unique occurrences to ", remove_distance, "km, using  ", remove_method, "\n",
         "Unique occurrences: ok.", "\n",
-        "Number of unique occurrences: ", nrow(occ_thin), "\n"
+        "Number of unique occurrences: ", nrow(removed_spat_occ), "\n"
       )
     },
     error = function(error_message) {
@@ -369,17 +366,17 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   #--------------------------------------
   # 3. Accessible Area.
   #--------------------------------------
-  message("Constructing accesible area")
+  message("Constructing interest areas")
 
   linesmsg3 <- tryCatch(
     expr = {
-      M_ <- inte_areas(
+      interest_areas <- define_interest_areas(
         occ. = removed_spat_occ,  col.lon = col_lon, col.lat = col_lat, folder.sp = folder_sp, dist.Mov = dist_MOV,
         method.M = method_M, method.G = method_G, method.F = method_F, area.M = area_M,
         area.G = area_G, area.F = area_F, proj.models = proj_models,
         do.future = do_future, compute.F = compute_F, polygon.data = polygon_data
       )
-      write.csv(M_$occurrences, paste0(folder_sp, "/occurrences/occ_jointID.csv"), row.names = F)
+      write.csv(interest_areas$occurrences, paste0(folder_sp, "/occurrences/jointID_occ.csv"), row.names = F)
       paste("Accesible area: ok.", "\n")
     },
     error = function(error_message) {
@@ -398,14 +395,15 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   #--------------------------------------
   message("Processing environmental layers")
 
-  linesmsg4 <- tryCatch( # missing at copy, use a vector of names instead of numbers to select what layers to copy
+  linesmsg4 <- tryCatch( # missing use a vector of names instead of numbers to select what layers to copy
     expr = {
-      envars <- process_env.current(
-        clim.dataset = clim_vars, clim.dir = dir_clim, exten = extension_vars,
+      envars <- process_env_current(
+        clim.dataset = clim_vars, clim.dir = dir_clim, file.extension = file_extension,
         compute.G = compute_G, compute.F = compute_F, dir.G = dir_G, dir.F = dir_F, 
         cor.eval = cor_eval, cor.method = cor_method, cor.detail = cor_detail,
-        crs.proyect = crs_proyect, shape.M = M_$shape_M, shape.G = M_$shape_G, shape.F = M_$shape_F,
-        env.other = dir_other, folder.sp = folder_sp, do.future = do_future, proj.models = proj_models
+        crs.proyect = crs_proyect, shape.M = interest_areas$shape_M, shape.G = interest_areas$shape_G, 
+        shape.F = interest_areas$shape_F, env.other = dir_other, folder.sp = folder_sp, do.future = do_future, 
+        proj.models = proj_models
       )
       paste0(
         "Processing environmental layers: ok.", "\n",
@@ -435,7 +433,10 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     expr = {
       if (use_bias == TRUE) {
         message("Procesing bias layer")
-        BiasSp <- get_BiasSp()
+        BiasSp <- estimate_sampling_bias(data. = interest_areas$occurrences, TGS.kernel = "bias_layer/aves.tif",
+                                         shape.M = interest_areas$shape_M, env.M = envars$M, ext = "*.asc",
+                                         folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat,
+                                         col.sp = col_sp)
         paste("Bias file development: ok", "\n")
       } else {
         BiasSp <- NULL
@@ -461,13 +462,13 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   message("Calibrating and evaluating SDM's")
   
-  if (nrow(M_$occurrences) < 6 ) {
+  if (nrow(interest_areas$occurrences) < 6 ) {
     
       message("Path, calibrating and evaluating bioclim models")
       
       linesmsg6.1 <- tryCatch(
         expr = {
-          PathBioclim <- do.bioclim(occ. = M_$occurrences, env.Mdir = paste0(folder_sp, "/M_variables"),
+          PathBioclim <- do.bioclim(occ. = interest_areas$occurrences, env.Mdir = paste0(folder_sp, "/M_variables"),
                                     env.Gdir = paste0(folder_sp, "/G_variables"),
                                     folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat, 
                                     proj.models = proj_models, crs.proyect = crs_proyect, extrap = extrapo, 
@@ -490,11 +491,11 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       linesmsg6.2 <- tryCatch(
         expr = {
           enscurr <- currentEns_byAlg(
-            rasM.Stack = PathBioclim$c_proj, data. = M_$occurrences,
+            rasM.Stack = PathBioclim$c_proj, data. = interest_areas$occurrences,
             collon = col_lon, collat = col_lat, e = E, algorithm = "bioclim",
             foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = M_, proj.models = proj_models
+            areas = interest_areas, proj.models = proj_models
           )
           
           if (do_future == TRUE) {
@@ -502,11 +503,11 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
             
             for (f in 1:length(layersF)) {
               currentEns_byAlg(
-                ras.Stack = layersF[[f]], data. = M_$occurrences,
+                ras.Stack = layersF[[f]], data. = interest_areas$occurrences,
                 collon = col_lon, collat = col_lat, e = E, algorithm = "bioclim",
                 foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
                 crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                areas = M_, compute.F = compute_F, proj.models = proj_models
+                areas = interest_areas, compute.F = compute_F, proj.models = proj_models
               )
             }
           }
@@ -527,7 +528,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   
   #pckg <- match.arg(use., c("Dismo", "kuenm", "ENMeval2", "SDMTune", "Biomod"))
 
-  if (nrow(M_$occurrences) >= 6 & nrow(M_$occurrences) < 20) {
+  if (nrow(interest_areas$occurrences) >= 6 & nrow(interest_areas$occurrences) < 20) {
     
       ##########
       # Path A # Jackknife, enmeval maxent
@@ -538,7 +539,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       linesmsg6.1 <- tryCatch(
         expr = {
           PathAMaxent <- do.enmeval(
-            occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.clas = fc_5.25,
+            occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.clas = fc_5.25,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
@@ -564,10 +565,10 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         expr = {
           enscurr <- currentEns_byAlg(
             rasM.Stack = PathAMaxent$M_proj, rasG.Stack = PathAMaxent$G_proj, 
-            data. = M_$occurrences, collon = col_lon, collat = col_lat, e = E, 
+            data. = interest_areas$occurrences, collon = col_lon, collat = col_lat, e = E, 
             algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = M_, proj.models = proj_models, bins = NULL 
+            areas = interest_areas, proj.models = proj_models, bins = NULL 
           )
 
           if (do_future == TRUE) {
@@ -596,7 +597,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       writeLines(linestime, filelog)
   }
 
-  if (nrow(M_$occurrences) >= 20) {
+  if (nrow(interest_areas$occurrences) >= 20) {
     ##########
     # Path B # split in test and train, kuenm maxent, biomod GBM y ANN
     ##########
@@ -607,7 +608,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       linesmsg6.1 <- tryCatch(
         expr = {
           PathBMaxent <- do.enmeval(
-            occ. = M_$occurrences, bias.file = BiasSp, beta.mult = beta_25, f.clas = fc_25,
+            occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_25, f.clas = fc_25,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
@@ -634,10 +635,10 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         expr = {
           enscurr <- currentEns_byAlg(
             rasM.Stack = PathBMaxent$M_proj, rasG.Stack = PathBMaxent$G_proj, 
-            data. = M_$occurrences, collon = col_lon, collat = col_lat, e = E, 
+            data. = interest_areas$occurrences, collon = col_lon, collat = col_lat, e = E, 
             algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
             crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = M_, proj.models = proj_models, bins = NULL 
+            areas = interest_areas, proj.models = proj_models, bins = NULL 
           )
           
           if (do_future == TRUE) {
@@ -672,7 +673,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       linesmsg6.1 <- tryCatch(
         expr = {
           PathBOcc <- dosplit(
-            occ. = M_$occurrences, bias.file = BiasSp, folder.sp = folder_sp, col.lon = col_lon,
+            occ. = interest_areas$occurrences, bias.file = BiasSp, folder.sp = folder_sp, col.lon = col_lon,
             col.lat = col_lat, use.bias = use_bias, env.M = envars$M
           )
           paste0("\nPath B, number occ greater than 25\nOcc splited: ok.")
@@ -719,10 +720,10 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
           expr = {
             enscurr <- currentEns_byAlg(
               rasM.Stack = PathBMaxent$M_proj, rasG.Stack = PathBMaxent$G_proj, 
-              data. = M_$occurrences, collon = col_lon, collat = col_lat, e = E, 
+              data. = interest_areas$occurrences, collon = col_lon, collat = col_lat, e = E, 
               algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
               crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-              areas = M_, proj.models = proj_models, bins = NULL
+              areas = interest_areas, proj.models = proj_models, bins = NULL
             )
             
             if (do_future == TRUE) {
@@ -794,7 +795,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     #         if (length(layersalgo_i) != 0) {
     #           projBalgo_i <- PathBOther$c_proj[[layersalgo_i]]
     #           currentEns_byAlg(
-    #             ras.Stack = projBalgo_i, data. = M_$occurrences, collon = col_lon, collat = col_lat,
+    #             ras.Stack = projBalgo_i, data. = interest_areas$occurrences, collon = col_lon, collat = col_lat,
     #             e = E, algorithm = algos2[i], foldersp = folder_sp
     #           )
     #         }
