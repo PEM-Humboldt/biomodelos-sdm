@@ -1,6 +1,58 @@
-do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
-                       folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias,
-                       extrap, predic, write.intfiles, redo., redo.path, E = E) {
+#' Calibrate, evaluate and select ecological niche models using Maxent with the ENMeval package
+#' 
+#' @description
+#' The 'do_enmeval' function uses the Maxent algorithm with the ENMeval package to calibrate, evaluate, and select 
+#' ecological niche models. It first trains a set of competing models based on the 'f.clas' and 'beta.mult' arguments, 
+#' and then evaluates their performance using partial ROC, omission rate at the 10th percentile, and AICc. The 
+#' function selects the best models using a hierarchical process that considers partial ROC, omission rate, and 
+#' AICc in that order. Finally, the function projects the calibrated model onto projection areas and saves them 
+#' in the species folder specified by the 'folder.sp' argument. 
+#' 
+#' @param occ. data frame containing occurrence data of the species of interest. Must have columns for longitude 
+#' (col.lon) and latitude (col.lat).
+#' @param bias.file data frame containing a set of background points to be used for modeling. Must have columns 
+#' for longitude, latitude, and a probability weighting (in that order).
+#' @param beta.mult numeric value representing the regularization multiplier to be used in Maxent model calibration.
+#' @param f.clas character string indicating the feature class function to be used in Maxent model calibration (e.g. 'l', 'lq').
+#' @param env.Mdir character string representing the directory where the environmental layers for the M projection (train area) 
+#' are located.
+#' @param env.Gdir character string representing the directory where the environmental layers for the G projection (current area) 
+#' are located.
+#' @param env.Fdir character string representing the directory where the environmental layers for the F projection (future area) 
+#' are located.
+#' @param do.future logical indicating whether to calibrate models for future projections(F).
+#' @param folder.sp character string representing the output directory where calibrated models and evaluation results 
+#' will be saved.
+#' @param sp.name character string representing the species name to be used in file naming.
+#' @param col.lon character string representing the name of the column in occ. that contains the longitude data.
+#' @param col.lat character string representing the name of the column in occ. that contains the latitude data.
+#' @param proj.models character string indicating which set of environmental layers to use for modeling. If 'M-M', 
+#' only the M layers will be used. If 'M-G', both M and G layers will be used.
+#' @param partitionMethod character string, indicating the type of partitioning method to use for cross-validation.
+#' Given by ENMeval.
+#' @param crs.proyect character string, indicating the coordinate reference system of the environmental layers. Must be 
+#' a valid CRS string for the raster package.
+#' @param use.bias logical, indicating whether to use the bias file for modeling. If FALSE, background points 
+#' will be randomly sampled from the M projection area.
+#' @param extrap logical, indicating whether to allow model extrapolation beyond the range of environmental predictors.
+#' @param predic character string, indicating the type of prediction method to use. Must be one of 'response', 'threshold', 
+#' or 'probability'.
+#' @param redo. logical, indicating whether to re-run model calibration and evaluation from scratch, even if saved 
+#' results already exist.
+#' @param redo.path character string, representing the directory where saved model calibration and evaluation results are 
+#' located, if any.
+#' @param E numeric, an optional argument for passing a previously calibrated model as a starting point for calibration.
+#'
+#' @return A table of evaluation results is saved in a CSV file in the folder eval_results_enmeval within the folder.sp 
+#' directory specified by the user. The table contains evaluation metrics for each model tested, including AUC, OR10, 
+#' and other performance measures. A summary table of the best models is created based on the evaluation results. 
+#' The table includes information such as the model name, algorithm, AUC, OR10, and other evaluation metrics.
+#' The best models are selected based on various criteria, such as AUC, OR10, and delta AICc. The indices of the 
+#' selected models are stored in a variable index_select.
+
+do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
+                       folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
+                       use.bias, extrap, predic, redo., redo.path, E = E) {
 
   # MISSING user choose function to predict
 
@@ -172,12 +224,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
   # predicting current raster layers of best models
 
   if (proj.models == "M-M") {
-    # if (predic == "dismo") {
-    #   # filter best models and predict them in M
-    #   current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.M))
-    #   names(current_proj) <- best3$settings
-    #   current_proj <- stack(current_proj)
-    # }
+
     if (predic == "kuenm") {
       if (do.future == TRUE) {
         proj <- TRUE
@@ -199,11 +246,7 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
   if (proj.models == "M-G") {
     proj <- TRUE
-    # if (predic == "dismo" & extrap == "ext_clam") {
-    #   current_proj <- lapply(eval1_models, function(x) dismo::predict(x, env.G))
-    #   names(current_proj) <- best3$settings
-    #   current_proj <- stack(current_proj)
-    # }
+
     if (predic == "kuenm") {
       kuenm.occ(occ.[, -c(1, 2)], spname = folder.sp, foldersp = folder.sp, occname = "occ_joint_kuenm")
       kuenm::kuenm_mod(
@@ -217,31 +260,6 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
       )
     }
   }
-
-  # write current M or G prediction layers using dismo or maxnet
-  # if (predic == "dismo") {
-  #   if (proj.models == "M-G") folwrite <- "G"
-  #   if (proj.models == "M-M") folwrite <- "M"
-  #
-  #   if (write.intfiles == TRUE) {
-  #     for (i in 1:nlayers(current_proj)) {
-  #       dir.create(paste0(folder.sp, "/final_models_enmeval/", names(current_proj[[i]])))
-  #       Ras <- current_proj[[i]]
-  #       raster::crs(Ras) <- sp::CRS(crs.proyect)
-  #
-  #       writeRaster(Ras, paste0(
-  #         folder.sp, "/final_models_enmeval/", names(current_proj[[i]]), "/",
-  #         folder.sp, folwrite, ".tif"
-  #       ),
-  #       format = "GTiff",
-  #       overwrite = T,
-  #       NAflag = -9999,
-  #       datatype = "FLT4S",
-  #       options = "COMPRESS=LZW"
-  #       )
-  #     }
-  #   }
-  # }
 
   # searching raster layers
 
@@ -294,44 +312,6 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
     env.folder <- list.dirs(paste0(folder.sp, "/final_models_enmeval"), full.names = T, recursive = F)
     env.folderNm <- list.dirs(paste0(folder.sp, "/final_models_enmeval"), full.names = F, recursive = F)
 
-    # if (predic == "dismo" & extrap == "ext_clam") {
-    #   env.FlistRas <- lapply(env.Ffolder, function(x) {
-    #     list.files(x, pattern = "*.asc", all.files = T, full.names = T)
-    #   })
-    #   env.Fdata <- lapply(env.Ffolder, function(x) {
-    #     a <- list.files(x, pattern = "*.csv", all.files = T, full.names = T)
-    #     b <- read.csv(a)
-    #   })
-    #   envFdata <- dplyr::bind_rows(env.Fdata)
-    #   envFRas <- lapply(env.FlistRas, raster::stack)
-    #   names(envFRas) <- apply(envFdata[, c(1:3)], 1, paste0, collapse = "_")
-    # 
-    #   fut_proj <- list()
-    #   for (i in 1:length(envFRas)) {
-    #     fut_proj[[i]] <- lapply(eval1_models, function(x) dismo::predict(x, envFRas[[i]]))
-    #     names(fut_proj[[i]]) <- best3$settings
-    #   }
-    #   names(fut_proj) <- names(envFRas)
-    #   fut_proj2 <- unlist(fut_proj)
-    # 
-    #   dir.create(paste0(folder.sp, "/final_models_enmeval/future"))
-    # 
-    #   if (write.intfiles == TRUE) {
-    #     for (i in 1:length(fut_proj2)) {
-    #       writeRaster(fut_proj2[[i]], paste0(
-    #         folder.sp, "/final_models_enmeval/future/",
-    #         names(fut_proj2[i]), ".tif"
-    #       ),
-    #       format = "GTiff",
-    #       overwrite = T,
-    #       NAflag = -9999,
-    #       datatype = "FLT4S",
-    #       options = "COMPRESS=LZW"
-    #       )
-    #     }
-    #   }
-    # }
-
     if (predic == "kuenm") {
       fut_proj_list <- list()
       for (i in 1:length(env.folder)) {
@@ -347,29 +327,6 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         fut_proj <- terra::rast(env.FlistRas)
         names(fut_proj) <- env.listnms[-noFRas]
 
-        # change asc files for tif
-        # first search into folder model, read files and create stack, write the layers in tif
-        # if (write.intfiles == TRUE) {
-        #   for (a in 1:nlayers(fut_proj)) {
-        # 
-        #     # getting a vector with name of model and layer
-        #     fileNm2 <- unlist(strsplit(x = env.FlistRas[a], split = "/"))
-        # 
-        #     Ras <- fut_proj[[a]]
-        #     raster::crs(Ras) <- sp::CRS(crs.proyect)
-        #     writeRaster(Ras, paste0(
-        #       folder.sp, "/final_models_enmeval/", fileNm2[3], "/", unlist(strsplit(fileNm2[4], ".asc$")),
-        #       ".tif"
-        #     ),
-        #     format = "GTiff",
-        #     overwrite = T,
-        #     NAflag = -9999,
-        #     datatype = "FLT4S",
-        #     options = "COMPRESS=LZW"
-        #     )
-        #   }
-        # }
-
         fut_proj_list[[i]] <- fut_proj
       }
       names(fut_proj_list) <- env.folderNm
@@ -377,11 +334,12 @@ do.enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
 
     # results in case of do.future = TRUE
-    return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = fut_proj_list, best = best3))
+    return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = fut_proj_list, best = best3, 
+                algorithm = "MAXENT"))
   }
 
   # results in case of do.future = FALSE
-  return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = NULL, best = best3))
+  return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = NULL, best = best3, algorithm = "MAXENT"))
 }
 
 

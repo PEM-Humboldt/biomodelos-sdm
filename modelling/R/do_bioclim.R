@@ -215,22 +215,6 @@ do.bioclim <- function(occ. = M_$occurrences, env.Mdir = paste0(folder_sp, "/M_v
   # write best models data frame
   write.csv(best3, paste0(folder.sp, "/eval_results_bioclim/best_models.csv"), row.names = F)
 
-# dir.create(paste0(folder.sp, "/", "final_models_bioclim"), showWarnings = F)
-# 
-#   for (i in 1:nlayers(eval1_models)) {
-#     writeRaster(eval1_models[[i]],
-#       filename = paste0(
-#         folder.sp, "/",
-#         "final_models_bioclim", "/",
-#         names(eval1_models[[i]]), ".tif"
-#       ), format = "GTiff",
-#       overwrite = T,
-#       NAflag = -9999,
-#       datatype = "FLT4S",
-#       options = "COMPRESS=LZW"
-#     )
-#   }
-
-
-  return(list(c_proj = terra::rast(eval1_models), f_proj = NULL, best = best2))
+  return(list(M_proj = terra::rast(eval1_models), G_proj = NULL, f_proj = NULL, best = best2, algorithm = "bioclim"))
+  # missing G is not working
 }

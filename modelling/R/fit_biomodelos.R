@@ -9,10 +9,10 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
                          do_future = NULL, method_F = NULL, area_F = NULL, compute_F = NULL, dir_F = NULL,
                          cor_eval = NULL, cor_method = NULL, cor_detail = NULL,
                          algos = NULL, beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, 
-                         E = NULL, extrapo = NULL, predic = NULL, kept = NULL, pckg = NULL,
+                         E = NULL, extrapo = NULL, predic = NULL, kept = NULL, maxent_package = NULL,
                          crs_proyect = NULL, tipo = NULL,keep_files = NULL, transf_biomo_ext = NULL, 
                          redo = NULL, redo_path = NULL, polygon_data = NULL
-                         # mxnt.pckg = NULL, other.pckg = NULL
+                         # other.pckg = NULL
 ) {
 
   # checking concatenated arguments and format of files
@@ -164,7 +164,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 10
   if (is.null(predic)) predic <- "kuenm"
-  if (is.null(pckg)) pckg <- "ENMeval2"
+  if (is.null(maxent_package)) maxent_package <- "enmeval"
 
   # Colineality
   if (is.null(cor_eval)) col_eval <- FALSE
@@ -201,13 +201,13 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   source("R/apply_vif_analysis.R")
   source("R/process_env_variables.R")
   source("R/estimate_sampling_bias.R")
-  source("R/6A_1_doenmEVAL.R")
-  source("R/6B_1_dosplit.R")
-  source("R/6B_2_dokuenm.R")
-  source("R/6B_3_dobiomod.R")
-  source("R/6B_doindeva.R")
-  source("R/6C_do.bioclim.R")
-  source("R/7_doensemble.R")
+  source("R/do_enmeval.R")
+  source("R/make_split_occ.R")
+  source("R/do_kuenm.R")
+  source("R/do_biomod.R")
+  source("R/apply_independent_evaluation.R")
+  source("R/do_bioclim.R")
+  source("R/make_ensembles.R")
   source("R/give.msg.time.R")
 
   # 0.2 Starting time
@@ -468,7 +468,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       
       linesmsg6.1 <- tryCatch(
         expr = {
-          PathBioclim <- do.bioclim(occ. = interest_areas$occurrences, env.Mdir = paste0(folder_sp, "/M_variables"),
+          calibrate_model <- do.bioclim(occ. = interest_areas$occurrences, env.Mdir = paste0(folder_sp, "/M_variables"),
                                     env.Gdir = paste0(folder_sp, "/G_variables"),
                                     folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat, 
                                     proj.models = proj_models, crs.proyect = crs_proyect, extrap = extrapo, 
@@ -485,45 +485,6 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
       linestime <- give.msg.time(time.1 = time1)
-      
-      message("\nEnsembles")
-      
-      linesmsg6.2 <- tryCatch(
-        expr = {
-          enscurr <- currentEns_byAlg(
-            rasM.Stack = PathBioclim$c_proj, data. = interest_areas$occurrences,
-            collon = col_lon, collat = col_lat, e = E, algorithm = "bioclim",
-            foldersp = folder_sp, tim = "current", esc.nm = "",
-            crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = interest_areas, proj.models = proj_models
-          )
-          
-          if (do_future == TRUE) {
-            layersF <- futAuxiliar(PathAMaxent$f_proj)
-            
-            for (f in 1:length(layersF)) {
-              currentEns_byAlg(
-                ras.Stack = layersF[[f]], data. = interest_areas$occurrences,
-                collon = col_lon, collat = col_lat, e = E, algorithm = "bioclim",
-                foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
-                crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                areas = interest_areas, compute.F = compute_F, proj.models = proj_models
-              )
-            }
-          }
-          paste("\nEnsembles: ok.")
-        },
-        error = function(error_message) {
-          e1 <- conditionMessage(error_message)
-          return(paste0("\nEnsembles fail.\nError R: ", e1))
-        }
-      )
-      
-      writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
-      
-      linestime <- give.msg.time(time.1 = time1)
-      writeLines(linestime, filelog)
-    
   }
   
   #pckg <- match.arg(use., c("Dismo", "kuenm", "ENMeval2", "SDMTune", "Biomod"))
@@ -538,13 +499,13 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
       linesmsg6.1 <- tryCatch(
         expr = {
-          PathAMaxent <- do.enmeval(
+          calibrate_model <- do_enmeval(
             occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.clas = fc_5.25,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic,
-            write.intfiles = FALSE, sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
+            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
           )
           paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
         },
@@ -557,44 +518,6 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
       linestime <- give.msg.time(time.1 = time1)
       writeLines(linestime, filelog)
-      
-
-      message("\nEnsembles")
-
-      linesmsg6.2 <- tryCatch(
-        expr = {
-          enscurr <- currentEns_byAlg(
-            rasM.Stack = PathAMaxent$M_proj, rasG.Stack = PathAMaxent$G_proj, 
-            data. = interest_areas$occurrences, collon = col_lon, collat = col_lat, e = E, 
-            algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
-            crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = interest_areas, proj.models = proj_models, bins = NULL 
-          )
-
-          if (do_future == TRUE) {
-            layersF <- futAuxiliar(PathAMaxent$f_proj)
-
-            for (f in 1:length(layersF)) {
-              currentEns_byAlg(
-                rasM.Stack = PathAMaxent$M_proj, rasF.Stack = layersF[[f]], algorithm = "MAXENT",
-                foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
-                crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                proj.models = proj_models, bins = enscurr, e = E
-              )
-            }
-          }
-          paste("\nEnsembles: ok.")
-        },
-        error = function(error_message) {
-          e1 <- conditionMessage(error_message)
-          return(paste0("\nEnsembles fail.\nError R: ", e1))
-        }
-      )
-
-      writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
-
-      linestime <- give.msg.time(time.1 = time1)
-      writeLines(linestime, filelog)
   }
 
   if (nrow(interest_areas$occurrences) >= 20) {
@@ -604,16 +527,16 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     
     message("Path B")
     
-    if(pckg == "ENMeval2"){
+    if(maxent_package == "enmeval"){
       linesmsg6.1 <- tryCatch(
         expr = {
-          PathBMaxent <- do.enmeval(
+          calibrate_model <- do_enmeval(
             occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_25, f.clas = fc_25,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic,
-            write.intfiles = FALSE, sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
+            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
           )
           paste("\nPath B, number occ greater than 25\nLarge sample Maxent modelling: ok.")
         },
@@ -629,50 +552,14 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       linestime <- give.msg.time(time.1 = time1)
       writeLines(linestime, filelog)
       
-      message("\nEnsembles")
-      
-      linesmsg6.2 <- tryCatch(
-        expr = {
-          enscurr <- currentEns_byAlg(
-            rasM.Stack = PathBMaxent$M_proj, rasG.Stack = PathBMaxent$G_proj, 
-            data. = interest_areas$occurrences, collon = col_lon, collat = col_lat, e = E, 
-            algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
-            crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-            areas = interest_areas, proj.models = proj_models, bins = NULL 
-          )
-          
-          if (do_future == TRUE) {
-            layersF <- futAuxiliar(fut.list.ras = PathBMaxent$f_proj)
-            
-            for (f in 1:length(layersF)) {
-              currentEns_byAlg(
-                rasM.Stack = PathBMaxent$M_proj, rasF.Stack = layersF[[f]], algorithm = "MAXENT",
-                foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
-                crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                proj.models = proj_models, bins = enscurr, e = E
-              )
-            }
-          }
-          paste("\nEnsembles: ok.")
-        },
-        error = function(error_message) {
-          e1 <- conditionMessage(error_message)
-          return(paste0("\nEnsembles fail.\nError R: ", e1))
-        }
-      )
-      
-      writeLines(text = linesmsg6.2, con = filelog, sep = "\n")
-      
-      linestime <- give.msg.time(time.1 = time1)
-      writeLines(linestime, filelog)
     }
     
     
-    if(pckg == "kuenm"){
+    if(maxent_package == "kuenm"){
       
       linesmsg6.1 <- tryCatch(
         expr = {
-          PathBOcc <- dosplit(
+          PathBOcc <- make_split_occ(
             occ. = interest_areas$occurrences, bias.file = BiasSp, folder.sp = folder_sp, col.lon = col_lon,
             col.lat = col_lat, use.bias = use_bias, env.M = envars$M
           )
@@ -688,7 +575,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       
       linesmsg6.2 <- tryCatch(
           expr = {
-            PathBMaxent <- do.kuenm(
+            calibrate_model <- do_kuenm(
               occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
               biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
               maxent.path = getwd(), proj.models = proj_models, E = E,
@@ -712,44 +599,6 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
         
         linestime <- give.msg.time(time.1 = time1)
         writeLines(linestime, filelog)
-        
-        
-        message("\nEnsembles")
-        
-        linesmsg6.3 <- tryCatch(
-          expr = {
-            enscurr <- currentEns_byAlg(
-              rasM.Stack = PathBMaxent$M_proj, rasG.Stack = PathBMaxent$G_proj, 
-              data. = interest_areas$occurrences, collon = col_lon, collat = col_lat, e = E, 
-              algorithm = "MAXENT", foldersp = folder_sp, tim = "current", esc.nm = "",
-              crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-              areas = interest_areas, proj.models = proj_models, bins = NULL
-            )
-            
-            if (do_future == TRUE) {
-              layersF <- futAuxiliar(fut.list.ras = PathBMaxent$f_proj)
-              
-              for (f in 1:length(layersF)) {
-                currentEns_byAlg(
-                  rasM.Stack = PathBMaxent$M_proj, rasF.Stack = layersF[[f]], algorithm = "MAXENT",
-                  foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
-                  crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-                  proj.models = proj_models, bins = enscurr, e = E
-                )
-              }
-            }
-            
-            paste("\nEnsembles current: ok.")
-          },
-          error = function(error_message) {
-            e1 <- conditionMessage(error_message)
-            return(paste0("\nEnsemblig: fail.\nError R: ", e1))
-          }
-        )
-        writeLines(text = linesmsg6.3, con = filelog, sep = "\n")
-        
-        linestime <- give.msg.time(time.1 = time1)
-        writeLines(linestime, filelog)
       
     }
 
@@ -764,7 +613,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     # 
     #   linesmsg6.4 <- tryCatch(
     #     expr = {
-    #       PathBOther <- do.biomod(
+    #       calibrate_model <- do.biomod(
     #         data.splitted = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
     #         Biasfile = BiasSp, env.Mdir = paste0(folder_sp, "/M_variables"),
     #         env.Gdir = paste0(folder_sp, "/G_variables"), nrep.s = 10,
@@ -816,6 +665,47 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     #   writeLines(linestime, filelog)
     # }
   }
+  
+  #--------------------------------------
+  # 7. Ensemble calibrated and evaluated models
+  #--------------------------------------
+  
+  linesmsg7 <- tryCatch(
+    expr = {
+      enscurr <- currentEns_byAlg(
+        rasM.Stack = calibrate_model$M_proj, rasG.Stack = calibrate_model$G_proj, 
+        data. = interest_areas$occurrences, collon = col_lon, collat = col_lat, e = E, 
+        algorithm = calibrate_model $algorithm, foldersp = folder_sp, 
+        tim = "current", esc.nm = "",
+        crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
+        areas = interest_areas, proj.models = proj_models, bins = NULL
+      )
+      
+      if (do_future == TRUE) {
+        layersF <- futAuxiliar(fut.list.ras = calibrate_model$f_proj)
+        
+        for (f in 1:length(layersF)) {
+          currentEns_byAlg(
+            rasM.Stack = calibrate_model$M_proj, rasF.Stack = layersF[[f]], 
+            algorithm = calibrate_model $algorithm,
+            foldersp = folder_sp, tim = "future", esc.nm = names(layersF[f]),
+            crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
+            proj.models = proj_models, bins = enscurr, e = E
+          )
+        }
+      }
+      
+      paste("\nEnsembles current: ok.")
+    },
+    error = function(error_message) {
+      e1 <- conditionMessage(error_message)
+      return(paste0("\nEnsemblig: fail.\nError R: ", e1))
+    }
+  )
+  writeLines(text = linesmsg7, con = filelog, sep = "\n")
+  
+  linestime <- give.msg.time(time.1 = time1)
+  writeLines(linestime, filelog)
 
   #--------------------------------------
   # End

@@ -209,12 +209,13 @@ do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
 
     # results in case of do.future = FALSE
 
-    return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = fut_proj_list, best = best3))
+    return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = fut_proj_list, best = best3, 
+                algorithm = "MAXENT"))
   }
 
   # results in case of do.future = FALSE
 
-  return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = NULL, best = best3))
+  return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = NULL, best = best3, algorithm = "MAXENT"))
 }
 
 #--------------------------
