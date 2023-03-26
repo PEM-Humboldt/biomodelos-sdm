@@ -1,5 +1,5 @@
 
-# Modelling repository
+# Modelling repository: biomodelos-sdm tool
 
  This repository stores functions to automate the construction of Species Distribution Models (SDM). The functions follow an automatized and flexible SDM general routine. First, it cleans occurrence data when is necessary and construct geographical areas in which those models will be trained. Second, they crops and masks current and future environmental variables. Third, the functions train  SDM's using one or several algorithms, then evaluate them quantitatively and ensemble the best of each one. Fourth, they project to different scenarios at user discretion.
 
@@ -7,22 +7,16 @@ Current state: in development.
 
 ### Deploying:
 
-Sprint 1
-Start time: October 10th 2022
-End time: October 20th
-
-* Include ENMeval2 and organize models methods.
-* Remove cleaning occurrences features as it will be part of the preprocessing stage. However, spatial thinning feature will be maintained.
-
 Sprint 2, 3, 4
-Start time: January 2023
-Expected end time: February 2023
+Start time: March 2023
+Expected end time: March 2023
 
 What is left to deploy
 * The work flow won't be conditioned to occurrences. What algorithm, package and methods will be chosen by users.
-* Revise projection M-M and M-G and future with several case use
+* Revise projection M-M and M-G and future with several case use (ok)
 * Documentation: update past documentation, generate additional documents for past features added during 2020 and 2021, new features documents
 * Vignettes for user and developers
+* See issues
 
 
 ## Prerequisites
@@ -33,10 +27,10 @@ Dependencies to install, choose the version depending on your operating system a
 
 * [R](https://cran.r-project.org/mirrors.html) version 4.1.0 or upper
 * [RStudio](https://www.rstudio.com/products/rstudio/download/#download) version 1.4 or upper
-* [Rtools](https://cran.r-project.org/bin/windows/Rtools/) version 4.0 or upper
+* [Rtools](https://cran.r-project.org/bin/windows/Rtools/) version 4.0 or upper, choose an appropiate one for your R version
 * [Java Development Kit](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) version 8.0 or upper
 * [Maxent](https://biodiversityinformatics.amnh.org/open_source/maxent/) version 3 or upper
-* This repository (BioModelos)
+* This repository (biomodelos-sdm)
 
 ### Libraries
 Libraries required and their versions
@@ -53,7 +47,7 @@ Libraries required and their versions
 "raster" version 3.4.10
 "dismo" version 1.3.3
 "biomod2" version 3.4.6
-"ENMeval" version 0.3.1
+"ENMeval" version 2.0.3
 "rgdal" version 1.5.23
 "rJava" version 0.9.13
 "kuenm" version 1.1.6
@@ -61,26 +55,27 @@ Libraries required and their versions
 
 ## How to run
 
-1. Create a folder and move (uncompressed) the content of this repository and "maxent.jar" file (downloaded previously) there. For better results choose a root directory like "C" or "D" in windows to create the folder (working directory).
+1. Download and uncompress the content of this repository (biomodelos-sdm) and "maxent.jar" file (downloaded previously) there. For better results choose a root directory like "C" or "D" in windows to move the folder (working directory).
 
-2. Open RStudio and create a new project using the folder created as working directory. It can be achieving doing the next. First, click on tool bar "File" (upper left of the RStudio window). Second, "New Project". In the opened window, click on "Existing Directory". After that, browse into the computer folder structure until reach the folder created in the step 1. Last, get click on "Create Project". *Note: For a bit more experimented users, this step is comparative to setup a working directory with* `setwd()`.
+2. Open RStudio and open the project: biomodelos-sdm.Rproj inside the modelling folder of the repository. It can be achieving doing the next. First, click on tool bar "File" (upper left of the RStudio window). Second, "Open Project". In the opened window, browse into the computer folder structure until reach the folder uncompressed before in the step 1 and go to the folder "biomodelos-sdm/modelling/". *Note: For a bit more experimented users, this step is comparative to setup a working directory with* `setwd()` at the cited folder.
 
 3.  Create in RStudio a new script. It can be achieve going to "File" tool bar, "New File" and then "R Script". It may well be used the icon "New file" right under the tool bar "File" or using the keyboard shortcut "Ctrl+Shift+N" in windows.
 
-4. Load the setup functions of **BioModelos 2**. In the script editor type
+4. Load the setup function store in the **biomodelos-sdm/modelling/**. Type in the script editor:
 
 ```
 source("setup.R")
 ```
 
 5. Then run it using the icon "Run" or the keyboard shortcut "Ctrl+Enter" in windows. You will find four new objects in the environment (upper left portion of the RStudio window)
-+ *vector.packages* vector character that stores the name of each package necessary to run **BioModelos 2**
++ *vector.packages* vector character that stores the name of each package necessary to run the **biomodelos-sdm** tool
 + *do.install* automatic installation of needed packages
 + *do.check* function to verify if the installation of vector packages was successful
 + *do.load* automatic loading of needed packages
 + *do.folder.structure* function to create folders to organize work process in the working directory.
 
-6. Run the automatic installation in the editor script. The process will install the packages stored in the 'vector.packages' object. In case of showing a compilation window procedure accept as it diminish likely of installation errors, it is slower than a traditional method, so be patient. In case of showing an updating message in the RStudio Console (left down in the window),  Warning: if you have a version of ENMeval package lower or higher than 0.3.1 it will be replace by the former.
+6. Run the automatic installation in the editor script. The process will install the packages stored in the 'vector.packages' object. In case of asking for a compilation window procedure accept it, this will diminish chances of installation errors, it is slower than a traditional method, so be patient. Warning: if you have a version of ENMeval package lower or higher than 2.0.3 it will be replace by the former.
+
 ```
 do.install(vector.packages)
 ```
@@ -88,9 +83,11 @@ do.install(vector.packages)
 You only need to install the packages once, so, it is better to block this command line typing a '#' character in the forefront of the line just before of the first run, like this `# do.install(vector.packages)` or even erase the line.
 
 7. Verify if packages were successfully installed using
+
 ```
 do.check(vector.packages)
 ```
+
 A message showing a table with column names "package" and "successfully_completed" will be shown in the console (corner left of the RStudio window), as well as the ENMeval version installed. For example,
 
 ```
@@ -111,10 +108,10 @@ A message showing a table with column names "package" and "successfully_complete
 14             rJava                  TRUE
 15             kuenm                  TRUE
 
-ENMeval version 0.3.1 is TRUE
+ENMeval version 2.0.3 is TRUE
 ```
 
-In case of receiving a FALSE statement on the table or having an ENMeval version different to 0.3.1, you need to troubleshoot before to continue. Please refer to the vignette **Manual Installation of Packages** MISSING.
+In case of receiving a FALSE statement on the table or having an ENMeval version different to 2.0.3, you need to troubleshoot before to continue. Please refer to the vignettes and installation manual of each problematic package: [kuenm](https://github.com/marlonecobos/kuenm), [enmeval](https://www.bing.com/search?q=enmeval+github&qs=n&form=QBRE&sp=-1&lq=0&pq=enmeval+github&sc=6-14&sk=&cvid=F714530DD0334E67862BCDB5962C6426&ghsh=0&ghacc=0&ghpl=), etc. Then re-run `do.check(vector.packages)`
 
 8. Load the installed packages with
 
@@ -131,7 +128,7 @@ The use of the character "worldclim"" inside the function does not refer to retr
 
 After run the function you will have in your working directory 3 new folders with subfolders:
 
-* *Bias_layer* to storage bias file layers created (please refer to the vignette **Constructing Bias Layer**, [this article](https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x) and this [blog](https://scottrinnan.wordpress.com/2015/08/31/how-to-construct-a-bias-file-with-r-for-use-in-maxent-modeling/)
+* *Bias_layer* to storage bias file layers created (please refer to [this article](https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x) and this [blog](https://scottrinnan.wordpress.com/2015/08/31/how-to-construct-a-bias-file-with-r-for-use-in-maxent-modeling/)
 * *Data* to storage geographical data. Sub-folders:
   + *biogeographic_shp* storage biogeographic, ecoregions or hydrosheets objects used to construct accessible areas of species
   + *env_vars* to storage environmental variables. Most used files can be ".tif" or ".asc". Supported file types are the 'native' raster package format and those that can be read via [rgdal](https://www.rdocumentation.org/packages/rgdal/versions/1.5-23/topics/readGDAL). Sub-folders:
