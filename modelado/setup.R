@@ -84,7 +84,25 @@ do.install <- function(x = vector.packages, repository = "https://www.icesi.edu.
        warning(paste0("ENMeval was changed from ", enmevalversion, ", to 2.0.3"))
      }
    }
-
+  
+  # fixing last issues installing kuenm  
+   if(!require(hier.part, warn.conflicts = FALSE)){
+    install.packages("https://cran.r-project.org/src/contrib/Archive/gtools/gtools_3.9.3.tar.gz",
+                     repos = NULL, type = "source", dependencies = T)
+    install.packages("https://cran.r-project.org/src/contrib/Archive/modeltools/modeltools_0.2-22.tar.gz",
+                     repos = NULL, type = "source", dependencies = T)
+    install.packages("https://cran.r-project.org/src/contrib/Archive/flexmix/flexmix_2.3-18.tar.gz",
+                     repos = NULL, type = "source", dependencies = T)
+    install.packages("https://cran.r-project.org/src/contrib/Archive/lmtest/lmtest_0.9-39.tar.gz",
+                     repos = NULL, type = "source", dependencies = T)
+    install.packages("https://cran.r-project.org/src/contrib/Archive/sandwich/sandwich_3.0-1.tar.gz",
+                     repos = NULL, type = "source", dependencies = T)
+    install.packages("https://cran.r-project.org/src/contrib/Archive/betareg/betareg_3.1-3.tar.gz",
+                     repos = NULL, type = "source", dependencies = T)
+    install.packages("https://cran.r-project.org/src/contrib/Archive/hier.part/hier.part_1.0-6.tar.gz",
+                     repos = NULL, type = "source", dependencies = T)
+  } 
+  
   # kuenm needs to be installed from github as it doesn't have link to CRAN
   if (!require(kuenm, warn.conflicts = FALSE)) {
     devtools::install_github("marlonecobos/kuenm")
