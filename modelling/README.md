@@ -130,24 +130,23 @@ After run the function you will have in your working directory 3 new folders wit
 
 * *Bias_layer* to storage bias file layers created (please refer to [this article](https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x) and this [blog](https://scottrinnan.wordpress.com/2015/08/31/how-to-construct-a-bias-file-with-r-for-use-in-maxent-modeling/)
 * *Data* to storage geographical data. Sub-folders:
-  + *biogeographic_shp* storage biogeographic, ecoregions or hydrosheets objects used to construct accessible areas of species
-  + *env_vars* to storage environmental variables. Most used files can be ".tif" or ".asc". Supported file types are the 'native' raster package format and those that can be read via [rgdal](https://www.rdocumentation.org/packages/rgdal/versions/1.5-23/topics/readGDAL). Sub-folders:
+  + *biogeographic_shp* storage geographical objects in order to compute or calculate interest areas of study, for example biogeographic, ecoregions or hydrosheets shapefiles. It would be useful to storage areas odf interes for individual species.
+  + *env_vars* to storage environmental variables. Most used files can be ".tif" or ".asc". Supported file types are the 'native' for raster and terra package format and those that can be read via [rgdal](https://www.rdocumentation.org/packages/rgdal/versions/1.5-23/topics/readGDAL). Sub-folders:
     + *other* environmental variables not related with climate but consider important to modeled species
       + *future*
       + *current*
     + *climatic* climatic variables consider important to modeled species
       + *future*
       + *current*
-  + *shapes* to storage of useful shapefiles like Colombian or American borders
 * *Occurrences* to storage geographical records of species, those records must have a column with name species, latitude and longitude in decimal format
 
-10. Load the wrapper function "Bio2_routine". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R.
+10. Load the wrapper function "fit_biomodelos". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R.
 
 ```
-source("R/Bio2_routine.R")
+source("R/fit_biomodelos.R")
 ```
 
-For help go to [Bio2_routine](vignettes/Bio2_routine.md) and [Structure and Functions]() vignettes to find more information about.
+For help go to [fit_biomodelos](vignettes/fit_biomodelos.md) vignette to find more information about.
 
 ### Folder structure and RStudio window
 
@@ -160,13 +159,13 @@ Your RStudio window must look like this:
 ![RStudio_View](images/RStudio_View.png)
 
 
-Now you are ready to customize Bio2_routine and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. We encourage you to follow the next section. It will show you the structure and characteristics of both elements and transcendental information to run and learn about this application. Also, to go deep in this function revise **Structure and Functions** and [Bio2_routine](vignettes/Bio2_routine.md) vignette.
+Now you are ready to customize the biomodelos-sdm tool and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. We encourage you to follow the next section. It will show you the structure and characteristics of both elements and transcendental information to run and learn about this application. Also, to go deep in this function revise **Structure and Functions** and [fit_biomodelos](vignettes/fit_biomodelos.md) vignette.
 
 ## Working Example
 
 ### Environmental Data and Ocurrences
 
-Having done the earlier steps, extract the files inside of the ".zip" folder *Example* to the main root folder. It will overwrite the *Bias_file*, *Data*, and *Occurrences* folders, please let the process continue if you are asked about. Inside the *Data* folder you will find environmental variables representing climatic and other factors of current and future scenarios (for future scenarios projection and training go to vignette **exercises**). In the current worldclim folder you will observe two raster files ".tif". On the other hand, you will get two spreadsheets in ".csv" format inside the *Occurrences* folder. Each ".csv" stores occurrence data, the first one is a single species database with column labels "species", "lon" and "lat", the second one is a multiple species database (5 species) using identical column names.
+Having done the earlier steps, extract the files inside of the ".zip" folder *example* to the main root folder. It will overwrite the *Bias_file*, *Data*, and *Occurrences* folders, let the process continue if you are asked about. Inside the *Data* folder you will find environmental variables representing climatic and other factors of current and future scenarios. In the current worldclim folder you will observe two raster files ".tif". On the other hand, you will get two spreadsheets in ".csv" format inside the *Occurrences* folder. Each ".csv" stores occurrence data, the first one is a single species database with column labels "species", "lon" and "lat", the second one is a multiple species database (5 species) using identical column names.
 
 In this example, we are going to run a simple ENM of a single species database, a colorful bird species called [Chlorochrysa nitidissima](https://ebird.org/species/multan1?siteLanguage=es). So, load the "single_species.csv". After loading, feel free to explore the object call *dataSp*.
 
@@ -179,11 +178,11 @@ dataSp <- read.csv("Example/Occurrences/single_species.csv")
 Once the species occurrence data and environmental variables are ready, the function `Bio2_routine()` can be customized and run. In this specific example, we are going to use:
 
 ```
-Bio2_routine(
+fit_biomodelos(
   occ = dataSp, col_sp = "species", col_lat = "lat",
   col_lon = "lon", clim_vars = "worldclim", dir_clim = "Data/env_vars/",
   dir_other = "Data/env_vars/other/", method_M = "points_buffer", dist_MOV = 74,
-  proj_models = "M-M", algos = "MAXENT", dist_uniq = 10
+  proj_models = "M-M", algos = "MAXENT", remove_distance = 10
 )
 ```
 
