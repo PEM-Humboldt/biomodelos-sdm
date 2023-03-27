@@ -12,10 +12,8 @@ Start time: March 2023
 Expected end time: March 2023
 
 What is left to deploy
-* The work flow won't be conditioned to occurrences. What algorithm, package and methods will be chosen by users.
 * Revise projection M-M and M-G and future with several case use (ok)
 * Documentation: update past documentation, generate additional documents for past features added during 2020 and 2021, new features documents
-* Vignettes for user and developers
 * See issues
 
 
@@ -131,7 +129,7 @@ After run the function you will have in your working directory 3 new folders wit
 * *Bias_layer* to storage bias file layers created (please refer to [this article](https://onlinelibrary.wiley.com/doi/10.1111/j.1600-0587.2013.07872.x) and this [blog](https://scottrinnan.wordpress.com/2015/08/31/how-to-construct-a-bias-file-with-r-for-use-in-maxent-modeling/)
 * *Data* to storage geographical data. Sub-folders:
   + *biogeographic_shp* storage geographical objects in order to compute or calculate interest areas of study, for example biogeographic, ecoregions or hydrosheets shapefiles. It would be useful to storage areas odf interes for individual species.
-  + *env_vars* to storage environmental variables. Most used files can be ".tif" or ".asc". Supported file types are the 'native' for raster and terra package format and those that can be read via [rgdal](https://www.rdocumentation.org/packages/rgdal/versions/1.5-23/topics/readGDAL). Sub-folders:
+  + *env_vars* to storage environmental variables. Most used files can be ".tif" or ".asc". Supported file types are the 'native' for raster and terra package format and those that can be read via [rgdal](https://www.rdocumentation.org/packages/rgdal/versions/1.5-23/topics/readGDAL). Warning: we are working on pdate spatial functions relying on rgdal, rgeos, sp and raster to geos, sf and terra. Sub-folders:
     + *other* environmental variables not related with climate but consider important to modeled species
       + *future*
       + *current*
@@ -140,7 +138,7 @@ After run the function you will have in your working directory 3 new folders wit
       + *current*
 * *Occurrences* to storage geographical records of species, those records must have a column with name species, latitude and longitude in decimal format
 
-10. Load the wrapper function "fit_biomodelos". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization. Also, it is useful for users not familiarized with ENM's or R.
+10. Load the wrapper function "fit_biomodelos". This function follows the basic structure of an "Ecological Niche Modeling" (ENM) process (Peterson et al, 2011). It calls several subroutines to achieve this with a few inputs and having a wide range of customization.
 
 ```
 source("R/fit_biomodelos.R")
@@ -159,7 +157,7 @@ Your RStudio window must look like this:
 ![RStudio_View](images/RStudio_View.png)
 
 
-Now you are ready to customize the biomodelos-sdm tool and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. We encourage you to follow the next section. It will show you the structure and characteristics of both elements and transcendental information to run and learn about this application. Also, to go deep in this function revise **Structure and Functions** and [fit_biomodelos](vignettes/fit_biomodelos.md) vignette.
+Now you are ready to customize the biomodelos-sdm tool and run SDM models. You only need,as said before, two more basic elements: environmental variables and georeferenced occurrence data of one or several species. We encourage you to follow the next section. It will show you the structure and characteristics of both elements and transcendental information to run and learn about this application. Also, to go deep in this function revise the [fit_biomodelos](vignettes/fit_biomodelos.md) vignette.
 
 ## Working Example
 
@@ -175,7 +173,7 @@ dataSp <- read.csv("Example/Occurrences/single_species.csv")
 
 ### Running
 
-Once the species occurrence data and environmental variables are ready, the function `Bio2_routine()` can be customized and run. In this specific example, we are going to use:
+Once the species occurrence data and environmental variables are ready, the function `fit_biomodelos()` can be customized and run. In this specific example, we are going to use:
 
 ```
 fit_biomodelos(
@@ -199,7 +197,7 @@ A quick explanation for each of these arguments:
 + Algorithm (**algos**) used will be *MAXENT*.
 
 
-There are several more arguments and ways to customize them, revise the [Bio2_routine](vignettes/Bio2_routine.md) vignette.
+There are several more arguments and ways to customize them, revise the [fit_biomodelos](vignettes/fit_biomodelos.md) vignette.
 
 ### Checking console messages and working directory folder
 
@@ -207,10 +205,10 @@ Once you run the last script, you would monitor the process in the console (left
 
 |Step|Action in progress|Console message|Working folder|
 |-|--|-|--|
-|0   |Just after running, the routine creates a species folder in the working directory. Inside the last, it sets up a temporary folder for raster files (Temp), occurrences by species, and a log file. The log file is used to save the parameters given to the function and make possible to reproduce the modeling process. You are allowed to see the content of the log file at the end of the process, see the vignette **knowing your log file** MISSING.|``` [1] "Preparing folders and files"```|![Step0](images/step0.png)|
+|0   |Just after running, the routine creates a species folder in the working directory. Inside the last, it sets up a temporary folder for raster files (Temp), occurrences by species, and a log file. The log file is used to save the parameters given to the function and make possible to reproduce the modeling process. You are allowed to see the content of the log file at the end of the process.|``` [1] "Preparing folders and files"```|![Step0](images/step0.png)|
 |1   |Detecting and correcting (or removing) corrupt or inaccurate records from the database. In a first moment the routine searches missing coordinates or having strange characters. Then, in an optional step, when *do_clean = TRUE* and *drop_out = IQR*, it removes geographical outliers and data potentially problematic making use of the [CoordinateCleaner](https://cran.r-project.org/web/packages/CoordinateCleaner/index.html) package.|``` [1] "Cleaning data"```|![Step1](images/step1.png)|
 |2   |Spatial thinning of occurrence records in a way to diminish the bias sample and make the process more efficient. Here, by default the function uses [clean_dup](https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R) from [ntbox](https://github.com/luismurao/ntbox/tree/master/R), but can be customized to run [spThin](https://cran.r-project.org/web/packages/spThin/spThin.pdf).|```[1] "Thinning database to 1km, using  sqkm"```|![Step2](images/step2.png) |
-|3   |Constructing research areas or accessible areas in which the algorithm(s) selected will be trained, or projected in current or future scenarios. In this way, *Bio2_routine* has several options to construct them. Those are called "Interest areas". Please see [Bio2_routine](vignettes/Bio2_routine.md) vignette.|```[1] "Constructing accessible area"```|![Step3](images/step3.png)   |
+|3   |Constructing research areas or accessible areas in which the algorithm(s) selected will be trained, or projected in current or future scenarios. In this way, *fit_biomodelos* has several options to construct them. Those are called "Interest areas". Please see [fit_biomodelos](vignettes/fit_biomodelos.md) vignette.|```[1] "Constructing accessible area"```|![Step3](images/step3.png)   |
 |4   |Cropping and masking the environmental variables, either be current or future ones. It also stores them temporally in a folder call M (or G in case of transferring/projecting the model to other areas)|```[1] "Processing environmental layers"```| ![Step4](images/step4.png) |
 |Optional|Cropping and masking the bias layer constructed by the user to accessible area extent|```[1] "Processing bias layer"```|![Step_optional](images/step_optional.png)   |
 |5   |Running algorithms chosen and evaluating them. Supported algorithms include Maxent and those native to [BIOMOD2](https://cran.r-project.org/web/packages/biomod2/index.html). In the current version only Maxent hyperparameters are tuned using [ENMeval](https://cran.r-project.org/web/packages/ENMeval/index.html) or [Kuenm](https://github.com/marlonecobos/kuenm). If there are less than 25 occurrence species records a jackknife procedure is performed, by the other side the models are tuned using blocks. Algorithms runned by Biomod are replicated 10 times. Evaluation of models depends on a hierarchical selection of best Partial Roc (only for Kuenm and Biomod) or AUC (only for ENMeval), Akaike Information Criterion, and the lowest omission rate at user discretion percentile (default 10th).|```[1] "Calibrating and evaluating SDM's"```|![Step5](images/step5.png)   |
