@@ -46,12 +46,25 @@ Methods to construct geographical areas to calibrate and project the models. Thr
 
 The method.M, method.G and method.F are parameters defined by character string that specifies the method to define each interest area. The method parameter can take the following values:
 
-1.  "points_buffer": This method generates a buffer around the occurrence points (given by dist.Mov).
+1.  "points_buffer": This method generates a buffer around the occurrence points (given by dist_Mov).
+
 2.  "points_MCP": This method generates a minimum convex polygon around the occurrence points.
-3.  "points_MCP_buffer": This method generates a minimum convex polygon around the occurrence points, applies a buffer of a specified distance (given by dist.Mov) around the polygon, and then clips the polygon to the study area boundary. ![points_methods](images/points.png)
-4.  "polygon_points": This method intersects a biogeographic area multi-polygon (given by polygon.data) with the occurrence points to create a new polygon that covers the study area and contains all occurrence points.
-5.  "polygon_buffer": This method intersects a biogeographic area multi-polygon (given by polygon.data) with the occurrence points and then create a buffer of a specified distance (given by dist.Mov) around the selected polygon to create a new polygon that covers the study area and contains all occurrence points and a buffer.
-6.  "polygon_points_buffer": This method intersects a biogeographic area multi-polygon (given by polygon.data) with a buffer of a specified distance (given by dist.Mov) around the occurrence points, then clips the resulting polygon to the study area boundary. ![polygon_methods_1](images/polygon1.png) This method generates a new polygon that covers the study area and contains all occurrence points by intersecting a study area polygon (specified by polygon.data) with a minimum convex polygon around the occurrence points. This method removes any non-contiguous polygons, resulting in a single, continuous polygon that covers the study area and all occurrence points. ![polygon_methods_2](images/polygon2.png)
+
+3.  "points_MCP_buffer": This method generates a minimum convex polygon around the occurrence points, applies a buffer of a specified distance (given by dist_Mov) around the polygon, and then clips the polygon to the study area boundary.
+
+  ![points_method](images/points.png)
+
+4.  "polygon_points": This method intersects a biogeographic area multi-polygon (given by polygon_data) with the occurrence points to create a new polygon that covers the study area and contains all occurrence points.
+
+5.  "polygon_buffer": This method intersects a biogeographic area multi-polygon (given by polygon.data) with the occurrence points and then create a buffer of a specified distance (given by dist_Mov) around the selected polygon to create a new polygon that covers the study area and contains all occurrence points and a buffer.
+
+6.  "polygon_points_buffer": This method intersects a biogeographic area multi-polygon (given by polygon_data) with a buffer of a specified distance (given by dist.Mov) around the occurrence points, then clips the resulting polygon to the study area boundary.
+
+    ![polygon1_methods](images/polygon1.png)
+
+7.  "polygon_MCP": This method generates a new polygon that covers the study area and contains all occurrence points by intersecting a study area polygon (specified by polygon_data) with a minimum convex polygon around the occurrence points. This method removes any non-contiguous polygons, resulting in a single, continuous polygon that covers the study area and all occurrence points.
+
+    ![polygon2_methods](images/polygon2.png){width="376"}
 
 -   **dist_MOV** numeric: distance in kilometers of
 

@@ -106,17 +106,17 @@
 #' 
 #' The method.M, method.G and method.F are parameters defined by character string that specifies the method to 
 #' define each interest area.  The method parameter can take the following values: 
-#' "points_buffer": This method generates a buffer around the occurrence points (given by dist.Mov). 
+#' "points_buffer": This method generates a buffer around the occurrence points (given by dist_Mov). 
 #' "points_MCP": This method generates a minimum convex polygon around the occurrence points. 
 #' "points_MCP_buffer": This method generates a minimum convex polygon around the occurrence points, applies a buffer
-#' of a specified distance (given by dist.Mov) around the polygon, and then clips the polygon to the study area boundary.
-#' "polygon_points": This method intersects a biogeographic area multi-polygon (given by polygon.data) with the 
+#' of a specified distance (given by dist_Mov) around the polygon, and then clips the polygon to the study area boundary.
+#' "polygon_points": This method intersects a biogeographic area multi-polygon (given by polygon_data) with the 
 #' occurrence points to create a new polygon that covers the study area and contains all occurrence points.
-#' "polygon_buffer": This method intersects a biogeographic area multi-polygon (given by polygon.data) with the 
+#' "polygon_buffer": This method intersects a biogeographic area multi-polygon (given by polygon_data) with the 
 #' occurrence points and then create a buffer of a specified distance (given by dist.Mov) around the selected polygon
 #' to create a new polygon that covers the study area and contains all occurrence points and a buffer.
-#' "polygon_points_buffer": This method intersects a biogeographic area multi-polygon (given by polygon.data) with 
-#' a buffer of a specified distance (given by dist.Mov) around the occurrence points, then clips the resulting polygon 
+#' "polygon_points_buffer": This method intersects a biogeographic area multi-polygon (given by polygon_data) with 
+#' a buffer of a specified distance (given by dist_Mov) around the occurrence points, then clips the resulting polygon 
 #' to the study area boundary. 
 #' "polygon_MCP": This method intersects a study area polygon (given by polygon.data) with a minimum convex polygon 
 #' around the occurrence points to create a new polygon that covers the study area and contains all occurrence points.
