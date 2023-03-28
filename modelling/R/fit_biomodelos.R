@@ -1,4 +1,4 @@
-#' fit_biomodelos automates the fitting of Species Distribution Models from occurrence and environmental data.
+#' fit_biomodelos automates the fitting of Species Distribution Models from occurrence and environmental data
 #' 
 #' @description  'fit_biomodelos' is a function that automates the process of fitting Species Distribution 
 #' Models (SDMs) using occurrence and environmental data. The function follows a flexible and automated general 
