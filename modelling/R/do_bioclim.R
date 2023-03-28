@@ -31,7 +31,7 @@
 
 do.bioclim <- function(occ. = M_$occurrences, env.Mdir = paste0(folder_sp, "/M_variables"),
                        env.Gdir = paste0(folder_sp, "/G_variables"), folder.sp = folder_sp,
-                       col.lon = col_lon, col.lat = col_lat, proj.models = proj_models,) {
+                       col.lon = col_lon, col.lat = col_lat, proj.models = proj_models) {
   if (proj.models == "M-M") {
     # M reading
     env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)

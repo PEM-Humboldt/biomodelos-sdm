@@ -17,7 +17,7 @@
 #' Default it takes the path 'env_vars/your_clim_vars/'
 #' @param dir_other optional character string specifying the directory containing other environmental data. Default
 #' it takes the path 'env_vars/other/'
-#' @param file_xtension character string specifying the file extension of the data files to be processed. Default .tiff
+#' @param file_xtension character string specifying the file extension of the data files to be processed. Default "*.tif"
 #' @param remove_method character string indicating the method for removing duplicate occurrences. Two options:
 #' "sqkm" uses clean_dup function from ntbox package by Luis Osorio 
 #' https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R or "spthin" uses thin function from package sp_thin
@@ -46,8 +46,8 @@
 #' compute.G is set to TRUE and proj.models is "M-G". 
 #' @param compute_G logical value indicating whether to compute data for the "G" projection area. It can be useful
 #' if the user pre-processed G environmental variables which are stored in a folder. 
-#' @param dir_G character string specifying the directory containing data for the "G" projection area. The quantity
-#' of layers and their names have to be equal to variables of "M" area.
+#' @param dir_G character string specifying the directory containing environmental variables data for the "G" 
+#' projection area. The quantity of layers and their names have to be equal to variables of "M" area.
 #' @param do_future logical value indicating whether to process data for future scenarios
 #' @param method_F character string, method to define the area to project with future climate. It is used if
 #' do.future and compute.F are set to TRUE
@@ -104,7 +104,7 @@
 #' a distance-based approach using a distance threshold. The function returns a data frame with unique occurrences 'sqkm', 
 #' based on the chosen method and distance threshold.
 #' 
-#' #' The method.M, method.G and method.F are parameters defined by character string that specifies the method to 
+#' The method.M, method.G and method.F are parameters defined by character string that specifies the method to 
 #' define each interest area.  The method parameter can take the following values: 
 #' "points_buffer": This method generates a buffer around the occurrence points (given by dist.Mov). 
 #' "points_MCP": This method generates a minimum convex polygon around the occurrence points. 
@@ -128,7 +128,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
                            dist_MOV = NULL, area_G = NULL, method_G = NULL, compute_G = NULL, dir_G = NULL,
                            do_future = NULL, method_F = NULL, area_F = NULL, polygon_data = NULL, compute_F = NULL, 
                            dir_F = NULL, cor_eval = NULL, cor_method = NULL, cor_detail = NULL, 
-                           beta_small_sample = NULL, fc__small_sample = NULL, beta_large_sample = NULL, 
+                           beta_small_sample = NULL, fc_small_sample = NULL, beta_large_sample = NULL, 
                            fc_large_sample = NULL, E = NULL, extrapo = NULL, kept = NULL, maxent_package = NULL, 
                            crs_proyect = NULL, tipo = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
                            redo_path = NULL
@@ -269,7 +269,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
 
   #-----------------------------------
   # Algorithms
-  if (is.null(algos)) algos <- "MAXENT" #c("MAXENT", "GBM", "ANN")
+  #if (is.null(algos)) algos <- "MAXENT" #c("MAXENT", "GBM", "ANN")
 
   #----------------------------------- 
   # Maxent details
@@ -278,7 +278,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
   if (is.null(fc_small_sample)) fc_small_sample <- c("l", "q", "lq")
   if (is.null(beta_large_sample)) beta_large_sample <- seq(1, 6, 1)
   if (is.null(fc_large_sample)) {
-    fc_25 <- c( "l", "q", "lq", "lp", "lqp", "qp")
+    fc_large_sample <- c( "l", "q", "lq", "lp", "lqp", "qp")
   }
   if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 10
@@ -381,7 +381,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
     "Computing G Variables ", compute_G, "\n",
     "Computing F Variables ", compute_F, "\n",
     "\n",
-    "Algorithms used ", algos, "\n",
+    #"Algorithms used ", algos, "\n",
     "Bias layer used ", use_bias, "\n",
     "Path of bias layer", "bias_layer/aves_set16.tif", "\n",
     "\n",
@@ -389,7 +389,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
     "Maxent beta multiplier occurrences small sample ", paste0(beta_small_sample, collapse = ","), "\n",
     "Maxent beta multiplier occurrences large sample ", paste0(beta_large_sample, collapse = ","), "\n",
     "Maxent feature classes occurrences small sample ", paste0(fc_small_sample, collapse = ","), "\n",
-    "Maxent feature classes occurrences large sample 25 ", paste0(fc_large_sample, collapse = ","), "\n",
+    "Maxent feature classes occurrences large sample ", paste0(fc_large_sample, collapse = ","), "\n",
     "Maxent prediction settings ", extrapo, "\n",
     "\n",
     "Final data", "\n",
@@ -435,7 +435,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
   # 2. Remove spatial duplicate occurrences to x km
   #--------------------------------------
   
-  message(paste0("Removing spatial duplicate occurrences database to ", remove_distance, "km, using  ", remove_method))
+  message(paste0("Removing spatial duplicate occurrences database to ", remove_distance, "km, using ", remove_method))
 
   linesmsg2 <- tryCatch(
     expr = {
@@ -833,7 +833,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
     erase <- ""
   }
 
-  if (keep_files == "essential" | keep_files == "none") {
+  if (erase_files == "essential" | erase_files == "all") {
     erase <- c(
       paste0(folder_sp, "/F_variables"), paste0(folder_sp, "/G_variables"),
       paste0(folder_sp, "/proj_current_cal"),
@@ -847,7 +847,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
       "spatial_thin_log.txt", paste0(folder_sp, "/Temp"),
       list.files(path = paste0(folder_sp, "/"), pattern = ".asc$", full.names = T, recursive = T)
     )
-    if (keep_files == "all") {
+    if (erase_files == "all") {
       folders.inside <- list.dirs(path = paste0(folder_sp, "/"), full.names = T, recursive = F)
       erase2 <- c(
         folders.inside[grep(folders.inside, pattern = "final_")], folders.inside[grep(folders.inside, pattern = "eval_")]
@@ -866,7 +866,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
 
   linestime <- give.msg.time(time.1 = time1)
 
-  writeLines(paste0("keep_files: ", keep_files, "\n", linestime), filelog)
+  writeLines(paste0("erase_files: ", erase_files, "\n", linestime), filelog)
 
   close(filelog)
 
