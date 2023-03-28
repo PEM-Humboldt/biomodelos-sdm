@@ -40,10 +40,10 @@
 #' @param dist_MOV numeric, maximum distance in kilometers to make buffer. It must be set following displacement 
 #' behavior of the species to work. 
 #' @param area_G character string, file path to the raster or shape file defining the M area, in case of not
-#' using any optional method, i.e an user pre-processed area to train ecological niche models. It is used if compute.G 
-#' is set to TRUE and proj.models is "M-G".
+#' using any optional method, i.e an user pre-processed area to train ecological niche models. It is used if compute_G 
+#' is set to TRUE and proj_models is "M-G".
 #' @param method_G character string, method to define the area to project with current climate. It is used if
-#' compute.G is set to TRUE and proj.models is "M-G". 
+#' compute_G is set to TRUE and proj_models is "M-G". 
 #' @param compute_G logical value indicating whether to compute data for the "G" projection area. It can be useful
 #' if the user pre-processed G environmental variables which are stored in a folder. 
 #' @param dir_G character string specifying the directory containing environmental variables data for the "G" 
@@ -51,7 +51,10 @@
 #' @param do_future logical value indicating whether to process data for future scenarios
 #' @param method_F character string, method to define the area to project with future climate. It is used if
 #' do.future and compute.F are set to TRUE
-#' @param area_F logical value indicating whether to compute data for the "F" future area
+#' @param area_F character string, file path to the raster or shape file defining the F area, in case of not
+#' using any optional method, i.e an user pre-processed area to project ecological niche models in diferent temporal.
+#' scenarios. It is used if compute_F is TRUE. 
+#' is set to TRUE and proj_models is "M-G".
 #' @param polygon_data character string, file path to shapefile in order to extract areas of interest. See details for
 #' more information. Default is NULL.
 #' @param compute_F logical value indicating whether to compute data for the "F" projection area. It can be useful
@@ -74,7 +77,7 @@
 #' calibration (e.g. 'l', 'lq') when there is a large sample. Large sample for Maxent is considered here as 
 #' equal or more than 20 occurrences.
 #' @param E numeric threshold the percentage of training data omission error allowed. See 
-#' @param extrapo extrapolation type of projections following kuenm_mod; can be: "all" (all three of the options 
+#' @param extrapo character string extrapolation type of projections following kuenm_mod; can be: "all" (all three of the options 
 #' listed), "ext_clam" (extrapolation with clamping), "ext" (free extrapolation), and "no_ext" (no extrapolation)
 #' @param kept logical, if FALSE, all candidate models created with kuenm will be erased after evaluation. 
 #' Default set as FALSE.
