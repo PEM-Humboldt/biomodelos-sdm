@@ -1,8 +1,37 @@
+#' Calibrate, evaluate and select ecological niche models using bioclim with the dismo package
+#' 
+#' @description 'do_bioclim' function uses the Maxent algorithm with the dismo package to calibrate, evaluate, and 
+#' select ecological niche models. It first trains a set of competing models based on different variables set
+#' and tails argument "low", "high", "both", and then evaluates their performance using partial AUC and omission rate 
+#' at the 10th percentile. The function selects the best models using a hierarchical process that considers AUC and
+#'  omission in that order. Finally, the function projects the calibrated model onto projection areas and saves them 
+#' in the species folder specified by the 'folder.sp' argument. 
+#' 
+#' @param occ. data frame containing occurrence data of the species of interest. Must have columns for longitude 
+#' (col.lon) and latitude (col.lat).
+#' @param env.Mdir character string representing the directory where the environmental layers for the M projection 
+#' (train area) are located.
+#' @param env.Gdir character string representing the directory where the environmental layers for the G projection 
+#' (current area) are located.
+#' @param folder.sp character string representing the output directory where calibrated models and evaluation results 
+#' will be saved.
+#' @param col.lon character string representing the name of the column in occ. that contains the longitude data.
+#' @param col.lat character string representing the name of the column in occ. that contains the latitude data.
+#' @param proj.models character string indicating which set of environmental layers to use for modeling. If 'M-M', 
+#' only the M layers will be used. If 'M-G', both M and G layers will be used.
+#' 
+#' @return A table of evaluation results is saved in a CSV file in the folder eval_results_bioclim within the folder.sp 
+#' directory specified by the user. The table contains evaluation metrics for each model tested, including AUC, OR10, 
+#' and other performance measures. A summary table of the best models is created based on the evaluation results. 
+#' The table includes information such as the model name, algorithm, AUC, OR10, and other evaluation metrics.
+#' The best models are selected based on various criteria, such as AUC, OR10, and delta AICc. The indices of the 
+#' selected models are stored in a variable index_select.
+#'
+#' @export
 
 do.bioclim <- function(occ. = M_$occurrences, env.Mdir = paste0(folder_sp, "/M_variables"),
                        env.Gdir = paste0(folder_sp, "/G_variables"), folder.sp = folder_sp,
-                       col.lon = col_lon, col.lat = col_lat, proj.models = proj_models,
-                       crs.proyect = crs_proyect, extrap = extrapo, predic = predic) {
+                       col.lon = col_lon, col.lat = col_lat, proj.models = proj_models,) {
   if (proj.models == "M-M") {
     # M reading
     env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)

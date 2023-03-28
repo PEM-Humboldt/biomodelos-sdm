@@ -41,7 +41,7 @@
 #' results already exist.
 #' @param redo.path character string, representing the directory where saved model calibration and evaluation results are 
 #' located, if any.
-#' @param E numeric, an optional argument for passing a previously calibrated model as a starting point for calibration.
+#' @param E numeric, threshold (numeric) the percentage of training data omission error allowed .
 #'
 #' @return A table of evaluation results is saved in a CSV file in the folder eval_results_enmeval within the folder.sp 
 #' directory specified by the user. The table contains evaluation metrics for each model tested, including AUC, OR10, 
@@ -52,7 +52,7 @@
 
 do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
-                       use.bias, extrap, predic, redo., redo.path, E = E) {
+                       use.bias, extrap, predic = "kuenm", redo., redo.path, E = E) {
 
   # MISSING user choose function to predict
 

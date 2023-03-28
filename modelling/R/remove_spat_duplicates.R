@@ -12,7 +12,7 @@
 #' @param sp.name character string species name (default is sp_name)
 #' @param remove.method character string indicating the method for removing duplicate occurrences. Two options:
 #' "sqkm" uses clean_dup function from ntbox package by Luis Osorio 
-#' https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R or "spthin" uses thin function
+#' https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R or "spthin" uses thin function from package sp_thin
 #' https://rdrr.io/cran/spThin/man/thin.html
 #' @param remove.distance: a numeric value indicating the distance threshold in kilometers for considering 
 #' occurrences as duplicates 

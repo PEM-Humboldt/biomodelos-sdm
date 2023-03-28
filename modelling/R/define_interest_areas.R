@@ -1,4 +1,5 @@
 #' Generate areas of interest for ecological niche models, projections, and future scenarios. 
+#' 
 #' @description  The `define_interest_areas` function constructs areas of interest for ecological
 #' niche modelling. It can define M area or accessible area in which algorithm is train, G area in which is
 #' possible project the trained model in current time or same as M, and F area in which is project 

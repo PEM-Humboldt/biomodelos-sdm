@@ -1,18 +1,138 @@
-# fit_biomodelos automates the fitting of Species Distribution Models from occurrence and environmental data.
+#' fit_biomodelos automates the fitting of Species Distribution Models from occurrence and environmental data.
+#' 
+#' @description  'fit_biomodelos' is a function that automates the process of fitting Species Distribution 
+#' Models (SDMs) using occurrence and environmental data. The function follows a flexible and automated general 
+#' routine to fit the SDMs. It formats occurrence data, constructs geographical areas, crops and masks environmental 
+#' variables, trains SDMs using one or several algorithms, evaluates them quantitatively, and ensembles the best 
+#' of each one. It also projects to different scenarios based on user input.
+#' #' @param occ data frame containing occurrence data of the species of interest. Must have columns for longitude 
+#' (col_lon), latitude (col_lat) and species name. Default 'acceptedNameUsage'
+#' @param col_lon character string representing the name of the column in occ data.frame that contains the longitude data.
+#' Default 'decimalLongitude'
+#' @param col_lat character string representing the name of the column in occ data.frame that contains the latitude data.
+#' Default 'decimalLatitude' if (is.null(col_sp)) col_sp <- "acceptedNameUsage"
+#' @param clim_vars character string name of the folder which stores the environmental variables. It would be created using
+#' the 'do.folder.structure' function. No default
+#' @param dir_clim character string specifying the directory containing climate data for the current time period.
+#' Default it takes the path 'env_vars/your_clim_vars/'
+#' @param dir_other optional character string specifying the directory containing other environmental data. Default
+#' it takes the path 'env_vars/other/'
+#' @param file_xtension character string specifying the file extension of the data files to be processed. Default .tiff
+#' @param remove_method character string indicating the method for removing duplicate occurrences. Two options:
+#' "sqkm" uses clean_dup function from ntbox package by Luis Osorio 
+#' https://github.com/luismurao/ntbox/blob/master/R/clean_dup.R or "spthin" uses thin function from package sp_thin
+#' https://rdrr.io/cran/spThin/man/thin.html
+#' @param remove_distance numeric value indicating the distance threshold in kilometers for considering occurrences 
+#' as duplicates 
+#' @param use_bias logical, calculates the bias of a set of species occurrences using the Target Group Sampling (TGS) 
+#' method. Default is FALSE
+#' @param TGS_kernel character string of the path to the raster file with the kernel for TGS. TGS estimates sampling 
+#' by using the presence locations of taxonomically related species observes using the same techniques as the focal 
+#' species, under the assumption that those surveys would have recorded the focal species had it occurred there. 
+#' Default is NULL.
+#' @param proj_models character string, it would be "M-M" or "M-G".The parameter specifies if the training area 
+#' is the same as the projection area. M area can be define as the accessible area in which algorithm is trained, 
+#' G area in which is going to be projected the trained model in current time or same as M.
+#' @param area_M character string, file path to the raster or shape file defining the M area, in case of not
+#' using any optional method, i.e an user pre-processed area to train ecological niche models. 
+#' @param method_M character string, method to define the area to train ecological niche models. See details for options.
+#' Default is set to 'points_buffer'.
+#' @param dist_MOV numeric, maximum distance in kilometers to make buffer. It must be set following displacement 
+#' behavior of the species to work. 
+#' @param area_G character string, file path to the raster or shape file defining the M area, in case of not
+#' using any optional method, i.e an user pre-processed area to train ecological niche models. It is used if compute.G 
+#' is set to TRUE and proj.models is "M-G".
+#' @param method_G character string, method to define the area to project with current climate. It is used if
+#' compute.G is set to TRUE and proj.models is "M-G". 
+#' @param compute_G logical value indicating whether to compute data for the "G" projection area. It can be useful
+#' if the user pre-processed G environmental variables which are stored in a folder. 
+#' @param dir_G character string specifying the directory containing data for the "G" projection area. The quantity
+#' of layers and their names have to be equal to variables of "M" area.
+#' @param do_future logical value indicating whether to process data for future scenarios
+#' @param method_F character string, method to define the area to project with future climate. It is used if
+#' do.future and compute.F are set to TRUE
+#' @param area_F logical value indicating whether to compute data for the "F" future area
+#' @param polygon_data character string, file path to shapefile in order to extract areas of interest. See details for
+#' more information. Default is NULL.
+#' @param compute_F logical value indicating whether to compute data for the "F" projection area. It can be useful
+#' if the user pre-processed F environmental variables which are stored in a folder. 
+#' @param dir_F character string specifying the directory containing data for the "F" future area. The quantity
+#' of layers and their names have to be equal to variables of "M" area.
+#' @param cor_eval logical value indicating whether to perform correlation analysis on the environmental variables
+#' @param cor_method character string specifying the method to be used for correlation analysis (e.g. "VIF")
+#' @param cor_detail numeric specifying details for correlation analysis, like the numeric value specifying 
+#' the VIF threshold. Default is set to 10.
+#' @param beta_small_sample numeric value representing the regularization multiplier to be used in Maxent model 
+#' calibration when there is a small sample. Small sample for Maxent is considered here as less than 20 occurrences.
+#' @param fc_small_sample character string indicating the feature class function to be used in Maxent model 
+#' calibration (e.g. 'l', 'lq') when there is a small sample. Small sample for Maxent is considered here as less 
+#' than 20 occurrences.
+#' @param beta_large_sample numeric value representing the regularization multiplier to be used in Maxent model 
+#' calibration when there is a large sample. Large sample for Maxent is considered here as equal or more than 20 
+#' occurrences.
+#' @param fc_large_sample character string indicating the feature class function to be used in Maxent model 
+#' calibration (e.g. 'l', 'lq') when there is a large sample. Large sample for Maxent is considered here as 
+#' equal or more than 20 occurrences.
+#' @param E numeric threshold the percentage of training data omission error allowed. See 
+#' @param extrapo extrapolation type of projections following kuenm_mod; can be: "all" (all three of the options 
+#' listed), "ext_clam" (extrapolation with clamping), "ext" (free extrapolation), and "no_ext" (no extrapolation)
+#' @param kept logical, if FALSE, all candidate models created with kuenm will be erased after evaluation. 
+#' Default set as FALSE.
+#' @param maxent_package character string, package to use to calibrate SDM's using large sample occurrence data. It
+#' would be 'kuenm' or 'enmeval'. Default set as 'enmeval'
+#' @param crs_proyect character string indicating which set of environmental layers to use for modeling. If 'M-M', 
+#' only the M layers will be used. If 'M-G', both M and G layers will be used. Default set as 
+#' "+proj=longlat +datum=WGS84 +no_defs +type=crs"
+#' @param tipo character string for adding as a suffixes to species name folder. Default set as NULL 
+#' @param erase_files character string representing if intermediate date and models are going to be erased. 
+#' Three options are possible "none" (not erase any file or folder, if kept is TRUE it maintains calibrated models), 
+#' "essential" (erase 'Temp' folder, calibrated models, RData files storing models, shaped occurrences for specific
+#' packages, and processed environmental variables), "all" (erase final_model folder and information relate to evaluated
+#' models, if used it will prevent the use of a redo model process) 
+#' @param transf_biomo_ext logical if TRUE, resulted models will have extension of the biomodelos windows being a 
+#' rectangular extension with left limit longitude: -83, right limit longitude: -60, upper limit latitude: 13, 
+#' and lower limit latitude: -14, decimal coordinates - WGS84 reference system. Default set as TRUE.
+#' @param redo logical if TRUE a redo model process is performed. This process use the best calibrated model in a 
+#' previous run to be projected in different scenarios like a new area G or F. In order to be completely a replicated 
+#' model you must to locate the same environmental variables in the other and climate folders.  
+#' @param redo_path character string representing the path of the species folder that will be subjected to a model 
+#' reprocessing.
+#' 
+#' @details 
+#' remove_method and remove_distance are used in the 'remove_spat_duplicates' function. The function offers two methods 
+#' for removing duplicates: 'remove_method' (1) a spatial thinning approach using the spThin package 'spthin', and (2) 
+#' a distance-based approach using a distance threshold. The function returns a data frame with unique occurrences 'sqkm', 
+#' based on the chosen method and distance threshold.
+#' 
+#' #' The method.M, method.G and method.F are parameters defined by character string that specifies the method to 
+#' define each interest area.  The method parameter can take the following values: 
+#' "points_buffer": This method generates a buffer around the occurrence points (given by dist.Mov). 
+#' "points_MCP": This method generates a minimum convex polygon around the occurrence points. 
+#' "points_MCP_buffer": This method generates a minimum convex polygon around the occurrence points, applies a buffer
+#' of a specified distance (given by dist.Mov) around the polygon, and then clips the polygon to the study area boundary.
+#' "polygon_points": This method intersects a biogeographic area multi-polygon (given by polygon.data) with the 
+#' occurrence points to create a new polygon that covers the study area and contains all occurrence points.
+#' "polygon_buffer": This method intersects a biogeographic area multi-polygon (given by polygon.data) with the 
+#' occurrence points and then create a buffer of a specified distance (given by dist.Mov) around the selected polygon
+#' to create a new polygon that covers the study area and contains all occurrence points and a buffer.
+#' "polygon_points_buffer": This method intersects a biogeographic area multi-polygon (given by polygon.data) with 
+#' a buffer of a specified distance (given by dist.Mov) around the occurrence points, then clips the resulting polygon 
+#' to the study area boundary. 
+#' "polygon_MCP": This method intersects a study area polygon (given by polygon.data) with a minimum convex polygon 
+#' around the occurrence points to create a new polygon that covers the study area and contains all occurrence points.
 
-fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
-                         clim_vars, dir_clim = NULL, dir_other = NULL,
-                         file_extension = NULL, remove_method = NULL, remove_distance = NULL, 
-                         use_bias = NULL, TGS_kernel = NULL, proj_models,
-                         method_M = NULL, dist_MOV = NULL, area_M = NULL, compute_M = NULL, dir_M = NULL,
-                         area_G = NULL, method_G = NULL, compute_G = NULL, dir_G = NULL,
-                         do_future = NULL, method_F = NULL, area_F = NULL, compute_F = NULL, dir_F = NULL,
-                         cor_eval = NULL, cor_method = NULL, cor_detail = NULL,
-                         algos = NULL, beta_5.25 = NULL, fc_5.25 = NULL, beta_25 = NULL, fc_25 = NULL, 
-                         E = NULL, extrapo = NULL, predic = NULL, kept = NULL, maxent_package = NULL,
-                         crs_proyect = NULL, tipo = NULL,keep_files = NULL, transf_biomo_ext = NULL, 
-                         redo = NULL, redo_path = NULL, polygon_data = NULL
-                         # other.pckg = NULL
+
+fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, clim_vars, dir_clim = NULL, 
+                           dir_other = NULL, file_extension = NULL, remove_method = NULL, remove_distance = NULL, 
+                           use_bias = NULL, TGS_kernel = NULL, proj_models, area_M = NULL, method_M = NULL, 
+                           dist_MOV = NULL, area_G = NULL, method_G = NULL, compute_G = NULL, dir_G = NULL,
+                           do_future = NULL, method_F = NULL, area_F = NULL, polygon_data = NULL, compute_F = NULL, 
+                           dir_F = NULL, cor_eval = NULL, cor_method = NULL, cor_detail = NULL, 
+                           beta_small_sample = NULL, fc__small_sample = NULL, beta_large_sample = NULL, 
+                           fc_large_sample = NULL, E = NULL, extrapo = NULL, kept = NULL, maxent_package = NULL, 
+                           crs_proyect = NULL, tipo = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
+                           redo_path = NULL
+                         # other.pckg = NULL, algos = NULL deprecated for problems with BIOMOD2
 ) {
 
   # checking concatenated arguments and format of files
@@ -147,37 +267,35 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   if (is.null(do_future)) do_future <- FALSE
   if (is.null(compute_F)) compute_F <- FALSE
 
-  ########################################################### Algorithms
+  #-----------------------------------
+  # Algorithms
   if (is.null(algos)) algos <- "MAXENT" #c("MAXENT", "GBM", "ANN")
 
-  ########################################################## Maxent details
-  if (is.null(beta_5.25)) beta_5.25 <- seq(0.5, 4, 0.5)
-  if (is.null(fc_5.25)) fc_5.25 <- c("l", "q", "lq")
-  if (is.null(beta_25)) beta_25 <- seq(1, 6, 1)
-  if (is.null(fc_25)) {
-    fc_25 <- c(
-      "lq", "lp", "lt", "lh", "qp", "qt", "qh", "lqp",
-      "lqt", "lqh", "lpt", "lph", "qpt", "qph", "qth", "lqpt",
-      "lqph", "lqth", "lpth", "lqpth"
-    )
+  #----------------------------------- 
+  # Maxent details
+  
+  if (is.null(beta_small_sample)) beta_small_sample <- seq(0.5, 4, 0.5)
+  if (is.null(fc_small_sample)) fc_small_sample <- c("l", "q", "lq")
+  if (is.null(beta_large_sample)) beta_large_sample <- seq(1, 6, 1)
+  if (is.null(fc_large_sample)) {
+    fc_25 <- c( "l", "q", "lq", "lp", "lqp", "qp")
   }
   if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 10
-  if (is.null(predic)) predic <- "kuenm"
   if (is.null(maxent_package)) maxent_package <- "enmeval"
 
   # Colineality
   if (is.null(cor_eval)) col_eval <- FALSE
   if (isTRUE(cor_eval)) { # as we have only one method now, get defaults
     if (is.null(cor_method)) col_method <- "VIF"
-    if (is.null(cor_detail)) col_detail <- 3
+    if (is.null(cor_detail)) col_detail <- 10
   }
 
   # other arguments
   if (is.null(tipo)) tipo <- ""
   if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
   if (is.null(kept)) kept <- FALSE
-  if (is.null(keep_files)) keep_files <- "essential"
+  if (is.null(erase_files)) erase_files <- "essential"
   if (is.null(transf_biomo_ext)) transf_biomo_ext <- TRUE
   if (is.null(redo)) redo <- FALSE
   if (is.null(redo_path)) redo_path <- NULL
@@ -268,15 +386,14 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     "Path of bias layer", "bias_layer/aves_set16.tif", "\n",
     "\n",
     "Maxent detailed", "\n",
-    "Maxent beta multiplier occurrences less than 25 ", paste0(beta_5.25, collapse = ","), "\n",
-    "Maxent beta multiplier occurrences greater than 25 ", paste0(beta_25, collapse = ","), "\n",
-    "Maxent feature classes occurrences less than 25 ", paste0(fc_5.25, collapse = ","), "\n",
-    "Maxent feature classes occurrences greater than 25 ", paste0(fc_25, collapse = ","), "\n",
+    "Maxent beta multiplier occurrences small sample ", paste0(beta_small_sample, collapse = ","), "\n",
+    "Maxent beta multiplier occurrences large sample ", paste0(beta_large_sample, collapse = ","), "\n",
+    "Maxent feature classes occurrences small sample ", paste0(fc_small_sample, collapse = ","), "\n",
+    "Maxent feature classes occurrences large sample 25 ", paste0(fc_large_sample, collapse = ","), "\n",
     "Maxent prediction settings ", extrapo, "\n",
-    "Maxent prediction function ", predic, "\n",
     "\n",
     "Final data", "\n",
-    "Store files ", keep_files, "\n",
+    "Store files ", erase_files, "\n",
     "#############################################################################", "\n"
   )
 
@@ -464,21 +581,20 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   
   if (nrow(interest_areas$occurrences) < 6 ) {
     
-      message("Path, calibrating and evaluating bioclim models")
+      message("Calibrating and evaluating bioclim models: less than 6 occurrences")
       
       linesmsg6.1 <- tryCatch(
         expr = {
           calibrate_model <- do.bioclim(occ. = interest_areas$occurrences, env.Mdir = paste0(folder_sp, "/M_variables"),
                                     env.Gdir = paste0(folder_sp, "/G_variables"),
                                     folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat, 
-                                    proj.models = proj_models, crs.proyect = crs_proyect, extrap = extrapo, 
-                                    predic = predic)
+                                    proj.models = proj_models)
           paste("\nPath, number occ less than 6\nVerySmall samples bioclim modelling: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
           return(paste0("\nPath, number occ less than 6 \nVerySmall samples bioclim modelling fail.\nError R: ", e1))
-        } ## MISSING FIXING DISMO PREDIC
+        } 
       )
       
       writeLines(linestime, filelog)
@@ -495,24 +611,24 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       # Path A # Jackknife, enmeval maxent
       ##########
 
-      message("Path A, calibrating and evaluating Maxent models")
+      message("Calibrating and evaluating Maxent models: less than 20 occurrences")
 
       linesmsg6.1 <- tryCatch(
         expr = {
           calibrate_model <- do_enmeval(
-            occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_5.25, f.clas = fc_5.25,
+            occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_small_sample, f.clas = fc_small_sample,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
-            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic,
+            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
           )
-          paste("\nPath A, number occ less or equal to 25\nSmall samples Maxent modelling: ok.")
+          paste("\nPath Maxent, number occ less than 20\nSmall samples Maxent modelling: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
-          return(paste0("\nPath A, number occ less or equal to 25 \nSmall samples Maxent modelling fail.\nError R: ", e1))
-        } ## MISSING FIXING DISMO PREDIC
+          return(paste0("\nPath Maxent, number occ less than 20 \nSmall samples Maxent modelling fail.\nError R: ", e1))
+        } 
       )
 
       writeLines(text = linesmsg6.1, con = filelog, sep = "\n")
@@ -525,25 +641,25 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
     # Path B # split in test and train, kuenm maxent, biomod GBM y ANN
     ##########
     
-    message("Path B")
+    message("Calibrating and evaluating Maxent models: equal or more than 20 occurrences")
     
     if(maxent_package == "enmeval"){
       linesmsg6.1 <- tryCatch(
         expr = {
           calibrate_model <- do_enmeval(
-            occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_25, f.clas = fc_25,
+            occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_large_sample, f.clas = fc_large_sample,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
-            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo, predic = predic,
+            use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
           )
-          paste("\nPath B, number occ greater than 25\nLarge sample Maxent modelling: ok.")
+          paste("\nPath Maxent, number occ greater than 20\nLarge sample Maxent modelling: ok.")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
-          return(paste0("\nPath B, number occ greater or equal to 25 \nLarge samples Maxent modelling fail.\nError R: ", e1))
-        } ## MISSING FIXING DISMO PREDIC
+          return(paste0("\nPath Maxent, number occ greater or equal to 20 \nLarge samples Maxent modelling fail.\nError R: ", e1))
+        } 
       )
       
       writeLines(linestime, filelog)
@@ -563,11 +679,11 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
             occ. = interest_areas$occurrences, bias.file = BiasSp, folder.sp = folder_sp, col.lon = col_lon,
             col.lat = col_lat, use.bias = use_bias, env.M = envars$M
           )
-          paste0("\nPath B, number occ greater than 25\nOcc splited: ok.")
+          paste0("\nPath Maxent, number occ greater than 20\nOcc splited: ok (kuenm).")
         },
         error = function(error_message) {
           e1 <- conditionMessage(error_message)
-          return(paste0("\nPath B, number occ greater than 25\nOcc splited: fail.\nError R: ", e1))
+          return(paste0("\nPath Maxent, number occ greater than 20\nOcc splited: fail (kuenm).\nError R: ", e1))
         }
       )
       
@@ -577,7 +693,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
           expr = {
             calibrate_model <- do_kuenm(
               occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
-              biasfile = "BiasfileM.asc", beta.mult = beta_25, fc.clas = fc_25, kept. = kept,
+              biasfile = "BiasfileM.asc", beta.mult = beta_large_sample, fc.clas = fc_large_sample, kept. = kept,
               maxent.path = getwd(), proj.models = proj_models, E = E,
               do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
               env.Gdir = paste0(folder_sp, "/G_variables"),
@@ -670,6 +786,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   # 7. Ensemble calibrated and evaluated models
   #--------------------------------------
   
+  message("Calculating ensembles")
+  
   linesmsg7 <- tryCatch(
     expr = {
       enscurr <- currentEns_byAlg(
@@ -711,7 +829,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
   # End
   #--------------------------------------
 
-  if (keep_files == "all") {
+  if (erase_files == "none") {
     erase <- ""
   }
 
@@ -729,7 +847,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
       "spatial_thin_log.txt", paste0(folder_sp, "/Temp"),
       list.files(path = paste0(folder_sp, "/"), pattern = ".asc$", full.names = T, recursive = T)
     )
-    if (keep_files == "none") {
+    if (keep_files == "all") {
       folders.inside <- list.dirs(path = paste0(folder_sp, "/"), full.names = T, recursive = F)
       erase2 <- c(
         folders.inside[grep(folders.inside, pattern = "final_")], folders.inside[grep(folders.inside, pattern = "eval_")]
@@ -752,5 +870,5 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL,
 
   close(filelog)
 
-  return(c("ok", sp_name))
+  return(paste0("Executed ", sp_name))
 }

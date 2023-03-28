@@ -5,7 +5,7 @@
 #' perform correlation analysis on the processed data if desired.
 #'
 #' @param clim.dataset character string specifying the name of the dataset to be processed
-#' @param clim.dir character string specifying the directory containing climate data for the current time period
+#' @param clim.dir character string specifying the directory containing climate data
 #' @param file.extension character string specifying the file extension of the data files to be processed
 #' @param crs.proyect optional character string specifying the coordinate reference system to be used for projection 
 #' (default is 'crs_proyect')
@@ -20,7 +20,7 @@
 #' @param compute.F logical value indicating whether to compute data for the "F" future area
 #' @param dir.G character string specifying the directory containing data for the "G" projection area
 #' @param dir.F character string specifying the directory containing data for the "F" future area
-#' @param cor.eval logical value indicating whether to perform correlation analysis on the processed data
+#' @param cor.eval logical value indicating whether to perform correlation analysis on on the environmental variables
 #' @param cor.method character string specifying the method to be used for correlation analysis (e.g. "VIF")
 #' @param cor.detail list specifying additional details for correlation analysis
 #' 
