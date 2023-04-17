@@ -41,7 +41,7 @@ This repository include functions and routines (Pre-processing, modelling, post-
 
 ## Acknowledgment
 
-*This development is supported by National Geographic Society Grant #NGS-86896T-21 "Developing an integrated species distribution modelling system to identify complementary conservation areas in Colombia". [Project information](https://explorer-directory.nationalgeographic.org/elkin-a-noguera-urbano)**
+*This development is supported by National Geographic Society Grant #NGS-86896T-21, project "Developing an integrated species distribution modelling system to identify complementary conservation areas in Colombia". [Project information](https://explorer-directory.nationalgeographic.org/elkin-a-noguera-urbano)**
 * Initial phases of the project were supported by Natural map.
 
 ## License
