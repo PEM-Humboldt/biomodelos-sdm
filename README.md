@@ -23,6 +23,9 @@ This repository include functions and routines (Pre-processing, modelling, post-
 ## Authors and contact
 
 * **Carlos Jair Muñoz Rodriguez, [contacto institucional](mailto:cmunoz@humboldt.org.co), [contacto personal](mailto:cmunozbiol@gmail.com)**
+* **Elkin Alexi Noguera Urbano, [contacto institucional](mailto:enoguera@humboldt.org.co), [contacto personal](mailto:elkalexno@gmail.com)**
+
+## Collaborators
 
 * **María Helena Olaya, [contacto institucional](mailto:molaya@humboldt.org.co ), [contacto personal](mailto:olaya42@gmail.com)**
 
@@ -35,8 +38,6 @@ This repository include functions and routines (Pre-processing, modelling, post-
 * **Luis Hernando Romero Jiménez, [contacto institucional](mailto:lromero@humboldt.org.co), [contacto personal](mailto:lhromeroj@gmail.com)**
 
 * **Andrés Felipe Suárez Castro, [contacto personal](mailto:felipesuarezca@gmail.com)**
-
-* **Elkin Alexi Noguera Urbano, [contacto institucional](mailto:enoguera@humboldt.org.co), [contacto personal](mailto:elkalexno@gmail.com)**
 
 ## Acknowledgment
 
