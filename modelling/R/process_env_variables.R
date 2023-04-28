@@ -72,6 +72,7 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
       rm(envras2)
       indexCol <- which((names(envras) %in% cor.result) == TRUE)
       envras <- envras[[indexCol]]
+      
     }
   }
 

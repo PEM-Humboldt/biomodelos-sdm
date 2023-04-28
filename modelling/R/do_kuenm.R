@@ -1,5 +1,5 @@
 
-do.kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
+do_kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
                      folder.sp, biasfile, kept., proj.models, do.future, env.Mdir, env.Gdir,
                      crs.proyect, use.bias, extrap, write.intfiles, redo., 
                      redo.path ) {
