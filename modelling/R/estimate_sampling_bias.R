@@ -11,7 +11,6 @@
 #' @param TGS.kernel character string of the path to the raster file with the kernel for TGS.
 #' @param shape.M shapefile with the extent and shape of the study area.
 #' @param env.M raster stack of environmental variables for the study area.
-#' @param ext character string of the extension of the raster files.
 #' @param folder.sp character string folder path to save the output files.
 #' @param col.lon character string of column name for the longitude in the data frame.
 #' @param col.lat character string of column name for the latitude in the data frame.
@@ -33,13 +32,13 @@
 #' probability surface created by the KDE.
 
 estimate_sampling_bias <- function(data. = interest_areas$occurrences, TGS.kernel = "bias_layer/aves.tif",
-                       shape.M = interest_areas$shape_M, env.M = envars$M, ext = "*.asc",
-                       folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat,
-                       col.sp = col_sp) {
+                       shape.M = interest_areas$shape_M, env.M = envars$M, folder.sp = folder_sp, 
+                       col.lon = col_lon, col.lat = col_lat, col.sp = col_sp) {
 
   ## import raster(bias_layer) and crop to the extent and shape of M composed
 
-  Biasfile <- raster::raster(TGS.kernel) * 1000
+  Biasfile <- raster::raster(TGS.kernel) * 1000 %>% 
+    trunc()
   
   # Bias in M
   BiasfileM <- Biasfile %>%

@@ -180,7 +180,8 @@ fit_biomodelos(
   occ = dataSp, col_sp = "species", col_lat = "lat",
   col_lon = "lon", clim_vars = "worldclim", dir_clim = "Data/env_vars/",
   dir_other = "Data/env_vars/other/", method_M = "points_buffer", dist_MOV = 74,
-  proj_models = "M-M", algos = "MAXENT", remove_distance = 10
+  proj_models = "M-M", remove_distance = 10, , fc_large_sample = c("l", "q", "h"),
+  beta_large_sample = c(1, 2)
 )
 ```
 

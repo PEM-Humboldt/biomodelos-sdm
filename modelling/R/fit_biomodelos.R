@@ -86,7 +86,7 @@
 #' @param crs_proyect character string indicating which set of environmental layers to use for modeling. If 'M-M', 
 #' only the M layers will be used. If 'M-G', both M and G layers will be used. Default set as 
 #' "+proj=longlat +datum=WGS84 +no_defs +type=crs"
-#' @param tipo character string for adding as a suffixes to species name folder. Default set as NULL 
+#' @param type character string for adding as a suffixes to species name folder. Default set as NULL 
 #' @param erase_files character string representing if intermediate date and models are going to be erased. 
 #' Three options are possible "none" (not erase any file or folder, if kept is TRUE it maintains calibrated models), 
 #' "essential" (erase 'Temp' folder, calibrated models, RData files storing models, shaped occurrences for specific
@@ -133,7 +133,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
                            dir_F = NULL, cor_eval = NULL, cor_method = NULL, cor_detail = NULL, 
                            beta_small_sample = NULL, fc_small_sample = NULL, beta_large_sample = NULL, 
                            fc_large_sample = NULL, E = NULL, extrapo = NULL, kept = NULL, maxent_package = NULL, 
-                           crs_proyect = NULL, tipo = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
+                           crs_proyect = NULL, type = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
                            redo_path = NULL
                          # other.pckg = NULL, algos = NULL deprecated for problems with BIOMOD2
 ) {
@@ -190,8 +190,14 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
           stop("Provide a raster file of an area different to M or a constructing method for G in order to project the models.")
         } else if (!is.null(area_G)) {
           Gstr <- tail(unlist(strsplit(area_G, "\\.")), n = 1)
-          if (Gstr == "shp") rtemp <- raster::shapefile(area_G)
-          if (Gstr == "tif") rtemp <- raster::raster(area_G)
+          if (Gstr == "shp") {
+            rtemp <- terra::vect(area_G)
+            rm(rtemp)
+          }
+          if (Gstr == "tif"){ # 
+            rtemp <- terra::rast(area_G)
+            rm(rtemp)
+          } 
 
           if (!exists("rtemp")) {
             stop("Provide a raster or shapefile supported by the raster package. See documentation.")
@@ -244,7 +250,18 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
       }
     }
   }
-
+  
+  if(!is.null(use_bias)){
+    if(use_bias == TRUE){
+      if (is.null(TGS_kernel)) {
+        stop("Provide a path directory in which are stored the future variables pre-processed using M or G as geographic extent.")
+      } else {
+        if (!file.exists(TGS_kernel)) {
+          stop("File of TGS_kernel does not exist, please provide a valid one.")
+        }
+      }
+    }
+  }
 
   # ellipsis arguments
   # occurrence arguments
@@ -295,7 +312,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
   }
 
   # other arguments
-  if (is.null(tipo)) tipo <- ""
+  if (is.null(type)) type <- ""
   if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
   if (is.null(kept)) kept <- FALSE
   if (is.null(erase_files)) erase_files <- "essential"
@@ -341,8 +358,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
 
   sp_name <- occ[1, col_sp] %>% gsub(pattern = " ", replacement = ".")
 
-  if (tipo != "") {
-    folder_sp <- paste0(sp_name, ".", tipo)
+  if (type != "") {
+    folder_sp <- paste0(sp_name, ".", type)
   } else {
     folder_sp <- sp_name
   }
@@ -366,7 +383,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
     time1, "\n",
     "Species name: ", sp_name, "\n",
     "Number of raw occurrences ", nrow(occ), "\n",
-    "Experimental type:", tipo, "\n",
+    "Experimental type:", type, "\n",
     "\n",
     "Method for unique records ", remove_method, "\n",
     "Distance used for unique records ", remove_distance, " km", "\n",
@@ -553,8 +570,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
     expr = {
       if (use_bias == TRUE) {
         message("Procesing bias layer")
-        BiasSp <- estimate_sampling_bias(data. = interest_areas$occurrences, TGS.kernel = "bias_layer/aves.tif",
-                                         shape.M = interest_areas$shape_M, env.M = envars$M, ext = "*.asc",
+        BiasSp <- estimate_sampling_bias(data. = interest_areas$occurrences, TGS.kernel = TGS_kernel,
+                                         shape.M = interest_areas$shape_M, env.M = envars$M, 
                                          folder.sp = folder_sp, col.lon = col_lon, col.lat = col_lat,
                                          col.sp = col_sp)
         paste("Bias file development: ok", "\n")
@@ -789,7 +806,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
   # 7. Ensemble calibrated and evaluated models
   #--------------------------------------
   
-  message("Calculating ensembles")
+  message("\nCalculating ensembles")
   
   linesmsg7 <- tryCatch(
     expr = {
