@@ -160,8 +160,8 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
     # selecting from the table the best enmeval models
     # AUC greater than 0.7
 
-    if (nrow(occ.) > 25) best1 <- eval_results[which(eval_results$proc_auc_ratio.avg >= 1), ]
-    if (nrow(occ.) <= 25) best1 <- eval_results[which(eval_results$auc.train >= 0.7), ]
+    if (nrow(occ.) > 20) best1 <- eval_results[which(eval_results$proc_auc_ratio.avg >= 1), ]
+    if (nrow(occ.) <= 20) best1 <- eval_results[which(eval_results$auc.train >= 0.7), ]
 
     if (nrow(best1) == 0) {
       stop("any model met the test criterion")
@@ -267,7 +267,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
     if (proj.models == "M-M") {
       if (proj == TRUE) {
         current_M_files <- list.files(
-          path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(sp.name, "_M.asc"), 
+          path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(folder.sp, "_M.asc"), 
           full.names = T, include.dirs = T, recursive = T
           )
       } else {
@@ -286,7 +286,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
     if (proj.models == "M-G") {
       current_M_files <- list.files(
-        path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(sp.name, "_M.asc"),
+        path = paste0(folder.sp, "/final_models_enmeval"), pattern = paste0(folder.sp, "_M.asc"),
         full.names = T, include.dirs = T, recursive = T
       )
 
@@ -295,7 +295,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
       current_G_files <- list.files(
         path = paste0(folder.sp, "/final_models_enmeval"),
-        pattern = "G.asc$", full.names = T, include.dirs = T, recursive = T
+        pattern = "*_G.asc$", full.names = T, include.dirs = T, recursive = T
       )
 
       current_G_proj <- terra::rast(current_G_files)
