@@ -1,0 +1,70 @@
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "C:/humboldt/biomodelos-sdm/modelling")
+```
+
+# Working Example 5: multiple species task
+
+Automating the construction of multiple species distribution models is a valuable approach in ecological research and conservation planning. By automating the process, researchers can efficiently analyze and model the distributions of numerous species, saving time and effort. This automation typically involves the use of scripting or programming languages to iterate through a list of species, systematically retrieving occurrence data, processing environmental variables, and applying modeling algorithms. Through this automated approach, researchers can generate a comprehensive set of species distribution models, enabling them to gain insights into species' ecological niches, identify key environmental factors driving their distributions, and assess potential conservation implications. Furthermore, automating the construction of multiple models facilitates large-scale analyses and enables the comparison of species responses across different environmental gradients, enhancing our understanding of species-environment relationships and supporting evidence-based conservation decision-making.
+
+## Environmental Data and Ocurrences
+
+If you skip the last section, extract the files inside of the ".zip" folder *example* to the main root folder. It will write a folder called *example* having three other folders: *Bias_file*, *Data*, and *Occurrences*.
+
+ - *Data* folder, you will find environmental variables representing climatic and other factors of current and future scenarios. You will observe two raster files in ".tif" extension by each scenario. The resolution of this layers are 10 km.
+
+ - *Occurrences* folder, you will find three spreadsheets in ".csv" format. Each ".csv" stores occurrence data using three columns called "species", "lon" and "lat". Go to last section for more information. 
+
+In this example, we are going to run species distribution models from a multiple species database storing data of five bird species: the Multicolored Tanager (*Chlorochrysa nitidissima*), Sooty-capped Puffbird (*Bucco noanamae*), Apolinar's wren  (*Cistothorus apolinari*), Chestnut-bellied Flowerpiercer (*Diglossa gloriosissima*), and Velvet-fronted Euphonia (*Euphonia concinna*). 
+
+```{r}
+dataSp <- read.csv("example/Occurrences/multi_species.csv")
+View(dataSp)
+```
+
+In the occurrence database, all species names are located in the first column labeled "species". Therefore, to effectively process each species, it is necessary to divide or split the database based on individual species. This division allows for a circular process where each species is processed separately, ensuring comprehensive analysis and modeling for every species present in the database.
+
+```{r}
+dataSp_list <- split(dataSp, f = dataSp$species)
+```
+
+## Running
+
+Call the biomodelos-sdm setup and load packages 
+
+```
+source("setup.R")
+do.load(vector.packages)
+```
+
+Load the core function fit_biomodelos
+
+```{r}
+source("R/fit_biomodelos.R")
+```
+
+The chunk code for this example is 
+
+```{r, eval = FALSE}
+for(i in 1:length(dataSp_list)){
+  fit_biomodelos(
+    occ = dataSp_list[[i]], col_sp = "species", col_lat = "lat",
+    col_lon = "lon", clim_vars = "worldclim", dir_clim = "example/Data/env_vars/",
+    dir_other = "example/Data/env_vars/other/", method_M = "polygon_MCP",
+    proj_models = "M-M", remove_distance = 10, remove_method = "spthin", 
+    extrapo = "no_ext", do_future = T, polygon_data = "example/Data/biogeographic_shp/datacrop.shp",
+    compute_F = T, fc_large_sample = c("l", "q", "lq"), beta_large_sample = c(1,1.5,2)
+  )
+}
+```
+
+In your root folder you will find the new folders for each species: the Multicolored Tanager (*Chlorochrysa.nitidissima*), Sooty-capped Puffbird (*Bucco.noanamae*), Apolinar's wren  (*Cistothorus.apolinari*), Chestnut-bellied Flowerpiercer (*Diglossa.gloriosissima*), and Velvet-fronted Euphonia (*Euphonia.concinna*). Please note the sign "point" between scientific name.
+
+## References
+
+Bayliss, S.L.J., Mueller, L.O., Ware, I.M. et al. (2022). Stacked distribution models predict climate-driven loss of variation in leaf phenology at continental scales. Commun Biol 5, 1213. https://doi.org/10.1038/s42003-022-04131-z
+
+Biber, MF, Voskamp, A, Niamir, A, Hickler, T, and Hof, C. A (2020) comparison of macroecological and stacked species distribution models to predict future global terrestrial vertebrate richness. J Biogeogr. 47: 114– 129. https://doi.org/10.1111/jbi.13696
+
+Calabrese, J.M., Certain, G., Kraan, C. and Dormann, C.F. (2014), Stacking species distribution models. Global Ecology and Biogeography, 23: 99-112. https://doi.org/10.1111/geb.12102
+
+Distler, T., Schuetz, J.G., Velásquez-Tibatá, J. and Langham, G.M. (2015), Stacked species distribution models and macroecological models provide congruent projections of avian species richness under climate change. J. Biogeogr., 42: 976-988. https://doi.org/10.1111/jbi.12479

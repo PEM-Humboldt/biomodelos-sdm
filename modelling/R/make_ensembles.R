@@ -8,10 +8,8 @@ currentEns_byAlg <- function(rasM.Stack, rasG.Stack, rasF.Stack, data., collon, 
     if (terra::nlyr(rasM.Stack) == 0) {
       message("number of layers of rasM stack is zero")
     } else {
-      # folder to save ensembleñs
-      dir.create(paste0(foldersp, "/ensembles"), showWarnings = FALSE)
-      dir.create(paste0(foldersp, "/ensembles/", tim), showWarnings = F)
-      dir.create(paste0(foldersp, "/ensembles/", tim, "/", algorithm), showWarnings = F)
+      # folder to save ensembles
+      dir.create(paste0(foldersp, "/ensembles/", tim, "/", algorithm), showWarnings = F, recursive = T)
 
       # species name with hyphen not dot
       sp_hyphen <- gsub(foldersp, pattern = "\\.", replacement = "_")
@@ -31,9 +29,7 @@ currentEns_byAlg <- function(rasM.Stack, rasG.Stack, rasF.Stack, data., collon, 
                                            folder.sp = foldersp, biomodelosext = biomodelos.ext)
           }
           if (proj.models == "M-G") {
-            equ.ext <- equal.extent(a = rasM.Stack, b = biomodelos.ext)
-            rasM.Stack <- equalize.extents(equal.1 = equ.ext[[1]], equal.2 = equ.ext[[2]], ras = rasM.Stack,
-                                           folder.sp = foldersp, biomodelosext = biomodelos.ext)
+            rasM.Stack <- rasM.Stack
 
             equ.ext <- equal.extent(a = rasG.Stack, b = biomodelos.ext)
             rasG.Stack <- equalize.extents(equal.1 = equ.ext[[1]], equal.2 = equ.ext[[2]], ras = rasG.Stack,
@@ -121,6 +117,7 @@ currentEns_byAlg <- function(rasM.Stack, rasG.Stack, rasF.Stack, data., collon, 
             Ras.med >= BinsDf[1, X]
           })
           BinsRas <- rast(BinsRas)
+          names(BinsRas) <- names(biomodelos.thresh)
 
           if (nlyr(rasG.Stack) > 1) {
             Ras.devstd <- terra::app(x = rasG.Stack, sd)
@@ -347,6 +344,7 @@ equal.extent <- function(a, b) { # a must be  a raster and b a vector extent
 
 equalize.extents <- function(equal.1, equal.2, ras, folder.sp, biomodelosext = biomodelos.ext) {
   if (equal.1 == TRUE) {
+    ras.tmp <- ras
     ext(ras.tmp) <- ext(biomodelosext)
   } else {
     dir.create(paste0(folder.sp, "/Temp/extent.transf"), showWarnings = F)

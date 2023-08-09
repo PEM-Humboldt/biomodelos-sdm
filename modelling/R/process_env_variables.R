@@ -300,9 +300,9 @@ process_env_future <- function(climdataset, climdir, otherfiles, extension, crsp
       idata <- index_vars[b]
 
       # information of climate change scenario
-      model <- strings_dir[[idata]][5]
-      year <- strings_dir[[idata]][6]
-      concentration <- strings_dir[[idata]][7]
+      model <- strings_dir[[idata]][max_dir-2]
+      year <- strings_dir[[idata]][max_dir-1]
+      concentration <- strings_dir[[idata]][max_dir]
 
       # getting vector of future scenaries information
       info_cc <- paste0(model, "_", year, "_", concentration)

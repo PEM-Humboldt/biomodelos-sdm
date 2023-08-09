@@ -192,11 +192,9 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
           Gstr <- tail(unlist(strsplit(area_G, "\\.")), n = 1)
           if (Gstr == "shp") {
             rtemp <- terra::vect(area_G)
-            rm(rtemp)
           }
           if (Gstr == "tif"){ # 
             rtemp <- terra::rast(area_G)
-            rm(rtemp)
           } 
 
           if (!exists("rtemp")) {
@@ -813,7 +811,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
       enscurr <- currentEns_byAlg(
         rasM.Stack = calibrate_model$M_proj, rasG.Stack = calibrate_model$G_proj, 
         data. = interest_areas$occurrences, collon = col_lon, collat = col_lat, e = E, 
-        algorithm = calibrate_model $algorithm, foldersp = folder_sp, 
+        algorithm = calibrate_model$algorithm, foldersp = folder_sp, 
         tim = "current", esc.nm = "",
         crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
         areas = interest_areas, proj.models = proj_models, bins = NULL

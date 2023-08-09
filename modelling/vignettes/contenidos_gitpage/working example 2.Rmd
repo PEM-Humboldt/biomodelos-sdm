@@ -1,0 +1,200 @@
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "C:/humboldt/biomodelos-sdm/modelling")
+```
+
+# Working Example 2: small number of occurrence records
+
+Species Distribution Models (SDMs) hold significant promise, particularly in poorly understood tropical landscapes with limited biogeographical data (Raxworthy et al., 2003). In these regions, data regarding the distribution of elusive species are often constrained to small samples of observed locations (Graham et al.,2004; Soberon & Peterson, 2004). This limitation stems from factors such as the rarity of certain species, challenges in sampling them, and the absence of electronically accessible data. The effectiveness of SDMs is strongly impacted by the quantity of records employed during their development, with predictions based on larger sample sizes typically yielding superior results compared to those derived from smaller datasets (Pearson et al, 2007).
+
+There are several reasons why model performance declines with smaller sample sizes. Firstly, when data is limited, parameter estimates become more uncertain, and outliers have a greater impact on the analysis. Moreover, the intricate nature of ecological niches often requires a larger number of samples to effectively capture the full range of conditions in which a species exists. Species' responses to environmental gradients can also display skewed or multimodal patterns, emphasizing the need for an adequate sample size to ensure accurate modeling (Wisz et al, 2008). Furthermore, the consideration of interactions among environmental variables increases the number of parameters that need to be estimated, and this complexity grows exponentially with the number of predictor variables (Merow, Smith and Silander, 2003). As a result, intricate relationships and interactions may necessitate larger datasets to achieve reliable results.
+
+
+In the biomodelos-sdm tool, *when dealing with datasets that have less than 20 presence localities, they are categorized as small data sets*. For such data, the standard approach is to use a technique called k-fold cross-validation, where the number of bins (k) equals the number of occurrence localities (n) in the dataset (Muscarella et al, 2014). This technique is commonly known as jackknife or leave-one-out partitioning (Hastie et al., 2009).
+
+<div style="text-align: center;">
+  ![jackknife procedure from a total pool of six occurrences, each iteration (show with a number) let one occurrence out ](images/jackknife.png)
+</div>
+
+
+The jackknife procedure involves iteratively removing one occurrence locality from the dataset and building a model using the remaining n-1 occurrences. This process is repeated for each occurrence locality in the dataset. In each iteration, the model is trained on a subset of the data and evaluated on the occurrence locality that was left out. This allows for an assessment of model performance and generalization. This process is performed using, by default, the ENMeval2 package (Pearson et al., 2007; Shcheglovitova & Anderson, 2013).
+
+## Environmental Data and Ocurrences
+
+If you skip the last section, extract the files inside of the ".zip" folder *example* to the main root folder. It will write a folder called *example* having three other folders: *Bias_file*, *Data*, and *Occurrences*.
+  
+  - *Data* folder, where you will find 
+    - *env_vars* environmental variables  representing climatic and other factors of current and future scenarios. The resolution of this layers are 10 km.
+      - *other* folder to store environmental variables no related to climatic factors like topographic or remote sensing data. 
+      - *worldclim* folder to store climatic variables, in this case the data come from the [worldclim](https://www.worldclim.org/) database 
+    - *biogeographic_shp* useful biogeographic shapes in order to be used as template for training models or select areas of interest.
+    
+ - *Occurrences* folder: You will find several spreadsheets in ".csv" format. Each ".csv" stores occurrence data using three columns called "species", "lon", and "lat". Go to the last section for more information. 
+
+In this example, we are going to run a simple ENM of a single species database, a criptic bird species, the Sooty-capped Puffbird or **[Bucco noanamae](https://ebird.org/species/socpuf1)**. This database have a relative small data set because of bias sampling, it means, many occurrences are located in only one location.
+
+First, we are going to call some libraries
+
+```{r, message=F, warning=F}
+library(maps)
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(terra)
+```
+
+Then, read the Sooty-capped Puffbird occurrences
+
+```{r}
+dataSp <- read.csv("example/Occurrences/single_species_2.csv")
+View(dataSp)
+```
+
+Explore the dataSp object. *Notice the change in column names*.
+
+```{r}
+names(dataSp)
+nrow(dataSp)
+ncol(dataSp)
+```
+
+Check the structure of the database
+```{r}
+head(dataSp)
+```
+
+Let's go to explore spatially the dataSp object.
+
+```{r}
+col <- read_sf("example/Data/biogeographic_shp/nacional_wgs84.shp")
+dataSp.points <- dataSp |>
+  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = st_crs("EPSG:4326"))
+ggplot() + 
+    geom_sf(data = col, fill = "transparent", color = "black") +
+    geom_sf(data = dataSp.points, color = "blue")
+```
+
+## Running
+
+Call the biomodelos-sdm setup and load packages 
+
+```{r, message=FALSE, warning=F}
+source("setup.R")
+do.load(vector.packages)
+```
+
+Load the core function fit_biomodelos
+
+```{r}
+source("R/fit_biomodelos.R")
+```
+
+In this specific example, we are going to use:
+
+```{r, eval = FALSE}
+fit_biomodelos(
+  occ = dataSp, col_sp = "acceptedNameUsage", col_lat = "decimalLatitude",
+  col_lon = "decimalLongitude", clim_vars = "worldclim", dir_clim = "example/Data/env_vars/",
+  dir_other = "example/Data/env_vars/other/", method_M = "points_MCP_buffer", dist_MOV = 74,
+  proj_models = "M-M", remove_distance = 10, remove_method = "sqkm",
+  fc_small_sample = c("l", "q", "lq"), beta_small_sample = c(1, 1.5, 2)
+)
+```
+
+Here is a brief explanation of new the arguments. *In order to save space, those revised or equal to the working example 1 will be override.
+
+ - fc_small_sample: string indicating the *feature class* functions to be used in Maxent model calibration.
+ 
+ - beta_small_sample: value representing the *regularization multiplier* to be used in Maxent model calibration.
+
+The **feature classes (fc)** and **regularization multiplier (beta)** are known as tuning MaxEnt models parameters. They are useful to optimize their performance and improve their accuracy in predicting species distributions. MaxEnt is a powerful modeling technique known for its ability to create complex response curves using a variety of features. It offers flexibility in capturing the relationships between predictors and species occurrences. When parametrizing the MaxEnt model, one must select the appropriate "feature" functions and determine the beta multiplier. With a small sample size, there is a higher risk of over fitting, where the model fits the noise or random variations in the data instead of the true underlying patterns. Simple MaxEnt models, with fewer parameters and complexity, are less prone to overfitting as they have less opportunity to capture noise in the data. This helps to ensure that the model generalizes well to new data and provides more reliable predictions. 
+
+MaxEnt employs different types of **feature classes (fc)** to capture specific relationships. Linear features (l) ensure that the mean value of a predictor matches the observed mean value, while quadratic features (q) constrain the variance. Product features (p) capture interactions between predictors, threshold features (t) convert predictors into binary variables using a specific value, and hinge features (h) use linear functions instead of step functions like threshold features. Each feature class is more complex than the previous one. The **regularization multiplier (beta)** is a positive integer or decimal number that constrains the parameters used by MaxEnt. A higher value for the regularization multiplier results in stronger constraints, making the models simpler.  
+
+Let's plot the species distribution model constructed with its threshold map using as cutoff the percentile 10 of occurrence data
+
+```{r}
+models <- list.files("Bucco.noanamae/ensembles/current/MAXENT/", full.names = T)[3] |>
+  rast() |>
+  crop(col)
+
+plot(models)
+plot(vect(col), add = T )
+```
+
+### Questions
+
+How is the area of interest used in this example of work? What differences do you find compared to the previous example of work?
+
+<details>
+  <summary>Answer</summary>
+  
+  1. It is a Minimum Convex Polygon with a buffer of 25 kilometers.
+  2. This working example uses a method of interest area that first constructs a polygon by connecting each occurrence and then creates a buffer around it. In contrast, working example 1 creates a buffer around each occurrence and then           dissolves these buffers to construct only one polygon.
+</details>
+
+How could you plot it in R the new area of interest?
+
+<details>
+  <summary>Answer</summary>
+  <pre><code>
+    aoi <- read_sf("Bucco noanamae/interest_areas/shape_M.shp")
+
+    ggplot() + 
+      geom_sf(data = col, fill = "transparent", color = "black") +
+      geom_sf(data = aoi, fill = "transparent", color = "black") 
+  </code></pre>
+</details>
+
+## Customize features of MAXENT models
+
+Remember, the beta_small_sample is a numeric value representing the regularization multiplier. On the other hand fc_small_sample is a character string indicating the feature class function to be used in Maxent model calibration (e.g. 'l', 'lq'). Both are used in Maxent model calibration when there is a small sample, here is considered a small sample as less than 20 occurrences.
+
+We are going to test as feature classes the linear, quadratic and hinge functions, while beta multiplier in a sequence from 0.5 to 4 in steps of 0.5
+
+```{r, eval = FALSE}
+fit_biomodelos(
+  occ = dataSp, col_sp = "acceptedNameUsage", col_lat = "decimalLatitude",
+  col_lon = "decimalLongitude", clim_vars = "worldclim", dir_clim = "example/Data/env_vars/",
+  dir_other = "example/Data/env_vars/other/", method_M = "points_MCP_buffer", dist_MOV = 25,
+  proj_models = "M-M", remove_distance = 10, remove_method = "sqkm",
+  fc_small_sample = c("l", "q", "h"), beta_small_sample = seq(0.5, 4, 0.5)
+)
+```
+
+### Questions
+
+Can you customize features of MAXENT models if you have more than 20 occurrences? Would you grasp which argument use? Look for help at [fit_biomodelos](vignettes/fit_biomodelos.md)
+
+<details>
+  <summary>Answer</summary>
+  
+  1. Yes, we can
+  2. Arguments: beta_large_sample and fc_large_sample
+
+</details>
+
+Note: do not worry if you forget to customize the features classes. If you omit customizing feature classes or the beta regularization multiplier, the tool will automatically test multiple parameters based on whether it is a large or small sample case. This built-in flexibility allows for a more user-friendly experience, ensuring that the modeling process can proceed smoothly even if some customization steps are overlooked.
+
+
+## References
+
+Graham, Catherine H; Ferrier, Simon; Huettman, Falk; Moritz, Craig & Peterson, A. Townsend (2004). New developments in museum-based informatics and applications in biodiversity analysis. Trends in Ecology & Evolution, 19(9) 497-503. https://doi.org/10.1016/j.tree.2004.07.006.
+
+Hastie, Trevor & Tibshirani, Robert & Friedman, Jerome. (2009). The Elements of Statistical Learning: Data Mining, Inference, and Prediction, Second Edition (Springer Series in Statistics). 
+
+Merow, C., Smith, M.J. and Silander, J.A., Jr (2013), A practical guide to MaxEnt for modeling species' distributions: what it does, and why inputs and settings matter. Ecography, 36: 1058-1069. https://doi.org/10.1111/j.1600-0587.2013.07872.x
+
+Muscarella, R., Galante, P.J., Soley-Guardia, M., Boria, R.A., Kass, J., Uriarte, M. and R.P. Anderson (2014). ENMeval: An R package for conducting spatially independent evaluations and estimating optimal model complexity for ecological niche models. Methods in Ecology and Evolution.
+
+Osorio-Olvera L., Lira‐Noriega, A., Soberón, J., Townsend Peterson, A., Falconi, M., Contreras‐Díaz, R.G., Martínez‐Meyer, E., Barve, V. and Barve, N. (2020), ntbox: an R package with graphical user interface for modeling and evaluating multidimensional ecological niches. Methods Ecol Evol. 11, 1199–1206. doi:10.1111/2041-210X.13452. https://github.com/luismurao/ntbox
+
+Pearson, Richard & Raxworthy, Christopher & Nakamura, Miguel & Peterson, Andrew. (2007). Predicting species distributions from small numbers of occurrence records: a test case using cryptic geckos in Madagascar. Journal of Biogeography. 34. 102 - 117. 10.1111/j.1365-2699.2006.01594.x. 
+
+Raxworthy, C., Martinez-Meyer, E., Horning, N. et al. Predicting distributions of known and unknown reptile species in Madagascar. Nature 426, 837–841 (2003). https://doi.org/10.1038/nature02205
+
+Shcheglovitova, Mariya & Anderson, Robert. (2013). Estimating optimal complexity for ecological niche models: A jackknife approach for species with small sample sizes. Ecological Modelling. 269. 10.1016/j.ecolmodel.2013.08.011. 
+
+Wisz, M.s & Hijmans, Robert & Li, Jin & Peterson, Andrew & Graham, Catherine & Guisan, Antoine & Elith, Jane & Dudík, Miroslav & Ferrier, Simon & Huettmann, Falk & Leathwick, John & Lehmann, Anthony & Lohmann, Lucia & Loiselle, Bette & Manion, Glenn & Moritz, Craig & Nakamura, Miguel & Nakazawa, Yoshinori & Overton, Jake & Zimmermann, Niklaus. (2008). Effects of sample size on the performance of species distribution models. Diversity and Distributions. 14. 763-773. 
+
+
+
