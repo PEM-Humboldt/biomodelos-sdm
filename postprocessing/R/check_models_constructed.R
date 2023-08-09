@@ -1,83 +1,86 @@
-# November 15 2022
-# Carlos Jair Munoz Rodriguez
+# Script for Checking Completion Status of Modelling Construction Process
+# Date: November 15th, 2022
 #
-# This script checks if a process of modelling construction created with the modelling routines
-# stored in "https://github.com/PEM-Humboldt/biomodelos-sdm/tree/master/Modelling" is completed.
-# The script can catch from the log file which issues were presented.
-# 
-# Return: data.frame #----- (finalizar)
+# Description:
+# This script is designed to determine whether a process of modelling construction,
+# which utilizes modelling routines from the repository "https://github.com/PEM-Humboldt/biomodelos-sdm/tree/master/Modelling",
+# has been completed. The script extracts information from log files to identify any issues encountered during the process.
+#
+# Return:
+# The script generates a data.frame that provides insights into the completion status of the modelling construction process.
+# The resulting data.frame contains columns for species names, evaluation status, final models status,
+# ensembles of future models status, time taken, and any errors encountered.
 
-# Preamble: you need to store all the species folder run inside only one. For example: if
-# you run 5 species move those folders inside only one and run the next script.
+# Preamble: Ensure that all species folders are organized inside a single main folder.
+# For instance, if you have run the process for 5 species, move those folders into a single directory before running this script.
 
-# names and folder path of species run
-sps_nm <- list.dirs("JBM/", recursive = F, full.names = F) %>% gsub(pattern = "\\.", replacement = " ")
-sps_folder <- list.dirs("JBM/", recursive = F, full.names = T)
+library(dplyr)
+library(stringr)
 
-# empty data.frame to fill
+# Path to the folder containing species run folders
+path_in_models <- "XXX"
 
-df <- data.frame("species" = as.character(), "eval"= as.character(), "final"= as.character(), 
-                "ensembles"= as.character(), "time"= as.character(), 
-                "Error"= as.character())
+# Extract species names and folder paths
+sps_nm <- list.dirs(path_in_models, recursive = FALSE, full.names = FALSE) %>% gsub(pattern = "\\.", replacement = " ")
+sps_folder <- list.dirs(path_in_models, recursive = FALSE, full.names = TRUE)
 
-#--------------------------------------
+# Create an empty data.frame to store information
+df <- data.frame("species" = character(), "eval" = character(), "final" = character(),
+                 "ensembles" = character(), "time" = character(),
+                 "Error" = character())
 
-for(i in 1:length(sps_folder)){
+# Loop through each species folder and extract relevant information
+for (i in 1:length(sps_folder)) {
   require(stringr)
-
-  #especie
+  
+  # Extract species name
   df[i, "species"] <- sps_nm[i]
   
-  folders <- list.dirs(sps_folder[i], recursive = F, full.names = T)
+  # Identify subfolders within the species folder
+  folders <- list.dirs(sps_folder[i], recursive = FALSE, full.names = TRUE)
   
-  #generalizacion?
-  gener <- list.dirs(folders, full.names = F, recursive = T) 
-  if(length(which(str_detect(gener, "generalizacion") == TRUE)) > 0){
-    df[i,"eval"] <- NA
-    df[i,"final"] <- NA
-    df[i,"ensembles"] <- "generalizacion"
+  # Check for the presence of 'generalizacion' folder
+  gener <- list.dirs(folders, full.names = FALSE, recursive = TRUE)
+  if (length(which(str_detect(gener, "generalizacion") == TRUE)) > 0) {
+    df[i, "eval"] <- NA
+    df[i, "final"] <- NA
+    df[i, "ensembles"] <- "generalizacion"
     next()
   }
   
-  # hizo evaluaciones?
+  # Check if evaluations were performed
   evalindex <- which(str_detect(folders, "eval_results") == TRUE)
-  if(length(evalindex) > 0 ) df[i,"eval"] <- "x"
+  if (length(evalindex) > 0) df[i, "eval"] <- "x"
   
-  # hizo modelos finales?
+  # Check if final models were created
   finalindex <- which(str_detect(folders, "final_models") == TRUE)
-  if(length(finalindex) > 0 ) df[i,"final"] <- "x" 
+  if (length(finalindex) > 0) df[i, "final"] <- "x"
   
-  # hizo ensambles de futuro?
+  # Check for ensembles of future models
   ensindex <- which(str_detect(folders, "ensembles") == TRUE)
-  if(length(ensindex) >  0){
+  if (length(ensindex) > 0) {
     ensfol <- folders[ensindex]
-    ensfols <- list.dirs(ensfol, recursive = F, full.names = T)
+    ensfols <- list.dirs(ensfol, recursive = FALSE, full.names = TRUE)
     enscurindex <- which(str_detect(ensfols, "current") == TRUE)
     enscur <- ensfols[enscurindex]
-    enscurs <- list.files(enscur, recursive = T, full.names = T)
-    if(length(enscurs) > 5 ) df[i,"ensembles"] <- "x"
-    
-    #ensfutindex <- which(str_detect(ensfols, "future") == TRUE)
-    #ensfut <- ensfols[ensfutindex]
-    #ensfuts <- list.files(ensfut, recursive = T, full.names = T)
-    #if(length(ensfuts) > 100 ) df[i,"ensembles"] <- "x" 
+    enscurs <- list.files(enscur, recursive = TRUE, full.names = TRUE)
+    if (length(enscurs) > 5) df[i, "ensembles"] <- "x"
   }
   
-  # si hubo errores, cual fue el primero y en que proceso?
-  #x <- as.vector(read.delim(paste0(sps_folder[i], "/log_file.txt"))) %>% unlist()
+  # Check for errors in the log file
   x <- read.delim(paste0(sps_folder[i], "/log_file.txt"))
-  errindex <- which(str_detect(x[,1], "Error") == TRUE)
-  if(length(errindex) >  0){
-    err <- paste(x[(errindex[1]-1), 1],"\n", x[errindex[1], 1])
-    df[i,"Error"] <- err
+  errindex <- which(str_detect(x[, 1], "Error") == TRUE)
+  if (length(errindex) > 0) {
+    err <- paste(x[(errindex[1] - 1), 1], "\n", x[errindex[1], 1])
+    df[i, "Error"] <- err
   }
   
-  # cuanto se demoro?
-  timeindex <- which(str_detect(x[,1], "mins") == TRUE)
+  # Extract time taken
+  timeindex <- which(str_detect(x[, 1], "mins") == TRUE)
   timedata <- x[timeindex[length(timeindex)], 1]
   timenums <- strsplit(timedata, "Completed in  ")
-  df[i,"time"] <- timenums[[1]][2]
+  df[i, "time"] <- timenums[[1]][2]
 }
 
-#escribir el data.frame
-write.csv(df, file =  "revAuto_JBM.csv", row.names = F )
+# Write the data.frame to a CSV file
+write.csv(df, file = "modelling_completion_status.csv", row.names = FALSE)

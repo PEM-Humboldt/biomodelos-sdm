@@ -7,15 +7,8 @@ Current state: in development.
 
 ### Deploying:
 
-Sprint 2, 3, 4
-Start time: March 2023
-Expected end time: March 2023
-
 What is left to deploy
-* Revise projection M-M and M-G and future with several case use (ok)
-* Documentation: update past documentation, generate additional documents for past features added during 2020 and 2021, new features documents
 * See issues
-
 
 ## Prerequisites
 
