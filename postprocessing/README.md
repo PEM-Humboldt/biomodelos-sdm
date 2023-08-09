@@ -19,7 +19,14 @@ Required Libraries and Their Versions for Each Indicator. Ensure you have the ex
 "stringr" 1.4.0
 "dplyr" 1.0.7
 ```
+2. Automated Metadata Generation for Species Modeling Results
 
+```
+"raster" 3.6-3
+"dplyr" 1.0.9
+"hms" 1.1.1
+"xlsx" 0.6.5
+```
 ## How to Run
 
 ### Independent Codes
@@ -55,3 +62,7 @@ These two codes work in conjunction to yield integrated results. Make sure to ha
 #### [Checking Completion Status of Modelling Construction Process](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/check_models_constructed.R)
 
 The provided script is designed to automate the assessment of the completion status of a SDM modeling construction process. The script operates on a collection of species folders, each representing a separate modeling run. By examining the contents and log files of these folders, the script systematically determines the progression of each modeling run. It identifies key stages, such as evaluation, final model creation, and the generation of ensembles for future predictions. Additionally, the script captures any encountered errors and records the time taken for each modeling run. Through a series of organized checks and evaluations, the script compiles this information into a structured data frame. This data frame provides a comprehensive overview of the modeling process, including species-specific details on progress, errors, and time allocation. By automating this analysis, the script streamlines the process of tracking the status of multiple modeling runs, enhancing efficiency and facilitating effective project management.
+
+#### [Automated Metadata Generation for Species Modeling Results](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/make_models_metadata.R)
+
+This script simplifies the process of creating metadata for species modeling outcomes. By analyzing modeling results stored in specific directories, the script automatically extracts essential information like model parameters and evaluation metrics. This eliminates manual effort and enhances accuracy. The script can handle various modeling algorithms and scenarios, producing organized metadata files in XLSX format. This efficient approach enhances the documentation and management of species modeling results, making research processes smoother.

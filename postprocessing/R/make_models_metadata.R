@@ -1,54 +1,57 @@
-# Load libraries
+# Automated Metadata Generation for Species Modeling Results
 
+# METADATA BETA VERSION 4
+# October 2022 to XXX 2023
+
+# Load Libraries
+# Required libraries for executing the script.
 library(raster)
 library(dplyr)
 library(hms)
 library(xlsx)
 
-#__________________________________
+# Get Prerequisites
 
-# METADATA BETA VERSION 4 :
-# October 2022  to XXX 2022
-#__________________________________
+# Load a reference map in case the model is not projected to the biomodelos extent.
+biomodelos_template <- raster::raster("raster_template.tif")
 
-# Get prerequisites
+# Load the metadata template
+meta_template <- read.csv("metada_template.csv")
 
-# reference map in case model is not projected to biomodelos extent
-biomodelos_template <- raster::raster("Zamia_amazonum_0_mx.tif")
-
-# metadata template
-meta_template <- read.csv("_metada_template.csv")
-
+# Define the taxon for metadata generation
 taxon <- "JBM"
 
-# directory in where is stored the folders coming from bio2_routine
+# Define the directory containing the folders from the bio2_routine
 dirmodels <- taxon
 
-# directory in where metadata will be created and model tifs will be moved
-tmp <- paste0(taxon,"_2")
+# Create a directory for storing metadata and moved model tifs
+tmp <- paste0(taxon, "_2")
 dir.create(tmp)
 dirtowrite <- tmp
 
+# Define the current date
 dates <- Sys.Date() %>% as.character()
 
+# Function to Automate Metadata Generation
 auto_metadata <- function(dirmodels, dirtowrite, meta_template, algos, fut_proj = T, 
                           dates, transf_ext = FALSE, ext_template = NULL, 
                           crs_project = "+init=epsg:4326") {
-
-  # each directory must represent a species, so, how much species do we have?
+  
+  # each directory must represent a species
   sps <- list.dirs(paste0(dirmodels, "/"), full.names = F, recursive = F)
-
+  
   # list to save template filled by tif mentioned above
   info <- list()
-
+  
+  # Iterate through species folders
   for (i in 1:length(sps)) {
-  #i <- 4
+    #i <- 4
     message(sps[i])
     
     dirs_inside <- list.dirs(paste0(dirmodels, "/", sps[i]), full.names = T, recursive = F)
-
+    
     ensembles_dir <- dirs_inside[grep("ensembles", dirs_inside)]
-
+    
     if (length(ensembles_dir) != 0) {
       
       for(a in 1:length(algos)){
@@ -70,8 +73,8 @@ auto_metadata <- function(dirmodels, dirtowrite, meta_template, algos, fut_proj 
       path_tifs <- list.files(path = pathforsp, pattern = "*.tif$", full.names = T, 
                               recursive = F)
       path_tifs_short <- list.files(path = pathforsp, pattern = "*.tif$", full.names = F, 
-                              recursive = F)
-
+                                    recursive = F)
+      
       if (length(path_tifs) !=0) {
         
         # find records and count
@@ -203,7 +206,7 @@ auto_metadata <- function(dirmodels, dirtowrite, meta_template, algos, fut_proj 
         # dates
         
         date_split <- strsplit(dates, "-") %>% unlist()
-
+        
         # filling meta data template
         
         meta_template[1:n, "acceptedNameUsage"] <- sps[i] %>% gsub(x = ., pattern = "[.]", replacement = " ")
@@ -240,17 +243,14 @@ auto_metadata <- function(dirmodels, dirtowrite, meta_template, algos, fut_proj 
   infoall <- do.call(rbind.data.frame, info)
 }
 
-
+# Generate metadata using the function
 a <- auto_metadata(dirmodels = dirmodels, dirtowrite = dirtowrite,
                    meta_template = meta_template, algos = c("MAXENT", "bioclim", 
                                                             "generalizacion"), 
-                   fut_proj = F, dates = dates, 
-                   transf_ext = F, ext_template = NULL, crs_project = NULL)
+                   fut_proj = FALSE, dates = dates, 
+                   transf_ext = FALSE, ext_template = NULL, crs_project = NULL)
 
-
-write.xlsx(a, file = paste0(dirtowrite, "/_metadata_", dirmodels,"_", dates, ".xlsx"),
-           sheetName= paste0("_metadata_", dirmodels,"_", dates), append= FALSE,
-           showNA = FALSE, row.names = F)
-
-
-
+# Write metadata to an xlsx file
+write.xlsx(a, file = paste0(dirtowrite, "/_metadata_", dirmodels, "_", dates, ".xlsx"),
+           sheetName= paste0("_metadata_", dirmodels, "_", dates), append= FALSE,
+           showNA = FALSE, row.names = FALSE)
