@@ -37,7 +37,7 @@ Dependencies to install, choose the version depending on your operating system a
 * [Rtools](https://cran.r-project.org/bin/windows/Rtools/) version 4.0 or upper, choose an appropiate one for your R version
 * [Java Development Kit](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) version 8.0 or upper
 * [Maxent](https://biodiversityinformatics.amnh.org/open_source/maxent/) version 3 or upper
-* This repository (biomodelos-sdm)
+* The [biomodelos-sdm](https://github.com/PEM-Humboldt/biomodelos-sdm) repository
 
 ### Libraries
 Libraries required and their versions
