@@ -13,10 +13,10 @@ library(xlsx)
 # Get Prerequisites
 
 # Load a reference map in case the model is not projected to the biomodelos extent.
-biomodelos_template <- raster::raster("raster_template.tif")
+biomodelos_template <- raster::raster("data/raster_template.tif")
 
 # Load the metadata template
-meta_template <- read.csv("metada_template.csv")
+meta_template <- read.csv("data/metada_template.csv")
 
 # Define the taxon for metadata generation
 taxon <- "JBM"
@@ -251,6 +251,6 @@ a <- auto_metadata(dirmodels = dirmodels, dirtowrite = dirtowrite,
                    transf_ext = FALSE, ext_template = NULL, crs_project = NULL)
 
 # Write metadata to an xlsx file
-write.xlsx(a, file = paste0(dirtowrite, "/_metadata_", dirmodels, "_", dates, ".xlsx"),
-           sheetName= paste0("_metadata_", dirmodels, "_", dates), append= FALSE,
-           showNA = FALSE, row.names = FALSE)
+# write.xlsx(a, file = paste0(dirtowrite, "/_metadata_", dirmodels, "_", dates, ".xlsx"),
+#            sheetName= paste0("_metadata_", dirmodels, "_", dates), append= FALSE,
+#            showNA = FALSE, row.names = FALSE)
