@@ -42,6 +42,7 @@
 #' @param redo.path character string, representing the directory where saved model calibration and evaluation results are 
 #' located, if any.
 #' @param E numeric, threshold (numeric) the percentage of training data omission error allowed .
+#' @param outformat, (character) the model output format; it can be: "raw", "logistic", "cloglog", or "cumulative".
 #'
 #' @return A table of evaluation results is saved in a CSV file in the folder eval_results_enmeval within the folder.sp 
 #' directory specified by the user. The table contains evaluation metrics for each model tested, including AUC, OR10, 
@@ -52,7 +53,7 @@
 
 do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
-                       use.bias, extrap, predic = "kuenm", redo., redo.path, E = E) {
+                       use.bias, extrap, predic = "kuenm", redo., redo.path, E = E, outformat = outformat) {
 
   # MISSING user choose function to predict
 
@@ -237,7 +238,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         M.var.dir = env.Mdir, out.eval = paste0(folder.sp, "/eval_results_enmeval"),
         batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
-        max.memory = 2000, out.format = "cloglog",
+        max.memory = 2000, out.format = outformat,
         project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
         write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
       )
@@ -254,7 +255,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         M.var.dir = env.Mdir, out.eval = paste0(folder.sp, "/eval_results_enmeval"),
         batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
-        max.memory = 2000, out.format = "cloglog",
+        max.memory = 2000, out.format = outformat,
         project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
         write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
       )

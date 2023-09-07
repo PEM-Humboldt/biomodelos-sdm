@@ -100,6 +100,8 @@
 #' model you must to locate the same environmental variables in the other and climate folders.  
 #' @param redo_path character string representing the path of the species folder that will be subjected to a model 
 #' reprocessing.
+#' @param outformat outformat, (character) the model output format; it can be: "raw", "logistic", "cloglog", or "cumulative"
+#' default "cloglog".
 #' 
 #' @details 
 #' remove_method and remove_distance are used in the 'remove_spat_duplicates' function. The function offers two methods 
@@ -134,7 +136,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
                            beta_small_sample = NULL, fc_small_sample = NULL, beta_large_sample = NULL, 
                            fc_large_sample = NULL, E = NULL, extrapo = NULL, kept = NULL, maxent_package = NULL, 
                            crs_proyect = NULL, type = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
-                           redo_path = NULL
+                           redo_path = NULL, outformat = NULL
                          # other.pckg = NULL, algos = NULL deprecated for problems with BIOMOD2
 ) {
 
@@ -301,6 +303,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
   if (is.null(extrapo)) extrapo <- "no_ext"
   if (is.null(E)) E <- 10
   if (is.null(maxent_package)) maxent_package <- "enmeval"
+  if (is.null(outformat)) outformat <- "cloglog"
 
   # Colineality
   if (is.null(cor_eval)) col_eval <- FALSE
