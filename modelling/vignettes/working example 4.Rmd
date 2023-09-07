@@ -1,6 +1,8 @@
 ```{r setup, include=FALSE}
 knitr::opts_knit$set(root.dir = "C:/humboldt/biomodelos-sdm/modelling")
 ```
+[ENGLISH](https://biomodelos.github.io/tallerNatGeo/working-example-4.html) [![ENGLISH](./images/ENG.png "ENGLISH")]( https://biomodelos.github.io/tallerNatGeo/working-example-4.html) |  [SPANISH]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-4.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )  [![SPANISH](./images/ESP.png "SPANISH")]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-4.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )
+
 
 # Working Example 4: projecting to different temporal period
 
@@ -94,7 +96,7 @@ source("R/fit_biomodelos.R")
 
 The chunk code for this example is 
 
-```
+```{r, eval=FALSE}
 fit_biomodelos(
   occ = dataSp, col_sp = "scientificName", col_lat = "latitude",
   col_lon = "longitude", clim_vars = "worldclim", dir_clim = "example/Data/env_vars/",

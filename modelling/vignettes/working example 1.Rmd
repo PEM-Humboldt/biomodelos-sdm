@@ -2,6 +2,8 @@
 knitr::opts_knit$set(root.dir = "C:/humboldt/biomodelos-sdm/modelling")
 ```
 
+[ENGLISH](https://biomodelos.github.io/tallerNatGeo/working-example-1.html) [![ENGLISH](./images/ENG.png "ENGLISH")]( https://biomodelos.github.io/tallerNatGeo/working-example-1.html) |  [SPANISH]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-1.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )  [![SPANISH](./images/ESP.png "SPANISH")]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-1.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )
+
 # Working Example 1: large number of occurrence records
 
 Species distribution models (SDMs) are computational models used to predict the potential geographic distribution of species based on environmental variables. These models aim to establish relationships between the observed occurrence records of a species and environmental factors, such as temperature, precipitation, elevation, and land cover, for that reason are called correlative models. By analyzing the known occurrences of a species in relation to these environmental variables, SDMs can then generate predictions about where the species is likely to occur in areas where observations are lacking.

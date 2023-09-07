@@ -2,6 +2,8 @@
 knitr::opts_knit$set(root.dir = "C:/humboldt/biomodelos-sdm/modelling")
 ```
 
+[ENGLISH](https://biomodelos.github.io/tallerNatGeo/working-example-3.html) [![ENGLISH](./images/ENG.png "ENGLISH")]( https://biomodelos.github.io/tallerNatGeo/working-example-3.html) |  [SPANISH]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-3.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )  [![SPANISH](./images/ESP.png "SPANISH")]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-3.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )
+
 # Working Example 3: projecting to different spatial extent
 
 Projecting species distribution models to different geographic extents is a fundamental step in understanding the potential distribution of species in new or future environments. By applying the models developed for one geographic region to other areas, we can gain insights into how species might respond to changing environmental conditions or expand their ranges.

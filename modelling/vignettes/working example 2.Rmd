@@ -2,6 +2,8 @@
 knitr::opts_knit$set(root.dir = "C:/humboldt/biomodelos-sdm/modelling")
 ```
 
+[ENGLISH](https://biomodelos.github.io/tallerNatGeo/working-example-2.html) [![ENGLISH](./images/ENG.png "ENGLISH")]( https://biomodelos.github.io/tallerNatGeo/working-example-2.html) |  [SPANISH]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-2.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )  [![SPANISH](./images/ESP.png "SPANISH")]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-2.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )
+
 # Working Example 2: small number of occurrence records
 
 Species Distribution Models (SDMs) hold significant promise, particularly in poorly understood tropical landscapes with limited biogeographical data (Raxworthy et al., 2003). In these regions, data regarding the distribution of elusive species are often constrained to small samples of observed locations (Graham et al.,2004; Soberon & Peterson, 2004). This limitation stems from factors such as the rarity of certain species, challenges in sampling them, and the absence of electronically accessible data. The effectiveness of SDMs is strongly impacted by the quantity of records employed during their development, with predictions based on larger sample sizes typically yielding superior results compared to those derived from smaller datasets (Pearson et al, 2007).

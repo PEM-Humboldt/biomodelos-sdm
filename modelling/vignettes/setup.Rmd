@@ -2,6 +2,9 @@
 knitr::opts_knit$set(root.dir = "C:/humboldt/biomodelos-sdm/modelling")
 ```
 
+[ENGLISH](https://biomodelos.github.io/tallerNatGeo/setup.html) [![ENGLISH](./images/ENG.png "ENGLISH")](https://biomodelos.github.io/tallerNatGeo/setup.html) |  [SPANISH](https://biomodelos-github-io.translate.goog/tallerNatGeo/setup.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp)  [![SPANISH](./images/ESP.png "SPANISH")](https://biomodelos-github-io.translate.goog/tallerNatGeo/setup.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp)
+
+
 # biomodelos-sdm tool
 ### July 14th, 2023
 
@@ -32,12 +35,14 @@ Ensuring that your computer meets these system requirements will guarantee a smo
 
 Dependencies to install, choose the version depending on your operating system and version. For example, a windows 10 terminal with more than 4 gigabytes on memory RAM almost always has a 64 bit version of windows. Surf on the web in case of more information.
 
-* [R](https://cran.r-project.org/mirrors.html) version 4.1.0 to 4.2.3 (4.3 or upper needs updating)
+* [R](https://cran.r-project.org/bin/windows/base/old/) version 4.1.0 to 4.2.3 (4.3 or upper doesn't work, yet)
 * [RStudio](https://www.rstudio.com/products/rstudio/download/#download) version 1.4 or upper
 * [Rtools](https://cran.r-project.org/bin/windows/Rtools/) version 4.0 or upper, choose an appropiate one for your R version
 * [Java Development Kit](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) version 8.0 or upper
 * [Maxent](https://biodiversityinformatics.amnh.org/open_source/maxent/) version 3 or upper
 * The [biomodelos-sdm](https://github.com/PEM-Humboldt/biomodelos-sdm) repository
+
+A guide to install R and R Studio (in spanish) can be found [here](https://docs.google.com/document/d/12dfUggqrRryTJ9zvKJVuFIcl1RT-IwRn/edit?usp=sharing&ouid=110336385847508729052&rtpof=true&sd=true)
 
 ### Libraries
 Libraries required and their versions

@@ -1,6 +1,8 @@
 ```{r setup, include=FALSE}
 knitr::opts_knit$set(root.dir = "C:/humboldt/biomodelos-sdm/modelling")
 ```
+[ENGLISH](https://biomodelos.github.io/tallerNatGeo/working-example-5.html) [![ENGLISH](./images/ENG.png "ENGLISH")]( https://biomodelos.github.io/tallerNatGeo/working-example-5.html) |  [SPANISH]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-5.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )  [![SPANISH](./images/ESP.png "SPANISH")]( https://biomodelos-github-io.translate.goog/tallerNatGeo/working-example-5.html?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=en-US&_x_tr_pto=wapp  )
+
 
 # Working Example 5: multiple species task
 
