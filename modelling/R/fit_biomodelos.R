@@ -642,7 +642,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
-            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
+            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat
           )
           paste("\nPath Maxent, number occ less than 20\nSmall samples Maxent modelling: ok.")
         },
@@ -673,7 +673,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
-            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E
+            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat
           )
           paste("\nPath Maxent, number occ greater than 20\nLarge sample Maxent modelling: ok.")
         },
