@@ -2,7 +2,7 @@
 do_kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
                      folder.sp, biasfile, kept., proj.models, do.future, env.Mdir, env.Gdir,
                      crs.proyect, use.bias, extrap, write.intfiles, redo., 
-                     redo.path ) {
+                     redo.path, Max.Bg ) {
 
   #--------------------
   # 1. Formatting occurrences to Kuenm package
@@ -37,7 +37,7 @@ do_kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
       occ.joint = occjoint, occ.tra = occtra, M.var.dir = M_var_dir,
       batch = batch_cal, out.dir = out_dir, reg.mult = beta.mult,
       f.clas = fc.clas, args = biasarg, maxent.path = maxent.path,
-      wait = wait, run = run
+      wait = wait, run = run, args = paste0("maximumbackground=", Max.Bg)
     )  
   }
   
@@ -142,8 +142,10 @@ do_kuenm <- function(occ., beta.mult, fc.clas, maxent.path, sp.name, E,
   kuenm::kuenm_mod(
     occ.joint = occjoint, M.var.dir = M_var_dir, out.eval = out_eval, batch = batch_fin,
     rep.n = rep_n, rep.type = rep_type, jackknife = jackknife, out.dir = mod_dir,
-    out.format = out_format, maxent.path = maxent.path, args = biasarg, wait = wait1,
-    run = run1, project = proj.mod, G.var.dir = G.var, ext.type = extrap
+    out.format = out_format, maxent.path = maxent.path, 
+    args = c(biasarg, paste0("maximumbackground=", Max.Bg)), wait = wait1,
+    run = run1, project = proj.mod, G.var.dir = G.var, ext.type = extrap,
+
   )
 
   

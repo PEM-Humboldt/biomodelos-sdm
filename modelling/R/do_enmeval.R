@@ -53,7 +53,8 @@
 
 do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
-                       use.bias, extrap, predic = "kuenm", redo., redo.path, E = E, outf = outformat) {
+                       use.bias, extrap, predic = "kuenm", redo., redo.path, E = E, outf = outformat,
+                       Max.Bg) {
 
   # MISSING user choose function to predict
 
@@ -76,11 +77,11 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
   # bias sample to create the background for modeling
   if (use.bias == TRUE) {
-    if (nrow(bias.file) > 10000) {
+    if (nrow(bias.file) > Max.Bg) {
       Sbg <- bias.file[
         sample(
           x = seq(1:nrow(bias.file)),
-          size = 10000,
+          size = Max.Bg,
           replace = F,
           prob = bias.file[, 3]
         ),
@@ -90,7 +91,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
       Sbg <- bias.file[
         sample(
           x = seq(1:nrow(bias.file)),
-          size = ceiling(nrow(bias.file) * 0.3),
+          size = ceiling(nrow(bias.file) * 0.2),
           replace = F,
           prob = bias.file[, 3]
         ),
@@ -99,11 +100,11 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
     }
   } else {
     M.points <- rasterToPoints(env.M[[1]])
-    if (nrow(M.points) > 10000) {
+    if (nrow(M.points) > Max.Bg) {
       Sbg <- M.points[
         sample(
           x = seq(1:nrow(M.points)),
-          size = 10000,
+          size = Max.Bg,
           replace = F
         ),
         1:2
@@ -118,6 +119,17 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         1:2
       ]
     }
+  }
+  
+  if(nrow(Sbg) > Max.Bg){
+    Sbg <- Sbg[
+      sample(
+        x = seq(1:nrow(Sbg)),
+        size = Max.Bg,
+        replace = F
+      ),
+      1:2
+    ]
   }
 
   colnames(Sbg) <- c("longitude", "latitude")
@@ -240,7 +252,8 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
         max.memory = 2000, out.format = outf,
         project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
-        write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
+        write.clamp = FALSE, maxent.path = getwd(), 
+        args = c(biasarg, paste0("maximumbackground=", Max.Bg)), wait = TRUE, run = TRUE
       )
     }
   }
@@ -257,7 +270,8 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
         max.memory = 2000, out.format = outformat,
         project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
-        write.clamp = FALSE, maxent.path = getwd(), args = biasarg, wait = TRUE, run = TRUE
+        write.clamp = FALSE, maxent.path = getwd(), 
+        args = c(biasarg, paste0("maximumbackground=", Max.Bg)), wait = TRUE, run = TRUE
       )
     }
   }

@@ -136,7 +136,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
                            beta_small_sample = NULL, fc_small_sample = NULL, beta_large_sample = NULL, 
                            fc_large_sample = NULL, E = NULL, extrapo = NULL, kept = NULL, maxent_package = NULL, 
                            crs_proyect = NULL, type = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
-                           redo_path = NULL, outformat = NULL
+                           redo_path = NULL, outformat = NULL, Max_Bg = NULL, wr_Bin_Matrix = NULL
                          # other.pckg = NULL, algos = NULL deprecated for problems with BIOMOD2
 ) {
 
@@ -304,6 +304,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
   if (is.null(E)) E <- 10
   if (is.null(maxent_package)) maxent_package <- "enmeval"
   if (is.null(outformat)) outformat <- "cloglog"
+  if (is.null(Max_Bg)) Max_Bg <- 10000
 
   # Colineality
   if (is.null(cor_eval)) col_eval <- FALSE
@@ -312,6 +313,9 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
     if (is.null(cor_detail)) col_detail <- 10
   }
 
+  # ensembles
+  if (is.null(wr_Bin_Matrix)) wr_Bin_Matrix <- FALSE
+  
   # other arguments
   if (is.null(type)) type <- ""
   if (is.null(crs_proyect)) crs_proyect <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
@@ -642,7 +646,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
-            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat
+            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
+            Max.Bg = Max_Bg
           )
           paste("\nPath Maxent, number occ less than 20\nSmall samples Maxent modelling: ok.")
         },
@@ -673,7 +678,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
-            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat
+            sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
+            Max.Bg = Max_Bg
           )
           paste("\nPath Maxent, number occ greater than 20\nLarge sample Maxent modelling: ok.")
         },
@@ -719,7 +725,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
               do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
               env.Gdir = paste0(folder_sp, "/G_variables"),
               crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo,
-              write.intfiles = FALSE, redo. = redo, redo.path = redo_path
+              write.intfiles = FALSE, redo. = redo, redo.path = redo_path,
+              Max.Bg = Max_Bg
               # MISSING for Unix and macOs the automated input of biasfile, ready for windows
             )
             paste0(
@@ -817,7 +824,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
         algorithm = calibrate_model$algorithm, foldersp = folder_sp, 
         tim = "current", esc.nm = "",
         crs.proyect = crs_proyect, transf.biomo.ext = transf_biomo_ext,
-        areas = interest_areas, proj.models = proj_models, bins = NULL
+        areas = interest_areas, proj.models = proj_models, bins = NULL, 
+        wr.Bin.Matrix = wr_Bin_Matrix
       )
       
       if (do_future == TRUE) {
