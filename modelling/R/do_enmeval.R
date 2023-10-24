@@ -367,3 +367,73 @@ proc <- function(vars) {
   )
   return(out)
 }
+
+#--------------------------------------------------------------------------------
+
+# AUC greater than 0.7
+# PROC-AUC selection
+
+proc.selection <- function(evaldata){
+  if (nrow(occ.) > 20){
+    evalresult <- evaldata[which(evaldata$proc_auc_ratio.avg >= 1), ]
+  }
+  if (nrow(occ.) <= 20){
+    evalresult <- evaldata[which(evaldata$auc.train >= 0.7), ]
+  }
+  
+  if(nrow(evalresult) == 0){
+    message("any model met the ROC test criterion")
+  }
+  
+  return(evalresult)
+}
+
+# or selection
+
+or10.selection <- function(evaldata){
+  
+  evalresult <- evaldata[which(evaldata$or.10p.avg == min(evaldata$or.10p.avg)), ]
+  
+  if(nrow(evalresult) == 0){
+    message("any model met the OR 10 test criterion")
+  }
+}
+
+# aic selection
+aic.selection <- function(evaldata){
+  if(nrow(evaldata) != 0){
+    if (nrow(evaldata) > 1) {
+      # delta aic criterion
+      evaldata$delta.AICc <- evaldata$AICc - min(evaldata$AICc, na.rm = T)
+      evalresult <- evaldata[which(evaldata$delta.AICc <= 2), ]
+    } else {
+      evalresult <- evaldata
+      return(evalresult)
+    }  
+  }{
+    message("any model met the last test criterion (aic)")
+  }
+  
+}
+
+model.selection <- function(evaldata, occ, sel) {
+  selected_models <- evaldata  # Inicializar con los datos originales
+  for (method in sel) {
+    if (method == "aic") {
+      selected_models <- aic_selection(selected_models)
+    } else if (method == "or") {
+      selected_models <- or10_selection(selected_models)
+    } else if (method == "proc") {
+      selected_models <- proc_selection(selected_models, occ)
+    }
+  }
+  return(selected_models)
+}
+
+
+# select best models
+index_select <- as.numeric()
+for (i in 1:nrow(best3)) {
+  indexi <- which(eval_results$tune.args == best3$tune.args[i])
+  index_select <- c(index_select, indexi)
+}
