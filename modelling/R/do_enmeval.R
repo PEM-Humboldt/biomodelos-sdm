@@ -54,7 +54,7 @@
 do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
                        use.bias, extrap, predic = "kuenm", redo., redo.path, E = E, outf = outformat,
-                       Max.Bg) {
+                       Max.Bg, sel.) {
 
   # MISSING user choose function to predict
 
@@ -170,55 +170,33 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
   #--------------------
 
   if (redo. == F) {
-    # selecting from the table the best enmeval models
-    # AUC greater than 0.7
-
-    if (nrow(occ.) > 20) best1 <- eval_results[which(eval_results$proc_auc_ratio.avg >= 1), ]
-    if (nrow(occ.) <= 20) best1 <- eval_results[which(eval_results$auc.train >= 0.7), ]
-
-    if (nrow(best1) == 0) {
-      stop("any model met the test criterion")
-    } else {
-      # model with the OR10 less minimun value
-      best2 <- best1[which(best1$or.10p.avg == min(best1$or.10p.avg)), ]
-
-      if (nrow(best2) != 0) {
-        if (nrow(best2) > 1) {
-          # delta aic criterion
-          best2$delta.AICc <- best2$AICc - min(best2$AICc, na.rm = T)
-          best3 <- best2[which(best2$delta.AICc <= 2), ]
-        } else {
-          best3 <- best2
-        }
-      } else {
-        best3 <- best1
-      }
-    }
+    
+    best <- model.selection(evaldata = eval_results, oc = occ., sel = sel.)
 
     # select best models
     index_select <- as.numeric()
-    for (i in 1:nrow(best3)) {
-      indexi <- which(eval_results$tune.args == best3$tune.args[i])
+    for (i in 1:nrow(best)) {
+      indexi <- which(eval_results$tune.args == best$tune.args[i])
       index_select <- c(index_select, indexi)
     }
 
     eval1_models <- eval1@models[index_select]
 
     # write best models data frame
-    write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
+    write.csv(best, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
 
     # writing best modelling objects
     save(eval1_models, file = paste0(folder.sp, "/eval_results_enmeval/best_models.RData"))
 
     # best models table kuenm style
     if (predic == "kuenm") {
-      best_kuenm_style <- data.frame(Model = as.character(paste0("M_", best3$rm, "_F_", tolower(best3$fc), "_Set_1")))
+      best_kuenm_style <- data.frame(Model = as.character(paste0("M_", best$rm, "_F_", tolower(best$fc), "_Set_1")))
       write.csv(best_kuenm_style, paste0(folder.sp, "/eval_results_enmeval/selected_models.csv"), row.names = F)
     }
   } else {
-    best3 <- read.csv(redo.path)
+    best <- read.csv(redo.path)
     dir.create(paste0(folder.sp, "/eval_results_enmeval/"))
-    write.csv(best3, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
+    write.csv(best, paste0(folder.sp, "/eval_results_enmeval/best_models.csv"), row.names = F)
   }
 
   #--------------------
@@ -292,7 +270,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
           )
       }
       current_M_proj <- terra::rast(current_M_files)
-      names(current_M_proj) <- paste0("M_", best3$rm, "_F_", tolower(best3$fc), "_Set_1")
+      names(current_M_proj) <- paste0("M_", best$rm, "_F_", tolower(best$fc), "_Set_1")
       
       # Create G object to complete the returned set of data
       current_G_proj <- NULL
@@ -306,7 +284,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
       )
 
       current_M_proj <- terra::rast(current_M_files)
-      names(current_M_proj) <- paste0("M_", best3$rm, "_F_", tolower(best3$fc), "_Set_1")
+      names(current_M_proj) <- paste0("M_", best$rm, "_F_", tolower(best$fc), "_Set_1")
 
       current_G_files <- list.files(
         path = paste0(folder.sp, "/final_models_enmeval"),
@@ -314,7 +292,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
       )
 
       current_G_proj <- terra::rast(current_G_files)
-      names(current_G_proj) <- paste0("G_", best3$rm, "_F_", tolower(best3$fc), "_Set_1")
+      names(current_G_proj) <- paste0("G_", best$rm, "_F_", tolower(best$fc), "_Set_1")
     }
   }
 
@@ -349,12 +327,12 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
 
     # results in case of do.future = TRUE
-    return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = fut_proj_list, best = best3, 
+    return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = fut_proj_list, best = best, 
                 algorithm = "MAXENT"))
   }
 
   # results in case of do.future = FALSE
-  return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = NULL, best = best3, algorithm = "MAXENT"))
+  return(list(M_proj = current_M_proj, G_proj = current_G_proj, f_proj = NULL, best = best, algorithm = "MAXENT"))
 }
 
 
@@ -373,11 +351,11 @@ proc <- function(vars) {
 # AUC greater than 0.7
 # PROC-AUC selection
 
-proc.selection <- function(evaldata){
-  if (nrow(occ.) > 20){
+proc.selection <- function(evaldata, oc){
+  if (nrow(oc) > 20){
     evalresult <- evaldata[which(evaldata$proc_auc_ratio.avg >= 1), ]
   }
-  if (nrow(occ.) <= 20){
+  if (nrow(oc) <= 20){
     evalresult <- evaldata[which(evaldata$auc.train >= 0.7), ]
   }
   
@@ -388,19 +366,42 @@ proc.selection <- function(evaldata){
   return(evalresult)
 }
 
+#---------------------------------------------------------
+
 # or selection
 
-or10.selection <- function(evaldata){
+or.selection <- function(evaldata){
   
   evalresult <- evaldata[which(evaldata$or.10p.avg == min(evaldata$or.10p.avg)), ]
   
   if(nrow(evalresult) == 0){
     message("any model met the OR 10 test criterion")
   }
+  
+  return(evalresult)
 }
 
+#------------------------------------------------------------
+
 # aic selection
-aic.selection <- function(evaldata){
+aic.selection <- function(evaldata = selected_models){
+  if(nrow(evaldata) != 0){
+    if (nrow(evaldata) > 1) {
+      # delta aic criterion
+      evalresult <- evaldata[which(evaldata$AICc == min(evaldata$AICc))[1], ]
+    } else {
+      evalresult <- evaldata
+    }
+    return(evalresult)
+  }else{
+    message("any model met the last test criterion (aic)")
+  }
+}
+
+#-------------------------------------------------------------
+
+# delta aic selection
+delta.aic.selection <- function(evaldata){
   if(nrow(evaldata) != 0){
     if (nrow(evaldata) > 1) {
       # delta aic criterion
@@ -408,32 +409,27 @@ aic.selection <- function(evaldata){
       evalresult <- evaldata[which(evaldata$delta.AICc <= 2), ]
     } else {
       evalresult <- evaldata
-      return(evalresult)
-    }  
-  }{
-    message("any model met the last test criterion (aic)")
+    }
+    return(evalresult)
+  }else{
+    message("any model met the last test criterion (delta aic)")
   }
-  
 }
 
-model.selection <- function(evaldata, occ, sel) {
+#---------------------------------------------------------
+
+model.selection <- function(evaldata, oc, sel) {
   selected_models <- evaldata  # Inicializar con los datos originales
   for (method in sel) {
-    if (method == "aic") {
-      selected_models <- aic_selection(selected_models)
+    if (method == "d.aic") {
+      selected_models <- delta.aic.selection(selected_models)
+    } else if (method == "aic") {
+      selected_models <- aic.selection(selected_models)
     } else if (method == "or") {
-      selected_models <- or10_selection(selected_models)
+      selected_models <- or.selection(selected_models)
     } else if (method == "proc") {
-      selected_models <- proc_selection(selected_models, occ)
+      selected_models <- proc.selection(selected_models, oc)
     }
   }
   return(selected_models)
-}
-
-
-# select best models
-index_select <- as.numeric()
-for (i in 1:nrow(best3)) {
-  indexi <- which(eval_results$tune.args == best3$tune.args[i])
-  index_select <- c(index_select, indexi)
 }

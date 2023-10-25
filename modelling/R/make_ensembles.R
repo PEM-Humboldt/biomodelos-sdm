@@ -56,10 +56,10 @@ currentEns_byAlg <- function(rasM.Stack, rasG.Stack, rasF.Stack, data., collon, 
             lat = collat, thresh = biomodelos.thresh[i],
             wrBinMatrix = wr.Bin.Matrix
           )
-          if(wr.Bin.Matrix){
-            write.csv(Binsi[[3]], paste0(
+          if(isTRUE(wr.Bin.Matrix)){
+            write.csv(Binsi[["BinMatrix"]], paste0(
               foldersp, "/ensembles/", tim, "/", algorithm, "/",
-              "binMatrix", esc.nm, algorithm,"_", biomodelos.thresh, "_.csv"
+              "binMatrix", esc.nm, names(biomodelos.thresh)[i], "_", algorithm,".csv"
             ),
             row.names = F
             )
@@ -275,11 +275,13 @@ do.bin <- function(Ras, dat, lon, lat, thresh, wrBinMatrix) {
   binT <- Ras >= TValue
   names(binT) <- names(thresh)
   
-  if(wrBinMatrix){
-    DatvalueT <- terra::extract(binT, dat[, c(lon, lat)])
+  if(isTRUE(wrBinMatrix)){
+    DatvalueT <- terra::extract(binT, dat[, c(lon, lat)], xy = T)
+  }else{
+    DatvalueT <- NULL
   }
   
-  return(list(binT, TValue, DatvalueT))
+  return(list("binT" = binT, "TValue" = TValue, "BinMatrix" = DatvalueT))
 }
 
 #------------------------------------------

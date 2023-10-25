@@ -136,7 +136,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
                            beta_small_sample = NULL, fc_small_sample = NULL, beta_large_sample = NULL, 
                            fc_large_sample = NULL, E = NULL, extrapo = NULL, kept = NULL, maxent_package = NULL, 
                            crs_proyect = NULL, type = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
-                           redo_path = NULL, outformat = NULL, Max_Bg = NULL, wr_Bin_Matrix = NULL
+                           redo_path = NULL, outformat = NULL, Max_Bg = NULL, wr_Bin_Matrix = NULL, selection = NULL
                          # other.pckg = NULL, algos = NULL deprecated for problems with BIOMOD2
 ) {
 
@@ -305,6 +305,10 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
   if (is.null(maxent_package)) maxent_package <- "enmeval"
   if (is.null(outformat)) outformat <- "cloglog"
   if (is.null(Max_Bg)) Max_Bg <- 10000
+  if (is.null(selection)) selection <- c("proc", "daic", "or")
+  
+  
+  #----------------------------------- 
 
   # Colineality
   if (is.null(cor_eval)) col_eval <- FALSE
@@ -416,6 +420,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
     "Maxent feature classes occurrences small sample ", paste0(fc_small_sample, collapse = ","), "\n",
     "Maxent feature classes occurrences large sample ", paste0(fc_large_sample, collapse = ","), "\n",
     "Maxent prediction settings ", extrapo, "\n",
+    "\n",
+    "Selection Methond ", selection, "\n",
     "\n",
     "Final data", "\n",
     "Store files ", erase_files, "\n",
@@ -647,7 +653,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
-            Max.Bg = Max_Bg
+            Max.Bg = Max_Bg, sel. = selection
           )
           paste("\nPath Maxent, number occ less than 20\nSmall samples Maxent modelling: ok.")
         },
@@ -673,13 +679,14 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
       linesmsg6.1 <- tryCatch(
         expr = {
           calibrate_model <- do_enmeval(
-            occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_large_sample, f.clas = fc_large_sample,
+            occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_large_sample, 
+            f.clas = fc_large_sample,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
-            Max.Bg = Max_Bg
+            Max.Bg = Max_Bg, sel. = selection
           )
           paste("\nPath Maxent, number occ greater than 20\nLarge sample Maxent modelling: ok.")
         },
