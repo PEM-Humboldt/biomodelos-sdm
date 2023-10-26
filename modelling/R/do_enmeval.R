@@ -190,6 +190,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
     # best models table kuenm style
     if (predic == "kuenm") {
+      if(best$fc == "LQHP") best$fc <- "LQPH"
       best_kuenm_style <- data.frame(Model = as.character(paste0("M_", best$rm, "_F_", tolower(best$fc), "_Set_1")))
       write.csv(best_kuenm_style, paste0(folder.sp, "/eval_results_enmeval/selected_models.csv"), row.names = F)
     }
