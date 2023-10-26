@@ -136,7 +136,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
                            beta_small_sample = NULL, fc_small_sample = NULL, beta_large_sample = NULL, 
                            fc_large_sample = NULL, E = NULL, extrapo = NULL, kept = NULL, maxent_package = NULL, 
                            crs_proyect = NULL, type = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
-                           redo_path = NULL, outformat = NULL, Max_Bg = NULL, wr_Bin_Matrix = NULL, selection = NULL
+                           redo_path = NULL, outformat = NULL, Max_Bg = NULL, wr_Bin_Matrix = NULL, selection = NULL,
+                           algo_enmeval = NULL
                          # other.pckg = NULL, algos = NULL deprecated for problems with BIOMOD2
 ) {
 
@@ -306,6 +307,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
   if (is.null(outformat)) outformat <- "cloglog"
   if (is.null(Max_Bg)) Max_Bg <- 10000
   if (is.null(selection)) selection <- c("proc", "daic", "or")
+  if (is.null(algo_enmeval)) algo_enmeval <-  "maxent.jar"
   
   
   #----------------------------------- 
@@ -653,7 +655,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
-            Max.Bg = Max_Bg, sel. = selection
+            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval
           )
           paste("\nPath Maxent, number occ less than 20\nSmall samples Maxent modelling: ok.")
         },
@@ -686,7 +688,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
-            Max.Bg = Max_Bg, sel. = selection
+            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval
           )
           paste("\nPath Maxent, number occ greater than 20\nLarge sample Maxent modelling: ok.")
         },

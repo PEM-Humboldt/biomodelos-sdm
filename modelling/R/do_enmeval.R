@@ -54,7 +54,7 @@
 do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
                        use.bias, extrap, predic = "kuenm", redo., redo.path, E = E, outf = outformat,
-                       Max.Bg, sel.) {
+                       Max.Bg, sel., algo.enmeval) {
 
   # MISSING user choose function to predict
 
@@ -154,7 +154,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
   if (redo. == F) {
     eval1 <- ENMevaluate(
       occs = data., bg = Sbg, partitions = partitionMethod,
-      tune.args = list(fc = toupper(f.clas), rm = beta.mult), algorithm = "maxent.jar",
+      tune.args = list(fc = toupper(f.clas), rm = beta.mult), algorithm = algo.enmeval,#"maxent.jar",
       doClamp = F, user.eval = proc
     )
 
