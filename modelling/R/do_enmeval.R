@@ -389,7 +389,7 @@ aic.selection <- function(evaldata = selected_models){
   if(nrow(evaldata) != 0){
     if (nrow(evaldata) > 1) {
       # delta aic criterion
-      evalresult <- evaldata[which(evaldata$AICc == min(evaldata$AICc))[1], ]
+      evalresult <- evaldata[which(evaldata$AICc == min(evaldata$AICc, na.rm = T))[1], ]
     } else {
       evalresult <- evaldata
     }
