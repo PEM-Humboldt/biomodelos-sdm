@@ -145,6 +145,10 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
   data.env <- raster::extract(env.M, data.)
   data. <- cbind(data., data.env)
+  
+  tm <- rbind(data., Sbg)
+  tm$pres <- c(rep(1, nrow(data.)), rep(0, nrow(Sbg)))
+  write.csv(tm, paste0(folder.sp, "/occurrences/pbg.csv"), row.names = F)
 
   #----------+----------
   # 2. calibrate and evaluate models
@@ -247,7 +251,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         M.var.dir = env.Mdir, out.eval = paste0(folder.sp, "/eval_results_enmeval"),
         batch = paste0(folder.sp, "/final_models"), rep.n = 1, rep.type = "Bootstrap",
         jackknife = FALSE, out.dir = paste0(folder.sp, "/final_models_enmeval"),
-        max.memory = 2000, out.format = outformat,
+        max.memory = 2000, out.format = outf,
         project = proj, G.var.dir = env.Gdir, ext.type = extrap, write.mess = FALSE,
         write.clamp = FALSE, maxent.path = getwd(), 
         args = c(biasarg, paste0("maximumbackground=", Max.Bg)), wait = TRUE, run = TRUE
