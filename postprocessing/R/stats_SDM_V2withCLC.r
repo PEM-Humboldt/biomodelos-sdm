@@ -53,30 +53,39 @@ PredictMcpRast <- function(r, area.raster, rast) {
 #   }
 # }
 
-PredictMcpRec <- function (r, Proj_col, rast, s, sppPath, proj) {
+PredictMcpRec <- function (r, Proj_col, rast, s, sppPath, proj, wr.mcp) {
   recc <- read.csv(as.character(sppPath$Rec_file[s]), sep = ",", as.is = T)#revisar el argumento sep
   if(dim(recc)[1]==0){
     return (list (MCP_recp = NA, MCPrec_km2 = NA))
   }else{
-    #Asegurarse del nombre de los campos con las coordenadas (lon, lat o longitud, latitud)
-  #recc <- recc[complete.cases(recc[ ,"longitud"]),]
-  recc <- recc[complete.cases(recc[ ,"lon"]),]##original; para asegurarse que si hay registros sin coordenadas no se tomen en cuenta
-  lon_lat <- matrix(nrow = nrow(recc), ncol = 2)
-  lon_lat[,1] <- recc$lon
-  lon_lat[,2] <- recc$lat
-  # lon_lat[,1] <- as.numeric(recc$longitud) #original
-  # lon_lat[,2] <- as.numeric(recc$latitud) #original
-  in.pts <- SpatialPoints(lon_lat, proj4string = CRS(proj))
-  cells <- unique(cellFromXY(r, in.pts))
-    if(length(cells) > 2){
-      ch_pol <- convHull(lon_lat)
-      ch_pol@polygons@proj4string@projargs <- proj
-      ch_proj <- spTransform(ch_pol@polygons, crs("+init=epsg:3116")) ##EPSG 3116 codigo Magna origen Bogota
-      ch_proj <- spTransform(ch_pol@polygons, Proj_col)
-      MCPrec_km2 <- gArea(ch_proj) / 1000000
-      return (list (MCP_recp = ch_proj, MCPrec_km2 = MCPrec_km2))
-    } else {
-      return (list (MCP_recp = NA, MCPrec_km2 = NA))
+    
+    recc <- select(recc, any_of(c("Lon", "Longitud", "Longitude", "longitud", "decimalLongitude", "lon", "longitude", 
+                                  "Lat", "Latitud", "Latitude", "latitud", "decimalLatitude", "lat", "latitude")))    
+    recc <- recc[complete.cases(recc), ] # para asegurarse que si hay registros sin coordenadas no se tomen en cuenta
+    
+    lon_lat <- matrix(nrow = nrow(recc), ncol = 2)
+    lon_lat[,1] <- recc[ , 1]
+    lon_lat[,2] <- recc[ , 2]
+    
+    # table for ConR /to update
+    # lat_lon_sp[,1] <- recc[ , 2]
+    # lat_lon_sp[,2] <- recc[ , 1]
+    # lat_lon_sp[,3] <- "sp"
+    
+    # lat_lon_sp <- as.data.frame(lat_lon_sp)
+    # colnames(lat_lon_sp) <- c("ddlat", "ddlon", "species")
+    
+    in.pts <- SpatialPoints(lon_lat, proj4string = CRS(proj))
+    cells <- unique(cellFromXY(r, in.pts))
+      if(length(cells) > 2){
+        ch_pol <- convHull(lon_lat)
+        ch_pol@polygons@proj4string@projargs <- proj
+        ch_proj <- spTransform(ch_pol@polygons, crs("+init=epsg:3116")) ##EPSG 3116 codigo Magna origen Bogota
+        ch_proj <- spTransform(ch_pol@polygons, Proj_col)
+        MCPrec_km2 <- gArea(ch_proj) / 1000000
+        return (list (MCP_recp = ch_proj, MCPrec_km2 = MCPrec_km2))
+      } else {
+        return (list (MCP_recp = NA, MCPrec_km2 = NA))
       }
     }
 }
@@ -84,25 +93,26 @@ PredictMcpRec <- function (r, Proj_col, rast, s, sppPath, proj) {
 # 5. Área de ocupación en km2 (registros)
 
 AOO <- function (r, Proj_col, rast, s, sppPath, proj){
-  library(red)
+  library(ConR)
   recc <- read.csv(as.character(sppPath$Rec_file[s]), sep=",",as.is = T)#revisar el argumento sep
   if(dim(recc)[1]==0){
     return (AOO = NA)
   }else{
-  #recc <- recc[complete.cases(recc[ ,"longitud"]),]
-  recc <- recc[complete.cases(recc[ ,"lon"]),]##original; para asegurarse que si hay registros sin coordenadas no se tomen en cuenta
-  lon_lat <- matrix(nrow = nrow(recc), ncol = 2)
-  lon_lat[,1] <- recc$lon
-  lon_lat[,2] <- recc$lat
-  # lon_lat[,1] <- as.numeric(recc$lon) #original
-  # lon_lat[,2] <- as.numeric(recc$lat) #original
-  AOO <- aoo(lon_lat)
-  return(AOO)
+    recc <- select(recc, any_of(c("Lon", "Longitud", "Longitude", "longitud", "decimalLongitude", "lon", "longitude", 
+                                  "Lat", "Latitud", "Latitude", "latitud", "decimalLatitude", "lat", "latitude")))
+    recc <- recc[complete.cases(recc), ]
+    lat_lon_sp <- data.frame(recc[ , 2], recc[ , 1], "sp")
+    
+    colnames(lat_lon_sp) <- c("ddlat", "ddlon", "tax")
+    
+    aoo. <- ConR::AOO.computing(lat_lon_sp)
+    names(aoo.) <- "AOO"
+    return(aoo.)
   }
 }
 
 # 6. Habitat CLC
- HabitatAreaClc<- function (r, area.raster, clcBrick, clcTif, rast){
+ HabitatAreaClc<- function (r, area.raster, clcBrick., clcTif, rast){
    r <- r * area.raster 
    clc_area <- rep( 0, nlayers(clcBrick))
    clc_area <- data.frame(matrix(0,nrow=1,ncol=nlayers(clcBrick)))
