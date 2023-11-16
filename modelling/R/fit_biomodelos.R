@@ -102,6 +102,10 @@
 #' reprocessing.
 #' @param outformat outformat, (character) the model output format; it can be: "raw", "logistic", "cloglog", or "cumulative"
 #' default "cloglog".
+#' @param Max_Bg = NULL, 
+#' @param wr_Bin_Matrix = NULL, 
+#' @param selection = NULL,
+#' @param algo_enmeval = NULL
 #' 
 #' @details 
 #' remove_method and remove_distance are used in the 'remove_spat_duplicates' function. The function offers two methods 
@@ -137,7 +141,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
                            fc_large_sample = NULL, E = NULL, extrapo = NULL, kept = NULL, maxent_package = NULL, 
                            crs_proyect = NULL, type = NULL, erase_files = NULL, transf_biomo_ext = NULL, redo = NULL, 
                            redo_path = NULL, outformat = NULL, Max_Bg = NULL, wr_Bin_Matrix = NULL, selection = NULL,
-                           algo_enmeval = NULL
+                           algo_enmeval = NULL, sbg_file = NULL
                          # other.pckg = NULL, algos = NULL deprecated for problems with BIOMOD2
 ) {
 
@@ -423,7 +427,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
     "Maxent feature classes occurrences large sample ", paste0(fc_large_sample, collapse = ","), "\n",
     "Maxent prediction settings ", extrapo, "\n",
     "\n",
-    "Selection Methond ", selection, "\n",
+    "Selection Method ", paste0(selection, collapse = ","), "\n",
     "\n",
     "Final data", "\n",
     "Store files ", erase_files, "\n",
@@ -652,7 +656,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_small_sample, f.clas = fc_small_sample,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
-            col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
+            col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "checkerboard1", #"jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
             Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval
@@ -688,7 +692,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
-            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval
+            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval, sbg.file = sbg_file
           )
           paste("\nPath Maxent, number occ greater than 20\nLarge sample Maxent modelling: ok.")
         },
@@ -713,7 +717,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
         expr = {
           PathBOcc <- make_split_occ(
             occ. = interest_areas$occurrences, bias.file = BiasSp, folder.sp = folder_sp, col.lon = col_lon,
-            col.lat = col_lat, use.bias = use_bias, env.M = envars$M
+            col.lat = col_lat, use.bias = use_bias, env.M = envars$M, sbg.file = sbg_file, Max.Bg = Max_Bg
           )
           paste0("\nPath Maxent, number occ greater than 20\nOcc splited: ok (kuenm).")
         },
@@ -729,8 +733,8 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
           expr = {
             calibrate_model <- do_kuenm(
               occ. = PathBOcc, sp.name = sp_name, folder.sp = folder_sp,
-              biasfile = "BiasfileM.asc", beta.mult = beta_large_sample, fc.clas = fc_large_sample, kept. = kept,
-              maxent.path = getwd(), proj.models = proj_models, E = E,
+              biasfile = "BiasfileM.asc", beta.mult = beta_large_sample, fc.clas = fc_large_sample, 
+              kept. = kept, maxent.path = getwd(), proj.models = proj_models, E = E,
               do.future = do_future, env.Mdir = paste0(folder_sp, "/M_variables"),
               env.Gdir = paste0(folder_sp, "/G_variables"),
               crs.proyect = crs_proyect, use.bias = use_bias, extrap = extrapo,

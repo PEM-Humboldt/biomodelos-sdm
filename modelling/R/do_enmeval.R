@@ -54,7 +54,7 @@
 do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
                        use.bias, extrap, predic = "kuenm", redo., redo.path, E = E, outf = outformat,
-                       Max.Bg, sel., algo.enmeval) {
+                       Max.Bg, sel., algo.enmeval, sbg.file) {
 
   # MISSING user choose function to predict
 
@@ -75,50 +75,61 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
   # 1. Formatting background and occurrences to enmeval package
   #--------------------
 
-  # bias sample to create the background for modeling
-  if (use.bias == TRUE) {
-    if (nrow(bias.file) > Max.Bg) {
-      Sbg <- bias.file[
-        sample(
-          x = seq(1:nrow(bias.file)),
-          size = Max.Bg,
-          replace = F,
-          prob = bias.file[, 3]
-        ),
-        1:2
-      ]
+  if(!is.null(sbg.file)){
+    
+    Sbg <- data.table::fread(sbg.file) %>% 
+      data.frame()
+    
+    if(dim(Sbg)[2] != 2){
+      error("Sample background must be a csv with longitude and latitude columns")
+    } 
+    
+  }else{
+    # bias sample to create the background for modeling
+    if (use.bias == TRUE) {
+      if (nrow(bias.file) > Max.Bg) {
+        Sbg <- bias.file[
+          sample(
+            x = seq(1:nrow(bias.file)),
+            size = Max.Bg,
+            replace = F,
+            prob = bias.file[, 3]
+          ),
+          1:2
+        ]
+      } else {
+        Sbg <- bias.file[
+          sample(
+            x = seq(1:nrow(bias.file)),
+            size = ceiling(nrow(bias.file) * 0.2),
+            replace = F,
+            prob = bias.file[, 3]
+          ),
+          1:2
+        ]
+      }
     } else {
-      Sbg <- bias.file[
-        sample(
-          x = seq(1:nrow(bias.file)),
-          size = ceiling(nrow(bias.file) * 0.2),
-          replace = F,
-          prob = bias.file[, 3]
-        ),
-        1:2
-      ]
-    }
-  } else {
-    M.points <- rasterToPoints(env.M[[1]])
-    if (nrow(M.points) > Max.Bg) {
-      Sbg <- M.points[
-        sample(
-          x = seq(1:nrow(M.points)),
-          size = Max.Bg,
-          replace = F
-        ),
-        1:2
-      ]
-    } else {
-      Sbg <- M.points[
-        sample(
-          x = seq(1:nrow(M.points)),
-          size = ceiling(nrow(M.points) * 0.2),
-          replace = F
-        ),
-        1:2
-      ]
-    }
+      M.points <- rasterToPoints(env.M[[1]])
+      if (nrow(M.points) > Max.Bg) {
+        Sbg <- M.points[
+          sample(
+            x = seq(1:nrow(M.points)),
+            size = Max.Bg,
+            replace = F
+          ),
+          1:2
+        ]
+      } else {
+        Sbg <- M.points[
+          sample(
+            x = seq(1:nrow(M.points)),
+            size = ceiling(nrow(M.points) * 0.2),
+            replace = F
+          ),
+          1:2
+        ]
+      }
+    }  
   }
   
   if(nrow(Sbg) > Max.Bg){
@@ -148,6 +159,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
   
   tm <- rbind(data., Sbg)
   tm$pres <- c(rep(1, nrow(data.)), rep(0, nrow(Sbg)))
+  
   write.csv(tm, paste0(folder.sp, "/occurrences/pbg.csv"), row.names = F)
 
   #----------+----------
@@ -194,7 +206,9 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
     # best models table kuenm style
     if (predic == "kuenm") {
-      if(best$fc == "LQHP") best$fc <- "LQPH"
+      if(sum(best$fc == "LQHP") > 1){
+        best$fc[which(best$fc == "LQHP")]  <- "LQPH"
+      } 
       best_kuenm_style <- data.frame(Model = as.character(paste0("M_", best$rm, "_F_", tolower(best$fc), "_Set_1")))
       write.csv(best_kuenm_style, paste0(folder.sp, "/eval_results_enmeval/selected_models.csv"), row.names = F)
     }

@@ -3,61 +3,95 @@
 # cell was calculated through the calculated range of a semivariogram. The range specifies from
 # what distance a spatial data base reduces its autocorrelation.
 
-make_split_occ <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias, env.M) {
+make_split_occ <- function(occ., bias.file, folder.sp, col.lon, col.lat, use.bias, env.M, Max.Bg,
+                           sbg.file) {
   
-    # bias sample to create the background for modeling
-  if(use.bias == TRUE){
-    if(nrow(bias.file) > 10000){
-      Sbg <- bias.file[
-        sample(
-          x = seq(1:nrow(bias.file)),
-          size = 10000,
-          replace = F,
-          prob = bias.file[, 3]
-        ),
-        1:2
-      ]
-    }else{
-      Sbg <- bias.file[
-        sample(
-          x = seq(1:nrow(bias.file)),
-          size = ceiling(nrow(bias.file)*0.3),
-          replace = F,
-          prob = bias.file[, 3]
-        ),
-        1:2
-      ]
-    }  
+  if(!is.null(sbg.file)){
+    
+    Sbg <- data.table::fread(sbg.file) %>% 
+      data.frame()
+    
+    if(dim(Sbg)[2] != 2){
+      error("Sample background must be a csv with longitude and latitude columns")
+    } 
+    
   }else{
-    M.points <- rasterToPoints(env.M[[1]])
-    if(nrow(M.points) > 10000){
-      Sbg <- M.points[
-        sample(
-          x = seq(1:nrow(M.points)),
-          size = 10000,
-          replace = F
-        ),
-        1:2
-      ]
+    
+    # bias sample to create the background for modeling
+    if(use.bias == TRUE){
+      if(nrow(bias.file) > Max.Bg){
+        Sbg <- bias.file[
+          sample(
+            x = seq(1:nrow(bias.file)),
+            size = Max.Bg,
+            replace = F,
+            prob = bias.file[, 3]
+          ),
+          1:2
+        ]
+      }else{
+        Sbg <- bias.file[
+          sample(
+            x = seq(1:nrow(bias.file)),
+            size = ceiling(nrow(bias.file)*0.3),
+            replace = F,
+            prob = bias.file[, 3]
+          ),
+          1:2
+        ]
+      }  
     }else{
-      Sbg <- M.points[
-        sample(
-          x = seq(1:nrow(M.points)),
-          size = ceiling(nrow(M.points)*0.3),
-          replace = F
-        ),
-        1:2
-      ]
+      M.points <- rasterToPoints(env.M[[1]])
+      if(nrow(M.points) > Max.Bg){
+        Sbg <- M.points[
+          sample(
+            x = seq(1:nrow(M.points)),
+            size = Max.Bg,
+            replace = F
+          ),
+          1:2
+        ]
+      }else{
+        Sbg <- M.points[
+          sample(
+            x = seq(1:nrow(M.points)),
+            size = ceiling(nrow(M.points)*0.3),
+            replace = F
+          ),
+          1:2
+        ]
+      }
     }
   }
   
-  Sbg <- occ.[, c(col.lon, col.lat)]
-  names(Sbg) <- c("longitude", "latitude")
+  if(nrow(Sbg) > Max.Bg){
+    Sbg <- Sbg[
+      sample(
+        x = seq(1:nrow(Sbg)),
+        size = Max.Bg,
+        replace = F
+      ),
+      1:2
+    ]
+  }
+  
+  colnames(Sbg) <- c("longitude", "latitude")
+  
+  tm.Sbg <- raster::extract(env.M, Sbg)
+  tm.Sbg <- cbind(Sbg, tm.Sbg)
   
   # enmeval way to split needs a data frame with longitude and latitude coordinates with these names and this
   # order
   data. <- occ.[, c(col.lon, col.lat)]
   names(data.) <- c("longitude", "latitude")
+  
+  tm.env <- raster::extract(env.M, data.)
+  tm.env <- cbind(data., tm.env)
+  
+  tm <- rbind(tm.env, tm.Sbg)
+  tm$pres <- c(rep(1, nrow(data.)), rep(0, nrow(Sbg)))
+  
+  write.csv(tm, paste0(folder.sp, "/occurrences/pbg.csv"), row.names = F)
   
   # creating blocks
 
