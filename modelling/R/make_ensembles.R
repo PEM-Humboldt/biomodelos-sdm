@@ -1,7 +1,7 @@
 
 currentEns_byAlg <- function(rasM.Stack, rasG.Stack, rasF.Stack, data., collon, collat, e, algorithm, foldersp,
                              tim, esc.nm, crs.proyect, extent.ensembles, transf.biomo.ext,
-                             areas = M_, proj.models = proj_models, bins) {
+                             areas = M_, proj.models = proj_models, bins, wr.Bin.Matrix) {
   if (is.null(rasM.Stack)) {
     message("rasM stack is null")
   } else {
@@ -53,8 +53,18 @@ currentEns_byAlg <- function(rasM.Stack, rasG.Stack, rasF.Stack, data., collon, 
         for (i in 1:length(biomodelos.thresh)) {
           Binsi <- do.bin(
             Ras = Ras.med, dat = data., lon = collon,
-            lat = collat, thresh = biomodelos.thresh[i]
+            lat = collat, thresh = biomodelos.thresh[i],
+            wrBinMatrix = wr.Bin.Matrix
           )
+          if(isTRUE(wr.Bin.Matrix)){
+            write.csv(Binsi[["BinMatrix"]], paste0(
+              foldersp, "/ensembles/", tim, "/", algorithm, "/",
+              "binMatrix", esc.nm, names(biomodelos.thresh)[i], "_", algorithm,".csv"
+            ),
+            row.names = F
+            )
+          }
+          
           Bins[[i]] <- Binsi
         }
 
@@ -234,7 +244,7 @@ currentEns_byAlg <- function(rasM.Stack, rasG.Stack, rasF.Stack, data., collon, 
 }
 
 #------------------------
-# variation coeficient function6
+# variation coeficient function
 CV <- function(x, na.rm = TRUE) {
   x1 <- sd(x, na.rm = na.rm) / median(x, na.rm = na.rm)
   x2 <- x1 * 100
@@ -242,7 +252,7 @@ CV <- function(x, na.rm = TRUE) {
 
 #------------------------------
 
-do.bin <- function(Ras, dat, lon, lat, thresh) {
+do.bin <- function(Ras, dat, lon, lat, thresh, wrBinMatrix) {
 
   # extracting values for all occurrences from models and organize in a data.frame
   rasvalueT <- terra::extract(Ras, dat[, c(lon, lat)])
@@ -264,8 +274,14 @@ do.bin <- function(Ras, dat, lon, lat, thresh) {
 
   binT <- Ras >= TValue
   names(binT) <- names(thresh)
-
-  return(list(binT, TValue))
+  
+  if(isTRUE(wrBinMatrix)){
+    DatvalueT <- terra::extract(binT, dat[, c(lon, lat)], xy = T)
+  }else{
+    DatvalueT <- NULL
+  }
+  
+  return(list("binT" = binT, "TValue" = TValue, "BinMatrix" = DatvalueT))
 }
 
 #------------------------------------------
