@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Muñoz Rodriguez"
+    given-names: "Carlos Jair"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+  - family-names: "Noguera Urbano"
+    given-names: "Elkin Alexi"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+title: "BioModelos: Species Distribution Maps from Colombian species"
+version: 1.2.0
+doi: 10.5281/zenodo.10479427
+date-released: 2024-01-10
+url: "https://github.com/PEM-Humboldt/biomodelos-sdm"
