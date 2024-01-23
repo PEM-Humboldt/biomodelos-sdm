@@ -67,7 +67,8 @@ define_interest_areas <- function(occ. = occ_thin,
         if (grepl(method.M, pattern = "polygon_buffer")) M <- intersect.polygonBuffer(occ., col.lon, col.lat, polygon.data, dist.Mov)
         if (grepl(method.M, pattern = "polygon_points_buffer")) M <- intersect.polygon.pointsBuffer(occ., col.lon, col.lat, polygon.data, dist.Mov)
         if (grepl(method.M, pattern = "polygon_MCP")) M <- intersect.polygon.MCP(occ., col.lon, col.lat, polygon.data)
-        }
+      }
+      M <- vect(M)
     } else {
       stop("Provide a method for M area")
     }
@@ -76,9 +77,9 @@ define_interest_areas <- function(occ. = occ_thin,
       exp = {
         finalstr <- tail(unlist(strsplit(area.M, "\\.")), n = 1)
         if (finalstr == "shp") {
-          M <- raster::shapefile(area.M)
+          M <- terra::vect(area.M)
         } else {
-          M <- raster::raster(area.M)
+          M <- terra::rast(area.M)
         }
       }
     )
@@ -97,7 +98,8 @@ define_interest_areas <- function(occ. = occ_thin,
           if (grepl(method.G, pattern = "polygon_buffer")) G <- intersect.polygonBuffer(occ., col.lon, col.lat, polygon.data, dist.Mov)
           if (grepl(method.G, pattern = "polygon_points_buffer")) G <- intersect.polygon.pointsBuffer(occ., col.lon, col.lat, polygon.data, dist.Mov)
           if (grepl(method.G, pattern = "polygon_MCP")) G <- intersect.polygon.MCP(occ., col.lon, col.lat, polygon.data)
-          }
+        }
+        G <- vect(G)
       } else {
         stop("Provide a method for G area")
       }
@@ -106,9 +108,9 @@ define_interest_areas <- function(occ. = occ_thin,
         exp = {
           finalstr <- tail(unlist(strsplit(area.G, "\\.")), n = 1)
           if (finalstr == "shp") {
-            G <- raster::shapefile(area.G)
+            G <- terra::vect(area.G)
           } else {
-            G <- raster::raster(area.G)
+            G <- terra::rast(area.G)
           }
         }
       )
@@ -130,15 +132,16 @@ define_interest_areas <- function(occ. = occ_thin,
             if (grepl(method.F, pattern = "polygon_buffer")) F. <- intersect.polygonBuffer(occ., col.lon, col.lat, polygon.data, dist.Mov)
             if (grepl(method.F, pattern = "polygon_points_buffer")) F. <- intersect.polygon.pointsBuffer(occ., col.lon, col.lat, polygon.data, dist.Mov)
             if (grepl(method.F, pattern = "polygon_MCP")) F. <- intersect.polygon.MCP(occ., col.lon, col.lat, polygon.data)
-            }
+          }
+          F <- vect(F)
         } else {
           if (proj.models == "M-M") F. <- M
           if (proj.models == "M-G") F. <- G
         }
       } else {
         finalstr <- tail(unlist(strsplit(area.F, "\\.")), n = 1)
-        if (finalstr == "shp") F. <- raster::shapefile(area.F)
-        if (finalstr == "tif") F. <- raster::raster(area.F)
+        if (finalstr == "shp") F. <- terra::vect(area.F)
+        if (finalstr == "tif") F. <- terra::rast(area.F)
         if (!exists("F.")) stop("if you do not provide a method for F at least provide a valid raster/shape path file ")
       }
     } else {
@@ -160,9 +163,9 @@ define_interest_areas <- function(occ. = occ_thin,
     if (!is.null(resi)) {
       if (!is.data.frame(resi)) {
         if (class(resi)[1] == "RasterLayer") {
-          raster::writeRaster(resi, paste0(folder.sp, "/", "interest_areas", "/", namesresi, ".tif"), overwrite = T, NAflag = -9999, datatype = "INT2S", options = "COMPRESS=LZW")
+          terra::writeRaster(resi, paste0(folder.sp, "/", "interest_areas", "/", namesresi, ".tif"), overwrite = T, NAflag = -9999, datatype = "INT2S")
         } else {
-          raster::shapefile(x = resi, filename = paste0(folder.sp, "/", "interest_areas", "/", namesresi), overwrite = T)
+          terra::writeVector(x = resi, filename = paste0(folder.sp, "/", "interest_areas", "/", namesresi, ".shp"), overwrite = T)
         }
       }
     }

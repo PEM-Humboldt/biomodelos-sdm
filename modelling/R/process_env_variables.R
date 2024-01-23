@@ -61,32 +61,47 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
   } else {
     envfiles <- clim_files
   }
+  
+  #---------------------
 
-  envras <- raster::stack(envfiles)
+  envras <- terra::rast(envfiles)
 
+  #---------------------
+  
   # Colinearity evaluation of variables inside each accesible area  
   if (isTRUE(cor.eval)) {
+    
+    sam <- cor_sample(shapeM = shape.M, envar = envras[[1]])
+    
     if ("VIF" %in% cor.method) {
-      envras2 <- terra::rast(envras)
-      cor.result <- vif_apply(shapeM = shape.M, envars = envras2, vifdetails = cor.detail)
-      rm(envras2)
+      
+      cor.result <- vif_apply(vifsample = sam, envars = envras, vifdetails = cor.detail)
+      
       indexCol <- which((names(envras) %in% cor.result) == TRUE)
+      
       envras <- envras[[indexCol]]
       
     }
   }
+  
+  #---------------------
 
   envMstack <- envras %>%
-    raster::crop(shape.M) %>%
-    raster::mask(shape.M)
+    crop(shape.M) %>%
+    mask(shape.M)
+  
+  #---------------------
 
   if (proj.models == "M-G" & compute.G == TRUE) {
+    
     # cut to G
     envGstack <- envras %>%
-      raster::crop(shape.G) %>%
-      raster::mask(shape.G)
+      crop(shape.G) %>%
+      mask(shape.G)
   }
-
+  
+  rm(envras); gc()
+  
   #---------------------
   # writing environmental layers
 
@@ -99,10 +114,11 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
 
   # write M area, Maxent needs ".asc" files
 
-  for (i in 1:nlayers(envMstack)) {
+  for (i in 1:nlyr(envMstack)) {
+    # i <- 1
     envMi <- envMstack[[i]]
 
-    value <- na.omit(values(envMi)) %>% max()
+    value <- values(envMi, na.rm = TRUE) %>% max()
     y <- ndec(x = value)
 
     if (y == 0) {
@@ -114,7 +130,7 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
       decinum <- 3
     }
 
-    raster::writeRaster(
+    writeRaster(
       x = round(envMi, digits = decinum),
       filename = paste0(
         folder.sp, "/M_variables/Set_1/", names(envMstack[[i]]), ".asc"
@@ -141,7 +157,7 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
 
       # write G area if it was computed
 
-      for (i in 1:nlayers(envGstack)) {
+      for (i in 1:nlyr(envGstack)) {
         envGi <- envGstack[[i]]
 
         value <- na.omit(values(envGi)) %>% max()
@@ -156,7 +172,7 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
           decinum <- 1
         }
 
-        raster::writeRaster(
+        writeRaster(
           x = round(envGi, digits = decinum),
           filename = paste0(
             folder.sp, "/G_variables/Set_1/G/", names(envGstack[[i]]), ".asc"
@@ -180,7 +196,7 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
       }
     }
 
-    # copying M files into the G folder, in order to diminish time of computing when we dont want/have to compute G layers
+    # copying M files into the G folder, in order to diminish time of computing 
 
     Mfiles <- list.files(paste0(folder.sp, "/M_variables/Set_1/"), pattern = ".asc", full.names = T, recursive = F)
     for (a in 1:length(Mfiles)) {
@@ -236,7 +252,7 @@ process_env_future <- function(climdataset, climdir, otherfiles, extension, crsp
                                envother, foldersp, projMod, names.ras, NclimCurrent,
                                computeF, dirF, shapeM, shapeG, shapeF) {
 
-  # creating directories for M-M projections in future, for M-G is not necessary as the routine
+  # creating directories for M-M projections in future, for M-G it is not necessary as the routine
   # in a former step do it already
 
   dir.create(paste0(foldersp, "/G_variables"), showWarnings = F)

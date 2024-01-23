@@ -1,44 +1,20 @@
-#' Extracts environmental variable values at sampled points from a shapefile and applies the 
-#' vif_func function to calculate VIF values for each variable based on the extracted values.
+#' Function to calculate VIF values for each variable based on the extracted values.
 #' 
-#' @description This function takes in a shapefile, a set of environmental variables, 
-#' and VIF (variance inflation factor) details as inputs. It then samples 
-#' a subset of points from the shapefile, extracts the values of the environmental variables at those 
-#' points, and applies the vif_func function (defined below) to calculate the VIF values for the variables. 
-#' Finally, it returns the calculated VIF values. The VIF is calculated by running a linear 
+#' @description This function applies the vif_func function (defined below) to calculate the VIF values for 
+#' the variables. Finally, it returns the calculated VIF values. The VIF is calculated by running a linear 
 #' regression on each variable while using all other variables as predictors. The function returns 
 #' the names of the variables that have a VIF value below a specified threshold (vifdetails).
 #' 
-#' @param shapeM spatial data frame containing the data used to calculate the VIF.
+#' @param vifsample data.frame containing points from the sample area constructed with cor_sample function
 #' @param envars raster file containing the explanatory variables.
 #' @param vifdetails numeric value specifying the VIF threshold.
 
-vif_apply <- function(shapeM, envars, vifdetails){
+vif_apply <- function(vifsample, envars, vifdetails){
   
-  Mpoints <- shapeM %>% st_as_sf() %>%  terra::vect() %>% rasterize(envars) %>% terra::as.data.frame(xy = T) %>% 
-    dplyr::select(-layer)
+  d <- terra::extract(envars, vifsample) %>% 
+    dplyr::select(-ID) %>% 
+    na.omit()
   
-  if (nrow(Mpoints) > 10000) {
-    Sbg <- Mpoints[
-      sample(
-        x = seq(1:nrow(Mpoints)),
-        size = 10000,
-        replace = F
-      ),
-      1:2
-    ]
-  } else {
-    Sbg <- Mpoints[
-      sample(
-        x = seq(1:nrow(Mpoints)),
-        size = ceiling(nrow(Mpoints) * 0.3),
-        replace = F
-      ),
-      1:2
-    ]
-  }
-  
-  d <- terra::extract(envars, Sbg) %>% dplyr::select(-ID) %>% na.omit()
   vifd <- vif_func(d, thresh = vifdetails)
   return(vifd) # aplicar el vif
 }
@@ -123,7 +99,44 @@ vif_func<-function(in_frame,thresh=10,trace=F,...){
   
 }
 
+#' Extracts environmental variable values at sampled points from a shapefile
 
+#' @description This function takes in a shapefile, a set of environmental variables, 
+#' and VIF (variance inflation factor) details as inputs. It then samples 
+#' a subset of points from the shapefile, extracts the values of the environmental variables at those 
+#' points
+#' 
+cor_sample <- function(shapeM, envar){
+  
+  Mpoints <- shapeM %>% 
+    st_as_sf() %>%  
+    terra::vect() %>% 
+    rasterize(envar) %>% 
+    terra::as.data.frame(xy = T) %>% 
+    dplyr::select(-layer)
+  
+  if (nrow(Mpoints) > 10000) {
+    Sbg <- Mpoints[
+      sample(
+        x = seq(1:nrow(Mpoints)),
+        size = 10000,
+        replace = F
+      ),
+      1:2
+    ]
+  } else {
+    Sbg <- Mpoints[
+      sample(
+        x = seq(1:nrow(Mpoints)),
+        size = ceiling(nrow(Mpoints) * 0.3),
+        replace = F
+      ),
+      1:2
+    ]
+  }
+  
+  return(Sbg)
+}
 
 
 

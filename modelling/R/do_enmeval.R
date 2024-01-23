@@ -188,6 +188,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
   if (redo. == F) {
     
     best <- model.selection(evaldata = eval_results, oc = occ., sel = sel.)
+    best$fc <- as.character(best$fc)
 
     # select best models
     index_select <- as.numeric()
@@ -206,8 +207,10 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
     # best models table kuenm style
     if (predic == "kuenm") {
-      if(sum(best$fc == "LQHP") > 1){
-        best$fc[which(best$fc == "LQHP")]  <- "LQPH"
+      if(sum(best$fc == "LQHP") >= 1){
+        index.fc <- which(best$fc == "LQHP")
+        best[index.fc,"fc"] <- "LQPH"
+        
       } 
       best_kuenm_style <- data.frame(Model = as.character(paste0("M_", best$rm, "_F_", tolower(best$fc), "_Set_1")))
       write.csv(best_kuenm_style, paste0(folder.sp, "/eval_results_enmeval/selected_models.csv"), row.names = F)
