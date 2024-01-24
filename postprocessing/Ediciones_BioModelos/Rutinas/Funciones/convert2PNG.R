@@ -1,85 +1,101 @@
-#convert2PNG.R
-#This function creates a KMZ file, georeferenced PNG and a thumb PNG for any given tif file.
-#Projection, extent and color scheme have been optimized for BioModelos
-#This function can be wrapped in a for loop or apply (sapply or sfClusterApplyLB) to
-#convert all tif files on a list. See example below
+#'convert2PNG.R
+#'
+#' Convert TIFF to PNG and create KMZ and thumbnail images.
+#'
+#' This function converts a TIFF file to a georeferenced PNG file, creates a KMZ file,
+#' and generates a thumbnail image. The projection, extent, and color scheme have been
+#' optimized for BioModelos.
 #
-#Args:
-# sp.raster = character string with tif filename (including extension)
-# in.folder = folder that contains the .tif file to convert
-# col.pal = color palette to be used in resulting maps
-# add.trans = add trasparent color to palette? Usually you would use TRUE when the tif file
-# contains NA, 0 and 1 values, whereas you would use FALSE when the tif only
-# has NA and 1 values.
-# params = list with elements dem, corresponding to a raster with elevation to be displayed in
-#  the background of thumbnails, and shape, corresponding to a SpatialPolygonsDataFrame with 
-#  administrative boundaries to be displayed in thumbnail.
-#
-#Usage:
-#   in.folder = "~/Modelos/librorojo2"
-#   col.pal = rgb(193,140,40,maxColorValue=255)
-#   sp.raster = "Anas_bahamensis_0.tif"
-#   convert2PNG(sp.raster, in.folder, col.pal, TRUE, params=params)
-#
-#Example on parallel loop
-# require(snowfall)
-# sfInit(parallel=T,cpus=16)#Initialize nodes
-# sfExportAll() #Export vars to all the nodes
-# sfClusterSetupRNG()
-# sfClusterApplyLB(sp.list, convert2PNG, in.folder=in.folder, 
-# col.pal=col.pal, add.trans=TRUE, params=params)
-# sfStop()
-#
-#Author: Jorge Velasquez
-#Date created: 05-09-2014
+#' @param sp.raster Character string with the TIFF filename (including extension).
+#' @param name Name for the output files (KMZ, PNG, and thumbnail). If NULL, the function
+#'             extracts the name from the TIFF file.
+#' @param in.folder Folder that contains the TIFF file to convert.
+#' @param col.pal Color palette to be used in resulting maps.
+#' @param add.trans Logical, indicating whether to add a transparent color to the palette.
+#'                  Use TRUE when the TIFF file contains NA, 0, and 1 values; use FALSE when
+#'                  the TIFF only has NA and 1 values.
+#' @param params List with elements dem, a raster with elevation for the background of thumbnails,
+#'               and shape, a SpatialPolygonsDataFrame with administrative boundaries for thumbnails.
+#' @param w Width of the thumbnail image.
+#' @param h Height of the thumbnail image.
+#'
+#' @examples
+#' in.folder <- "~/Modelos/librorojo2"
+#' col.pal <- rgb(193, 140, 40, maxColorValue = 255)
+#' sp.raster <- "Anas_bahamensis_0.tif"
+#' convert2PNG(sp.raster, NULL, in.folder, col.pal, TRUE, params = params, w = 800, h = 600)
+#'
+#' @export
+#' 
+#' @author Jorge Velasquez
+#' @date 05-09-2014
+#' 
+#' Updated
+#' @date 24-01-2024
 
-convert2PNG<-function(sp.raster, name,in.folder, col.pal, add.trans, params,w,h){
+convert2PNG <- function(sp.raster, name, in.folder, col.pal, add.trans, params, w, h) {
+  
+  # Load necessary libraries
   require(raster)
   require(sp)
   require(rgdal)
   
-  #Create dirs
-  dir.create(paste0(in.folder,"/PNG"), recursive=T)
-  dir.create(paste0(in.folder,"/KMZ"), recursive=T)
-  dir.create(paste0(in.folder,"/thumb"), recursive=T)
+  # Create directories to store output files
+  dir.create(file.path(in.folder, "PNG"), recursive = TRUE)
+  dir.create(file.path(in.folder, "KMZ"), recursive = TRUE)
+  dir.create(file.path(in.folder, "thumb"), recursive = TRUE)
   
-  #Plots for geovisor
-  if(class(sp.raster)=="RasterLayer"){
+  #-----------
+  # Check if the input raster is already a RasterLayer or needs to be loaded
+  if (class(sp.raster) == "RasterLayer") {
     in.raster <- sp.raster
   } else {
-    in.raster <- raster(paste0(in.folder, "/", sp.raster))
-    if(is.na(projection(in.raster))){
-      projection(in.raster)<-"+proj=longlat +ellps=WGS84 +datum=WGS84"
+    in.raster <- raster(file.path(in.folder, sp.raster))
+    
+    # Set a default projection if not available
+    if (is.na(projection(in.raster))) {
+      projection(in.raster) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
     }
   }
-    
-  #Remove colors if not enough categories
-  # freq.cat <- freq(in.raster)
-  # ind <- freq.cat[which(freq.cat[, 1]>0)]
-  # col.pal <- col.pal[ind]
-  tr<-rgb(255, 255, 255, 0, maxColorValue=255)
-  if(add.trans){
+  
+  # Add transparency to the color palette if specified
+  tr <- rgb(255, 255, 255, 0, maxColorValue = 255)
+  if (add.trans) {
     col.pal <- c(tr, col.pal)
   }
-
-  #Create KML
-  if(is.null(name)){
-    name <- strsplit(sp.raster,"[.]")[[1]][1]
-  }
-  KML(in.raster, filename=paste0(in.folder,"/KMZ/",name,".kmz"),
-      maxpixels=ncell(in.raster), col=col.pal, overwrite=T, blur=1)
-  unzip(paste0(in.folder, "/KMZ/", name, ".kmz"), exdir=paste0(in.folder,"/PNG"))
-  file.remove(paste0(in.folder, "/PNG/", name,".kml"))
   
-  #Generate thumbnails
+  #-----------
+  # Create a KML file from the raster
+  if (is.null(name)) {
+    name <- strsplit(sp.raster, "[.]")[[1]][1]
+  }
+  KML(in.raster, filename = file.path(in.folder, "KMZ", paste0(name, ".kmz")),
+      maxpixels = ncell(in.raster), col = col.pal, overwrite = TRUE, blur = 1)
+  
+  # Unzip the KMZ file to extract PNG files
+  unzip(file.path(in.folder, "KMZ", paste0(name, ".kmz")), exdir = file.path(in.folder, "PNG"))
+  # Remove the KML file
+  file.remove(file.path(in.folder, "PNG", paste0(name, ".kml")))
+  
+  #-----------
+  # Generate thumbnails
   in.raster.co <- in.raster
-  png(paste0(in.folder, "/thumb/", name, "_thumb.png"),
-      width=w, height=h, units="px", type="cairo")
-  op <- par(mar = rep(0, 4), bg=NA)
-  image(params$dem, axes=F, xlab="", ylab="", col=c(tr, "grey90"))
-  image(in.raster.co, col=col.pal, axes=FALSE, add=T)
-  plot(params$shape, add=T, lwd=1, border="grey40")
+  png(file.path(in.folder, "thumb", paste0(name, "_thumb.png")),
+      width = w, height = h, units = "px", type = "cairo")
+  op <- par(mar = rep(0, 4), bg = NA)
+  
+  # Plot the background elevation
+  image(params$dem, axes = FALSE, xlab = "", ylab = "", col = c(tr, "grey90"))
+  
+  # Overlay the raster with the specified color palette
+  image(in.raster.co, col = col.pal, axes = FALSE, add = TRUE)
+  
+  # Plot administrative boundaries
+  plot(params$shape, add = TRUE, lwd = 1, border = "grey40")
   dev.off()
-  unlink(list.files(tempdir()),recursive=T)
+  
+  #-----------
+  # Remove temporary files
+  unlink(list.files(tempdir()), recursive = TRUE)
 }
 
