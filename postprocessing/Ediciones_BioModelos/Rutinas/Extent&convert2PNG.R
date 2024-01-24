@@ -10,23 +10,37 @@
 # 2.2 Adjust the projection and extent
 # 2.3. Color Palette and Reclassification:
 # - Defines a color palette for continuous models.
-# - Reclassifies the raster data based on predefined thresholds.#
+# - Reclassifies the raster data based on predefined thresholds.
 # 2.3. Conversion to PNG:
-# - Applies the convert2PNG function to each statistic raster# 
+# - Applies the convert2PNG function to each statistic raster
+#
 # 3. Convert N1 or Level 1 Models (From 2023 onwards, it is preferable to use the Geoserver to upload these models.)
+#
 # 4. Convert N2 or Level 2 Models (From 2023 onwards, it is preferable to use the Geoserver to upload these models.)   
 
 #-----------
-# Step 1: prepare objects and load functions
+
+library(rgdal)
+library(raster)
+library(maptools)
+library(dplyr)
+
+# 1: prepare objects and load functions
+
+wd <- "path_to_working_directory"
+# Example: wd <- "c:/humboldt/miscelanea/Invemar_areas_interes/peces_invemar_modelos/"
 
 # Set the working directory and load necessary raster files.
-setwd('path_to_working_directory')
+setwd(wd)
 
 # load reference map
 ref.map <- raster("path_where_is_stored_Info_base/ref_map.tif")
+# Example: ref.map <- raster("c:/humboldt/biomodelos-sdm/postprocessing/Ediciones_BioModelos/Info_base/ref_map.tif")
 
 # Load the convert2PNG function and necessary parameters for the conversion process.
 ruta_funcion <- ("path_where_is_stored_function_convert2PNG.R_and_params.RData")
+# Example: ruta_funcion <- (c:/humboldt/biomodelos-sdm/postprocessing/Ediciones_BioModelos/Rutinas/Funciones/")
+
 source(paste0(ruta_funcion, "/convert2PNG.R"))
 load(paste0(ruta_funcion, "/params.RData"))
 
@@ -37,10 +51,14 @@ load(paste0(ruta_funcion, "/params.RData"))
 
 # 2.1 prepare folders
 # path in where are stored tif models
-in.folder <- 'path_to_statistics_models'
-sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = F)
-names <- gsub('*.tif$', '', sp.raster)
-outputfile <- "path_to_save"
+in.folder <- "path_to_statistics_models"
+# Example: in.folder <- "inExtent_BM/"
+sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = T)
+names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%  
+  gsub('*.tif$', '', .)
+
+output.folder <- "path_to_save"
+# Example: output.folder <- "inExtent_BM/imagenes"
 
 # 2.2 Adjust the projection and extent of each raster to WGS84 and BioModelos standards:
 # Use if the TIFF files have a coordinate system different from WGS84 or if they have 
@@ -54,7 +72,7 @@ for (i in 1:length(con.list)) {
     map <- projectRaster(map, ref.map)
     map2 <- extend(map, ref.map)
     extent(map2) <- extent(ref.map)
-    writeRaster(map2, paste0(outputfile, "/", names[i]), format = "GTiff", datatype = 'INT2S', overwrite = TRUE)
+    writeRaster(map2, paste0(output.folder, "/", names[i]), format = "GTiff", datatype = 'INT2S', overwrite = TRUE)
   } else
     cat(names[i], "doesn't need adjustment to projection \n")
 }
@@ -78,9 +96,9 @@ rclmat <- matrix(c(-Inf, 0, 1, 0, 0.2, 2, 0.2, 0.4, 3, 0.4, 0.6, 4, 0.6, 0.8, 5,
 w = 179
 h = 220
 
-for (i in 1:length(con.list)) {
-  print(con.list[i])
-  in.raster <- raster(con.list[i])
+for (i in 1:length(sp.raster)) {
+  print(sp.raster[i])
+  in.raster <- raster(sp.raster[i])
   rc <- reclassify(in.raster, rclmat, include.lowest = FALSE)
   vals <- unique(rc)
   
@@ -88,7 +106,7 @@ for (i in 1:length(con.list)) {
   # Use TRUE when the TIFF file contains NA, 0, and 1 values; use FALSE when
   # the TIFF only has NA and 1 values.
   
-  convert2PNG(rc, names[i], outputfile, colpal[vals[vals > 0]], FALSE, params, w, h)
+  convert2PNG(rc, names[i], output.folder, colpal[vals[vals > 0]], FALSE, params, w, h)
 }
 
 #-----------
@@ -99,8 +117,10 @@ col.pal <- rgb(193, 140, 40, maxColorValue = 255)
 
 # path in where are stored tif models
 in.folder <- 'path_to_tif_N1'
-sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = FALSE)
-name <- gsub('*_con.tif$', '', archivos)
+sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = T)
+names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%  
+  gsub('*.tif$', '', .)
+output.folder <- "path_to_save"
 
 # Apply the convert2PNG function to each Level 1 model.
 for (i in 1:length(sp.raster)) {
@@ -109,7 +129,7 @@ for (i in 1:length(sp.raster)) {
   #                  Use TRUE when the TIFF file contains NA, 0, and 1 values; use FALSE when
   #                  the TIFF only has NA and 1 values.
   
-  convert2PNG(sp.raster[i], name[i], in.folder, col.pal, FALSE, params, w, h)
+  convert2PNG(sp.raster[i], names[i], output.folder, col.pal, FALSE, params, w, h)
 }
 
 #------------
@@ -120,8 +140,10 @@ col.pal <- rgb(138, 47, 95, maxColorValue = 255)
 
 # path in where are stored tif models
 in.folder <- 'path_to_tif_N2'
-sp.raster <- list.files(in.folder, pattern = "veg.tif$")
-name <-  gsub('*_veg.tif$', '', sp.raster)
+sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = T)
+names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%  
+  gsub('*.tif$', '', .)
+output.folder <- "path_to_save"
 
 # Apply the convert2PNG function to each Level 2 model.
 for (i in 1:length(sp.raster)) {
@@ -130,5 +152,5 @@ for (i in 1:length(sp.raster)) {
   # Use TRUE when the TIFF file contains NA, 0, and 1 values; use FALSE when
   # the TIFF only has NA and 1 values.
   
-  convert2PNG(sp.raster[i], name[i], in.folder, col.pal, FALSE, params, w, h)
+  convert2PNG(sp.raster[i], names[i], output.folder, col.pal, FALSE, params, w, h)
 }
