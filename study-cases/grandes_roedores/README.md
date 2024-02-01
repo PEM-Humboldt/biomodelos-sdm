@@ -28,7 +28,7 @@ do.folder.structure("worldclim")
 Modelos
 
 ```
-load("Occurrences/grandes_roedores_atlas.csv") # path for sp data
+grandes_roedores_atlas <- read.csv("Occurrences/grandes_roedores_atlas.csv") # path for sp data
 
 list <- split(grandes_roedores_atlas, f = grandes_roedores_atlas$acceptedNameUsage)
 
