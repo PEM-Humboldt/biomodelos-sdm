@@ -2,7 +2,7 @@
 #'
 #' Convert TIFF to PNG and create KMZ and thumbnail images.
 #'
-#' This function converts a TIFF file to a georeferenced PNG file, creates a KMZ file,
+#' This function converts a TIFF file to a PNG file, creates a KMZ file,
 #' and generates a thumbnail image. The projection, extent, and color scheme have been
 #' optimized for BioModelos.
 #

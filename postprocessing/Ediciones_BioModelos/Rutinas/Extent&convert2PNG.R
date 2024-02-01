@@ -1,5 +1,5 @@
 # This script, named Extent&convert2PNG.R, is designed to prepare raster data for BioModelos by 
-# converting TIFF  files to georeferenced PNG images and creating additional files for visualization. 
+# converting TIFF  files to PNG images and creating additional files for visualization. 
 # The script involves several steps:
 #
 # 1. Prepare objects and load functions: Loads the convert2PNG function and necessary parameters for 

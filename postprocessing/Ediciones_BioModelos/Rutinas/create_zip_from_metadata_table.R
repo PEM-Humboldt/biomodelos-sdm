@@ -31,7 +31,7 @@ meta$png <- paste0(modelnm, ".png")
 
 # Save metadata with additional data and images to a new CSV file
 write.csv(meta, "path_to_save_meta_with_data_images")
-# Example: write.csv(meta, "c:/humboldt/miscelanea/Invemar_areas_interes/peces_invemar_modelos/inExtent_BM/_metadata_Modelos_Humboldt_Invemar_2024-01-24_.csv")
+# Example: write.csv(meta, "c:/humboldt/miscelanea/Invemar_areas_interes/peces_invemar_modelos/inExtent_BM/_metadata_Modelos_Humboldt_Invemar_2024-01-24_.csv", row.names = F)
 
 # Create folder for storing PNG and thumb images
 zip_path <- paste0("path_to_folder_which_store_the_png_and_thumb_images", "/zip/")
