@@ -56,6 +56,6 @@ construct_df_geoserver <- function(path.file.metadata, path.folder.raster, path.
 }
 
 construct_df_geoserver(path.file.metadata = "A", path.folder.raster = "B", path.folder.save = "C")
-construct_df_geoserver(path.file.metadata = ".../peces_invemar_modelos/metadata_Modelos_20231206.xlsx",
-                       path.folder.raster = ".../peces_invemar_modelos/",
-                       path.folder.save = ".../peces_invemar_modelos/")
+# construct_df_geoserver(path.file.metadata = ".../peces_invemar_modelos/metadata_Modelos_20231206.xlsx",
+#                        path.folder.raster = ".../peces_invemar_modelos/",
+#                        path.folder.save = ".../peces_invemar_modelos/")
