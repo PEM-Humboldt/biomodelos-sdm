@@ -169,23 +169,24 @@ AllProtectedFigures <- function(r, ap, pn, sc, ot, area.raster, rast){
   r <- r * area.raster
   spOccEx <- EstimateRangeSize( r = testN2, area.raster = area.raster) ##.............. Deber?a dividirse por el area dentro del poligono
   
+  ap[ap != 0] <- 1
   intAp <- (ap * r)
-  intAp<-reclassify(intAp, c(-Inf,0,NA, 0.2,Inf,1))
-  areaAp <- sum(intAp[], na.rm = TRUE)
+  areaAp <- cellStats(intAp, stat = "sum")
   
+  pn[pn != 0] <- 1
   intPn <- (pn * r)
-  intPn<-reclassify(intPn, c(-Inf,0,NA, 0.2,Inf,1))
-  areaPn <- sum(intPn[], na.rm = TRUE) #Suma de las probabilidades de ocurrencia dentro de 'pn' para el calculo de las estadisticas
+  areaPn <- cellStats(intPn, stat = "sum") #Suma de las probabilidades de ocurrencia dentro de 'pn' para el calculo de las estadisticas
   
+  sc[sc != 0] <- 1
   intSc <- (sc * r)
   intSc<-reclassify(intSc, c(-Inf,0,NA, 0.2,Inf,1))
-  areaSc <- sum(intSc[], na.rm = TRUE)
+  areaSc <- cellStats(intSc, stat = "sum")
   
+  ot[ot != 0] <- 1
   intOt <- (ot * r)
-  intOt<-reclassify(intOt, c(-Inf,0,NA, 0.2,Inf,1))
-  areaOt <- sum(intOt[], na.rm = TRUE)
- 
-   repr <- data.frame(protArea = areaAp*100/spOccEx, #Proporcion del area de distribucion entre el area protegida y el total
+  areaOt <- cellStats(intOt, stat = "sum")
+  
+  repr <- data.frame(protArea = areaAp*100/spOccEx, #Proporcion del area de distribucion entre el area protegida y el total
                      natPark =  areaPn*100/spOccEx,
                      civilRes = areaSc*100/spOccEx,
                      othFigur = areaOt*100/spOccEx)

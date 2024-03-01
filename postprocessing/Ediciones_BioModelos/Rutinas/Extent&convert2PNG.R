@@ -28,18 +28,18 @@ library(dplyr)
 # 1: prepare objects and load functions
 
 wd <- "path_to_working_directory"
-# Example: wd <- "c:/humboldt/miscelanea/Invemar_areas_interes/peces_invemar_modelos/"
+# Example: wd <- "D:/humboldt/Invemar/peces_invemar_modelos/"
 
 # Set the working directory and load necessary raster files.
 setwd(wd)
 
 # load reference map
 ref.map <- raster("path_where_is_stored_Info_base/ref_map.tif")
-# Example: ref.map <- raster("c:/humboldt/biomodelos-sdm/postprocessing/Ediciones_BioModelos/Info_base/ref_map.tif")
+# Example: ref.map <- raster("D:/humboldt/biomodelos-sdm/postprocessing/Ediciones_BioModelos/Info_base/ref_map.tif")
 
 # Load the convert2PNG function and necessary parameters for the conversion process.
 ruta_funcion <- ("path_where_is_stored_function_convert2PNG.R_and_params.RData")
-# Example: ruta_funcion <- (c:/humboldt/biomodelos-sdm/postprocessing/Ediciones_BioModelos/Rutinas/Funciones/")
+# Example: ruta_funcion <- ("D:/humboldt/biomodelos-sdm/postprocessing/Ediciones_BioModelos/Rutinas/Funciones/")
 
 source(paste0(ruta_funcion, "/convert2PNG.R"))
 load(paste0(ruta_funcion, "/params.RData"))
@@ -52,13 +52,13 @@ load(paste0(ruta_funcion, "/params.RData"))
 # 2.1 prepare folders
 # path in where are stored tif models
 in.folder <- "path_to_statistics_models"
-# Example: in.folder <- "inExtent_BM/"
+# Example: in.folder <- "Extent/"
 sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = T)
 names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%  
   gsub('*.tif$', '', .)
 
 output.folder <- "path_to_save"
-# Example: output.folder <- "inExtent_BM/imagenes"
+# Example: output.folder <- "Extent/imagenes"
 
 # 2.2 Adjust the projection and extent of each raster to WGS84 and BioModelos standards:
 # Use if the TIFF files have a coordinate system different from WGS84 or if they have 

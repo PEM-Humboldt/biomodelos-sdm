@@ -8,11 +8,10 @@
 
 # Read metadata from CSV file
 meta <- read.csv("path_to_metadata", 1)
-# Example: meta <- openxlsx::read.xlsx("c:/humboldt/miscelanea/Invemar_areas_interes/peces_invemar_modelos/inExtent_BM/_metadata_Modelos_Humboldt_Invemar_2024-01-24_.xlsx", 1)
+# Example: meta <- openxlsx::read.xlsx("D:/humboldt/Invemar/peces_invemar_modelos/_metadata_Modelos_Humboldt_Invemar_2023-12-06_.xlsx", 1)
 
 # Extract key data from each model
 threshold <- meta$thresholdType
-threshold[which(threshold == "sen")] <- "30"
 threshold[which(threshold != "Continuous")] <- paste0(threshold[which(threshold != "Continuous")], "_")
 threshold[which(threshold == "Continuous")] <- ""
 
@@ -35,13 +34,13 @@ write.csv(meta, "path_to_save_meta_with_data_images")
 
 # Create folder for storing PNG and thumb images
 zip_path <- paste0("path_to_folder_which_store_the_png_and_thumb_images", "/zip/")
-# Example: zip_path <- paste0("C:/humboldt/miscelanea/Invemar_areas_interes/peces_invemar_modelos/inExtent_BM/imagenes", "/zip/")
-dir.create(zip_path, showWarnings = FALSE)
+# Example: zip_path <- paste0("D:/humboldt/Invemar/peces_invemar_modelos", "/zip/")
+dir.create(zip_path)
 setwd(zip_path)
 
 # Define path for raster TIFF files
 tif_path <- "path_of_folder_where_are_store_raster_tif_files"
-# Example: tif_path <- "C:/humboldt/miscelanea/Invemar_areas_interes/peces_invemar_modelos/inExtent_BM/"
+# Example: tif_path <- "D:/humboldt/Invemar/peces_invemar_modelos/Extent/"
 
 # Loop through each row in the metadata and process each model
 for(i in 1:nrow(meta)){
