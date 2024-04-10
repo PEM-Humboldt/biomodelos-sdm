@@ -108,8 +108,8 @@ for(s in 1:length(names)){
   cat('procesing eoo and aoo \n') 
   eoo <- PredictMcpRec(r = testN2, Proj_col = Proj_col, proj = proj, rast = rasts, s = s,  sppPath = sppPath) # se reemplazó por el resultado del prquete ConR
   
-  # 5. Area de ocupacion Se calculó con el paquete ConR
-  aoo <- 0
+  # 5. Area de ocupacion (necesario para atlas, no para estadisticas de la plataforma BioModelos)
+  # aoo <- 0
   #AOO <- AOO.computing(testN2)
   
   # # 6. Habitat CLC
