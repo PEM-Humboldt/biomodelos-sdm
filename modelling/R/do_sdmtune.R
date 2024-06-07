@@ -1,4 +1,28 @@
-library(SDMtune)
+#' In Development: 2022
+#' Perform SDM Tune Workflow
+#'
+#' @description This function executes a workflow for species distribution modeling using SDMtune.
+#' It includes steps for creating background data, reading environmental data, formatting data,
+#' calibrating models, evaluating models, selecting the best model, and projecting to future scenarios.
+#'
+#' @param occ Data frame containing occurrence data.
+#' @param bias.file Data frame or file path for bias data.
+#' @param beta.mult Numeric value for beta multiplier in Maxent model.
+#' @param f.class Character string specifying feature class in Maxent model.
+#' @param env.Mdir Character string specifying the directory path for current environmental data.
+#' @param env.Gdir Character string specifying the directory path for G projections.
+#' @param env.Fdir Character string specifying the directory path for future environmental data.
+#' @param do.future Logical indicating whether to perform future projections.
+#' @param folder.sp Character string specifying the folder path for saving species data.
+#' @param col.lon Integer specifying the column number for longitude in occurrence data.
+#' @param col.lat Integer specifying the column number for latitude in occurrence data.
+#' @param proj.models Character string specifying the type of projection models ("M-G" or other).
+#' @param partitionMethod Character string specifying the partition method ("jackknife", "block", "checkerboard1").
+#' @param crs.proyect Character string specifying the coordinate reference system for projections.
+#' @param use.bias Logical indicating whether to use bias data.
+#' @param dist.Mov Numeric value specifying the distance for checkerboard partitioning.
+#' @return A list containing current and future projections and the best models.
+#' 
 do.sdmtunes <- function(occ., bias.file, beta.mult, f.class, env.Mdir, env.Gdir, env.Fdir, do.future,
                         folder.sp, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, use.bias,
                         dist.Mov) {

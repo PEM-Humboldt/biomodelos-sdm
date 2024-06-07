@@ -63,12 +63,12 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
 
   # M reading
   env.Mfiles <- list.files(env.Mdir, ".asc$", recursive = T, full.names = T)
-  env.M <- raster::stack(env.Mfiles)
+  env.M <- terra::rast(env.Mfiles)
 
   # G reading
   if (proj.models == "M-G") {
     env.Gfiles <- list.files(paste0(env.Gdir, "/Set_1/G/"), pattern = "*.asc$", full.names = T, recursive = F)
-    env.G <- raster::stack(env.Gfiles)
+    env.G <- terra::rast(env.Gfiles)
   }
 
   #--------------------
@@ -109,7 +109,7 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
         ]
       }
     } else {
-      M.points <- rasterToPoints(env.M[[1]])
+      M.points <- as.data.frame(env.M[[1]], xy = T, values= F)
       if (nrow(M.points) > Max.Bg) {
         Sbg <- M.points[
           sample(
@@ -144,7 +144,8 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
   }
 
   colnames(Sbg) <- c("longitude", "latitude")
-  Sbg_env <- raster::extract(env.M, Sbg)
+  Sbg_env <- terra::extract(env.M, Sbg)
+  Sbg_env <- Sbg_env[,-1] # remover ID que esta en la primera columna
 
   Sbg <- cbind(Sbg, Sbg_env)
 
@@ -154,7 +155,8 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
   data. <- occ.[, c(col.lon, col.lat)]
   names(data.) <- c("longitude", "latitude")
 
-  data.env <- raster::extract(env.M, data.)
+  data.env <- terra::extract(env.M, data.)
+  data.env <- data.env[,-1]
   data. <- cbind(data., data.env)
   
   tm <- rbind(data., Sbg)

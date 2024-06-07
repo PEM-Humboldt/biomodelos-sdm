@@ -130,7 +130,7 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
       decinum <- 3
     }
 
-    writeRaster(
+    terra::writeRaster(
       x = round(envMi, digits = decinum),
       filename = paste0(
         folder.sp, "/M_variables/Set_1/", names(envMstack[[i]]), ".asc"
@@ -172,7 +172,7 @@ process_env_current <- function(clim.dataset, clim.dir, file.extension, crs.proy
           decinum <- 1
         }
 
-        writeRaster(
+        terra::writeRaster(
           x = round(envGi, digits = decinum),
           filename = paste0(
             folder.sp, "/G_variables/Set_1/G/", names(envGstack[[i]]), ".asc"
@@ -396,13 +396,13 @@ process_env_future <- function(climdataset, climdir, otherfiles, extension, crsp
       # writing information of future scenarios
       write.csv(cbind(model, year, concentration), paste0(foldersp, "/G_variables/Set_1/", info_cc, "/data.csv"), row.names = F)
 
-      env_Fras <- raster::stack(env_Ffiles)
+      env_Fras <- terra::rast(env_Ffiles)
 
       env_Fstack <- env_Fras %>%
-        raster::crop(shapeF)
+        terra::crop(shapeF)
 
       # writing future layers
-      for (d in 1:nlayers(env_Fstack)) {
+      for (d in 1:nlyr(env_Fstack)) {
         env_Fd <- env_Fstack[[d]]
 
         value <- na.omit(values(env_Fd)) %>% max()
@@ -418,7 +418,7 @@ process_env_future <- function(climdataset, climdir, otherfiles, extension, crsp
         }
 
         names(env_Fd) <- names.ras[d]
-        raster::writeRaster(
+        terra::writeRaster(
           x = round(env_Fd, digits = decinum),
           filename = paste0(
             foldersp, "/G_variables/Set_1/", info_cc, "/", names(env_Fd), ".asc"

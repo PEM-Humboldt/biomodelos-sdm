@@ -1,3 +1,25 @@
+#' Deprecated: 2022
+#' Perform BIOMOD Modeling Workflow
+#'
+#' @description This function performs a series of steps including reading environmental data,
+#' creating pseudoabsence tables, calibrating models, evaluating models, selecting best models,
+#' and projecting models to future scenarios using BIOMOD.
+#'
+#' @param data.splitted List containing training and testing data sets.
+#' @param sp.name Character string specifying the species name.
+#' @param folder.sp Character string specifying the folder path for saving species data.
+#' @param Biasfile Data frame or file path for bias data.
+#' @param nrep.s Integer specifying the number of repetitions for model calibration.
+#' @param env.Mdir Character string specifying the directory path for current environmental data.
+#' @param env.Gdir Character string specifying the directory path for future environmental data.
+#' @param env.Fdir Character string specifying the directory path for projection environmental data.
+#' @param do.future Logical indicating whether to perform future projections.
+#' @param proj.models Character string specifying the type of projection models ("M-G" or other).
+#' @param crs.proyect Character string specifying the coordinate reference system for projections.
+#' @param algorithms Character vector specifying the algorithms to use for modeling.
+#' @param use.bias Logical indicating whether to use bias data.
+#' @return A list containing current and future projections and the best models.
+#' 
 do.biomod <- function(data.splitted, sp.name, folder.sp, Biasfile, nrep.s, env.Mdir, env.Gdir,
                       env.Fdir, do.future, proj.models, crs.proyect, algorithms, use.bias) {
 

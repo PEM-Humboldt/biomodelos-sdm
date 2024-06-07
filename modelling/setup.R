@@ -38,12 +38,11 @@ do.folder.structure <- function(clim.datasets) {
 # sf # to work with spatial objects like points, vectors and polygons
 # rnaturalearth # to use the r natural earth data (https://www.naturalearthdata.com/)
 # rnaturalearthdata # to import the r natural earth data (https://www.naturalearthdata.com/)
-# raster # to work with spatial objects like raster, it loads sp package (similar to sf)
+# terra # to work with spatial objects like raster, it loads sp package (similar to sf)
 # automap # to construct semivariograms in order to account spatial autocorrelation
 # dismo # it is a package to make ENM, but here it is used to split occurrence data
 # biomod2 # to make ENM, here is used to construct models for spp with more than 25 occurrences
-# Artificial Neural Networks (ANN) and Generalized Boosting Model (GBM)
-# kuenm # to fit Maxent models with more than 25 occurrences
+# Artificial Neural Networks (ANN) and Generalized Boosting Model (GBM) -DEPRECATED
 # ENMeval # to fit Maxent models with less than 25 occurrences
 # rJava # to link Low-Level R to Java Interface
 # PresenceAbsence # to fit and compute roc eval outside of kuenm, enmeval or biomod2
@@ -55,8 +54,8 @@ do.folder.structure <- function(clim.datasets) {
 
 vector.packages <- c(
   "plyr", "dplyr", "automap", "PresenceAbsence", "devtools",
-  "CoordinateCleaner", "sf", "spThin", "raster", "dismo", "biomod2", "ENMeval", "rgdal",
-  "rJava", "kuenm", "terra"
+  "CoordinateCleaner", "sf", "spThin", "terra", "dismo", "ENMeval",
+  "rJava", "kuenm"
 )
 
 # Installing

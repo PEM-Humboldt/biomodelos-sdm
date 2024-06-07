@@ -35,40 +35,41 @@ estimate_sampling_bias <- function(data. = interest_areas$occurrences, TGS.kerne
                        shape.M = interest_areas$shape_M, env.M = envars$M, folder.sp = folder_sp, 
                        col.lon = col_lon, col.lat = col_lat, col.sp = col_sp) {
 
-  ## import raster(bias_layer) and crop to the extent and shape of M composed
-
-  Biasfile <- raster::raster(TGS.kernel) * 1000 %>% 
-    trunc()
+  Biasfile <- rast(TGS.kernel) * 1000
+  Biasfile <- terra::round(Biasfile)
   
+  # Read and transform shape.M to match the CRS of Biasfile
+  if(crs(shape.M) != crs(Biasfile)){
+    shape.M <- st_as_sf(shape.M) %>% 
+      st_transform(crs(Biasfile)) %>% 
+      vect()
+  }
+
   # Bias in M
-  BiasfileM <- Biasfile %>%
-    raster::crop(shape.M) %>%
-    raster::mask(shape.M)
+  BiasfileM <- crop(Biasfile, shape.M) %>%
+    mask(shape.M)
   
-  # round(Biasfile, digits = 0) %>%
-
-  BiasfileM <- raster::projectRaster(BiasfileM, env.M)
+  # Project BiasfileM to the CRS of env.M
+  env.M <- rast(env.M)
+  if(crs(BiasfileM) != crs(env.M)){
+    BiasfileM <- project(BiasfileM, env.M)
+  }
   
-  raster::writeRaster(BiasfileM, paste0(folder.sp, "/BiasfileM.asc"),
-    overwrite = T,
-    NAflag = -9999,
-    datatype = "FLT4S",
-    options = "COMPRESS=LZW"
-  )
-
-  data.spat <- data.
-
-  data.spat <- sp::SpatialPointsDataFrame(coords = data.[, c(col.lon, col.lat)], data = data.frame(data.[, col.sp]))
+  terra::writeRaster(BiasfileM, paste0(folder.sp, "/BiasfileM.tif"), overwrite = TRUE, 
+              NAflag = -9999, datatype = "FLT4S")
   
-  # giving a buffer to each occurrence not to get background near to register
-
-  data.buffer <- rgeos::gBuffer(data.spat, width = res(env.M)[1])
+  # Create SpatialPointsDataFrame from data
+  data.spat <- st_as_sf(data., coords = c(col.lon, col.lat), crs = st_crs(BiasfileM))
   
-  BiasfileNO_Occ <- raster::mask(BiasfileM, data.buffer, inverse = TRUE)
-
-  BiasfilePo <- raster::rasterToPoints(BiasfileNO_Occ, spatial = F)
-
+  # Create a buffer around each occurrence point
+  data.buffer <- st_buffer(data.spat, dist = res(env.M)[1])
+  
+  # Mask BiasfileM with buffer to exclude occurrences
+  BiasfileNO_Occ <- mask(BiasfileM, vect(data.buffer), inverse = TRUE)
+  
+  # Convert masked raster to points
+  BiasfilePo <- as.data.frame(BiasfileNO_Occ, xy = T)
   colnames(BiasfilePo) <- c("lon", "lat", "prob")
-
+  
   return(BiasfilePo)
 }

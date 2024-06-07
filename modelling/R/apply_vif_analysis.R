@@ -36,7 +36,6 @@ vif_func<-function(in_frame,thresh=10,trace=F,...){
   
   require(fmsb) 
   require(dismo)
-  require(rgdal)
 
   if(class(in_frame) != 'data.frame') in_frame<-data.frame(in_frame)
   
