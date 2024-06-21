@@ -214,9 +214,11 @@ HumanFootPrint <- function (r, hfp, rast){
   colnames(hfp_area) <- c("Alto","Bajo","Medio","Natural")
   for(l in 1:nlayers(hfp)){
     catHfp <- r * hfp[[l]]
-    areaCat <- cellStats(catHfp[], stat = "sum") # sum(catHfp[], na.rm = TRUE)
+    catHfp[catHfp == 0] <- NA
+    areaCat <- cellStats(catHfp, stat = "sum") # sum(catHfp[], na.rm = TRUE)
     porcCat = areaCat*100/RangeSize
     hfp_area[1,l] <- porcCat
+    print(porcCat)
   }
   if (rast == T) {
     writeRaster(hfp, paste0(sppFolder,'/hfp.tif'), overwrite=TRUE)
@@ -229,7 +231,8 @@ HumanFootPrint <- function (r, hfp, rast){
 TitulosMineros <- function(r, area.raster, titMin, rast) {
   r <- r * area.raster
   nTit <- r * titMin
-  areaMin <- cellStats(nTit[], stat = "sum") # sum(nTit[], na.rm = TRUE)
+  nTit[nTit == 0] <- NA
+  areaMin <- cellStats(nTit, stat = "sum") # sum(nTit[], na.rm = TRUE)
   porcMin = areaMin*100/RangeSize
   
   if (rast == T) {
@@ -238,5 +241,4 @@ TitulosMineros <- function(r, area.raster, titMin, rast) {
   }
   return(porcMin)
 }
-
 
