@@ -1,4 +1,4 @@
-# Postprocessing
+# Preprocessing
 
 
 ## Prerequisites
@@ -12,27 +12,24 @@
 
 Required Libraries and Their Versions for Each Indicator. Ensure you have the exact versions of each package and they are compatible with the R version.
 
-1. Checking Completion Status of Modelling Construction Process
+1. Download occurrences from BioModelos MongoDB
 
 ```
-"stringr" 1.4.0
-"dplyr" 1.0.7
+"mongolite"
+"plyr"
+"dplyr"
+"devtools"
+"gtools"
+"openxlsx"
 ```
-2. Automated Metadata Generation for Species Modeling Results
 
-```
-"raster" 3.6-3
-"dplyr" 1.0.9
-"hms" 1.1.1
-"xlsx" 0.6.5
-```
 ## How to Run
 
 ### Independent Codes
 
- - [download_occurrences_biomodelos.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/check_models_constructed.R)
- - [make_models_metadata.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/make_models_metadata.R)
- - [mov_models.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/mov_models.R)
+ - [download_occurrences_biomodelos.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/download_occurrences_biomodelos.R)
+ - [bias_layer.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/bias_layer.R)
+ - [move_river_occurrences.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/move_river_occurrences.R)
 
 You can obtain the results of each code independently by following these steps:
 
