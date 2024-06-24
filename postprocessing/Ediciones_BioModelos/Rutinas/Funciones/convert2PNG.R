@@ -41,9 +41,9 @@ convert2PNG <- function(sp.raster, name, in.folder, col.pal, add.trans, params, 
   require(rgdal)
   
   # Create directories to store output files
-  dir.create(file.path(in.folder, "PNG"), recursive = TRUE)
-  dir.create(file.path(in.folder, "KMZ"), recursive = TRUE)
-  dir.create(file.path(in.folder, "thumb"), recursive = TRUE)
+  dir.create(file.path(in.folder, "PNG"), recursive = TRUE, showWarnings = F)
+  dir.create(file.path(in.folder, "KMZ"), recursive = TRUE, showWarnings = F)
+  dir.create(file.path(in.folder, "thumb"), recursive = TRUE, showWarnings = F)
   
   #-----------
   # Check if the input raster is already a RasterLayer or needs to be loaded

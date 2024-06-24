@@ -20,17 +20,16 @@
 
 construct_df_geoserver <- function(path.file.metadata, path.folder.raster, path.folder.save){
   
-  import(data.table)
-  import(openxlsx)
-  
   # Determine the format of the metadata file
-  finalstr <- tail(unlist(strsplit(path.metadata, "\\.")), n = 1)
+  finalstr <- tail(unlist(strsplit(path.file.metadata, "\\.")), n = 1)
   
   # Read metadata
   if (finalstr == "xlsx"|finalstr == "xls") {
-    metadata <- openxlsx::read.xlsx(path.metadata, sheet = 1)
-  } else if (finalstr == "csv") {
-    metadata <- data.table::fread(path.metadata) |> 
+    require(openxlsx)
+    metadata <- openxlsx::read.xlsx(path.file.metadata, sheet = 1)
+  } else {
+    require(data.table)
+    metadata <- data.table::fread(path.file.metadata) |> 
       as.data.frame()
   }
   
@@ -51,11 +50,17 @@ construct_df_geoserver <- function(path.file.metadata, path.folder.raster, path.
   date <- gsub("-", "", Sys.Date())
   
   # Write the data frame to a CSV file
-  write.csv(df_geoserver, paste0(path.to.save, "df_geoserver_", date, ".csv"), row.names = F)  
+  write.csv(df_geoserver, paste0(path.folder.save, "df_geoserver_", date, ".csv"), row.names = F)  
   
 }
 
 construct_df_geoserver(path.file.metadata = "A", path.folder.raster = "B", path.folder.save = "C")
+# Example1:
 # construct_df_geoserver(path.file.metadata = ".../peces_invemar_modelos/metadata_Modelos_20231206.xlsx",
 #                        path.folder.raster = ".../peces_invemar_modelos/",
 #                        path.folder.save = ".../peces_invemar_modelos/")
+
+# Example 2:
+# construct_df_geoserver(path.file.metadata = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/carnivora_metadata_2024-06-20_temporal2.csv", 
+#                       path.folder.raster = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/flujo_geoserver/", 
+#                       path.folder.save = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/flujo_geoserver/")

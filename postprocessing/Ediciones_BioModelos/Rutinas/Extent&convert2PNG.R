@@ -28,7 +28,7 @@ library(dplyr)
 # 1: prepare objects and load functions
 
 wd <- "path_to_working_directory"
-# Example: wd <- "D:/humboldt/Invemar/peces_invemar_modelos/"
+# Example: wd <- "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros"
 
 # Set the working directory and load necessary raster files.
 setwd(wd)
@@ -44,10 +44,13 @@ ruta_funcion <- ("path_where_is_stored_function_convert2PNG.R_and_params.RData")
 source(paste0(ruta_funcion, "/convert2PNG.R"))
 load(paste0(ruta_funcion, "/params.RData"))
 
+# set wide and hight for thumbnails
+w <- 179
+h <- 220
+
 #-----------
-# 2. Convert Statistics or N0
-# Statistics models group two kinds of models, continuos and binaries (or thresholded). Binaries 
-# by default are 0, 10, 20 and 30.
+# 2. Convert continuous and thresholded models
+# Binaries by default are 0, 10, 20 and 30.
 
 # 2.1 prepare folders
 # path in where are stored tif models
@@ -93,9 +96,6 @@ rclmat <- matrix(c(-Inf, 0, 1, 0, 0.2, 2, 0.2, 0.4, 3, 0.4, 0.6, 4, 0.6, 0.8, 5,
 # 2.4 Conversion to PNG
 # Apply the convert2PNG function to each raster, generating PNG images and thumbnails.
 
-w = 179
-h = 220
-
 for (i in 1:length(sp.raster)) {
   print(sp.raster[i])
   in.raster <- raster(sp.raster[i])
@@ -110,17 +110,17 @@ for (i in 1:length(sp.raster)) {
 }
 
 #-----------
-# 3. Convert N1 or Level 1 Models (orange-ochre color) 
+# 3. Convert consensus (named Level 1 Models - N1) (orange-ochre color) 
 
-dir.create('Especies/N1')
 col.pal <- rgb(193, 140, 40, maxColorValue = 255)
 
 # path in where are stored tif models
 in.folder <- 'path_to_tif_N1'
-sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = T)
+# Example: in.folder <- "flujo_imagenes/"
+
+sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = F)
 names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%  
   gsub('*.tif$', '', .)
-output.folder <- "path_to_save"
 
 # Apply the convert2PNG function to each Level 1 model.
 for (i in 1:length(sp.raster)) {
@@ -129,21 +129,21 @@ for (i in 1:length(sp.raster)) {
   #                  Use TRUE when the TIFF file contains NA, 0, and 1 values; use FALSE when
   #                  the TIFF only has NA and 1 values.
   
-  convert2PNG(sp.raster[i], names[i], output.folder, col.pal, FALSE, params, w, h)
+  convert2PNG(sp.raster = sp.raster[i], name = names[i], in.folder = in.folder, 
+              col.pal = col.pal, add.trans = FALSE, params = params, w = w, h = h)
 }
 
 #------------
 # 4. Convert N2 or Level 2 Models (purple color) March 4, 2022   
 
-dir.create('Especies/N2')
 col.pal <- rgb(138, 47, 95, maxColorValue = 255)
 
 # path in where are stored tif models
 in.folder <- 'path_to_tif_N2'
-sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = T)
+
+sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = F)
 names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%  
   gsub('*.tif$', '', .)
-output.folder <- "path_to_save"
 
 # Apply the convert2PNG function to each Level 2 model.
 for (i in 1:length(sp.raster)) {
@@ -152,5 +152,6 @@ for (i in 1:length(sp.raster)) {
   # Use TRUE when the TIFF file contains NA, 0, and 1 values; use FALSE when
   # the TIFF only has NA and 1 values.
   
-  convert2PNG(sp.raster[i], names[i], output.folder, col.pal, FALSE, params, w, h)
+  convert2PNG(sp.raster = sp.raster[i], name = names[i], in.folder = in.folder, 
+              col.pal = col.pal, add.trans = FALSE, params = params, w = w, h = h)
 }

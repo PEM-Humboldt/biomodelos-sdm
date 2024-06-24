@@ -1,1 +1,0 @@
-# Accesible area
