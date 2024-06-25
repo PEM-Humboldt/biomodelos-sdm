@@ -54,18 +54,22 @@ PredictMcpRast <- function(r, area.raster, rast) {
 # }
 
 PredictMcpRec <- function (r, Proj_col, rast, s, sppPath, proj, wr.mcp) {
-  recc <- read.csv(as.character(sppPath$Rec_file[s]), sep = ",", as.is = T)#revisar el argumento sep
+  recc <- data.table::fread(as.character(sppPath$Rec_file[s]))
+  recc <- as.data.frame(recc)
+  #revisar el argumento sep
   if(dim(recc)[1]==0){
     return (list (MCP_recp = NA, MCPrec_km2 = NA))
   }else{
     
-    recc <- select(recc, any_of(c("Lon", "Longitud", "Longitude", "longitud", "decimalLongitude", "lon", "longitude", 
-                                  "Lat", "Latitud", "Latitude", "latitud", "decimalLatitude", "lat", "latitude")))    
-    recc <- recc[complete.cases(recc), ] # para asegurarse que si hay registros sin coordenadas no se tomen en cuenta
+    lon_columns <- c("Lon", "Longitud", "Longitude", "longitud", "decimalLongitude", "lon", "longitude", "LONG")
+    lat_columns <- c("Lat", "Latitud", "Latitude", "latitud", "decimalLatitude", "lat", "latitude", "LAT")
+    
+    lon <- recc %>% select(any_of(lon_columns)) %>% .[, 1]
+    lat <- recc %>% select(any_of(lat_columns)) %>% .[, 1]
     
     lon_lat <- matrix(nrow = nrow(recc), ncol = 2)
-    lon_lat[,1] <- recc[ , 1]
-    lon_lat[,2] <- recc[ , 2]
+    lon_lat[,1] <- lon
+    lon_lat[,2] <- lat
     
     # table for ConR /to update
     # lat_lon_sp[,1] <- recc[ , 2]
@@ -94,14 +98,20 @@ PredictMcpRec <- function (r, Proj_col, rast, s, sppPath, proj, wr.mcp) {
 
 AOO <- function (r, Proj_col, rast, s, sppPath, proj){
   library(ConR)
-  recc <- read.csv(as.character(sppPath$Rec_file[s]), sep=",",as.is = T)#revisar el argumento sep
+  recc <- data.table::fread(as.character(sppPath$Rec_file[s]))
+  recc <- as.data.frame(recc)#revisar el argumento sep
   if(dim(recc)[1]==0){
     return (AOO = NA)
   }else{
-    recc <- select(recc, any_of(c("Lon", "Longitud", "Longitude", "longitud", "decimalLongitude", "lon", "longitude", 
-                                  "Lat", "Latitud", "Latitude", "latitud", "decimalLatitude", "lat", "latitude")))
-    recc <- recc[complete.cases(recc), ]
-    lat_lon_sp <- data.frame(recc[ , 2], recc[ , 1], "sp")
+    
+    lon_columns <- c("Lon", "Longitud", "Longitude", "longitud", "decimalLongitude", "lon", "longitude", "LONG")
+    lat_columns <- c("Lat", "Latitud", "Latitude", "latitud", "decimalLatitude", "lat", "latitude", "LAT")
+    
+    lon <- recc %>% select(any_of(lon_columns)) %>% .[, 1]
+    lat <- recc %>% select(any_of(lat_columns)) %>% .[, 1]
+    
+    lat_lon_sp <-  data.frame("lon" = lon, "lat" = lat, "sp")
+    lat_lon_sp <- recc[complete.cases(recc), ]
     
     colnames(lat_lon_sp) <- c("ddlat", "ddlon", "tax")
     
@@ -218,7 +228,6 @@ HumanFootPrint <- function (r, hfp, rast){
     areaCat <- cellStats(catHfp, stat = "sum") # sum(catHfp[], na.rm = TRUE)
     porcCat = areaCat*100/RangeSize
     hfp_area[1,l] <- porcCat
-    print(porcCat)
   }
   if (rast == T) {
     writeRaster(hfp, paste0(sppFolder,'/hfp.tif'), overwrite=TRUE)
@@ -241,4 +250,5 @@ TitulosMineros <- function(r, area.raster, titMin, rast) {
   }
   return(porcMin)
 }
+
 

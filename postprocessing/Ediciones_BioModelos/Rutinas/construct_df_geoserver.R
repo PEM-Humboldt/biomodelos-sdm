@@ -61,6 +61,6 @@ construct_df_geoserver(path.file.metadata = "A", path.folder.raster = "B", path.
 #                        path.folder.save = ".../peces_invemar_modelos/")
 
 # Example 2:
-# construct_df_geoserver(path.file.metadata = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/carnivora_metadata_2024-06-20_temporal2.csv", 
-#                       path.folder.raster = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/flujo_geoserver/", 
-#                       path.folder.save = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/flujo_geoserver/")
+construct_df_geoserver(path.file.metadata = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/carnivora_metadata_2024-06-20_geoserver.csv", 
+                      path.folder.raster = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/flujo_geoserver/", 
+                     path.folder.save = "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros/flujo_geoserver/")
