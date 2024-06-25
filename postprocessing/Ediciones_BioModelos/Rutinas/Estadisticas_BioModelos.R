@@ -109,7 +109,7 @@ for(s in 1:length(names)){
   eoo <- PredictMcpRec(r = testN2, Proj_col = Proj_col, proj = proj, rast = rasts, s = s,  sppPath = sppPath) # se reemplazó por el resultado del prquete ConR
   
   # 5. Area de ocupacion (necesario para atlas, no para estadisticas de la plataforma BioModelos)
-  aoo <- 0
+  # aoo <- 0
   #AOO <- AOO.computing(testN2)
   
   # # 6. Habitat CLC
@@ -155,50 +155,8 @@ colnames(metadata.all) <- colnames(header.met)
 write.csv(metadata.all,  paste0(spresult, 'stats_level2.csv'), row.names = F)
 write.csv(threats.all, paste0 (spresult, 'stats_threats_level2.csv'), row.names = F)
 
-#-------------------------------
-#ESTADISTICAS NIVEL 1 (necesario para atlas, no para estadisticas de la plataforma BioModelos)
-
-header.met2 <- read.csv("Info_base/Indice_metadatosN1.csv",header=T, sep=";")
-
-files<-list.files(paste0(fold, "/", "N1", pattern = "con.tif$",full.names=T)
-sppPath$potencial <- files
-metadata.potencial <- data.frame()
-
-for(s in 1:length(names)){
-  # s <- 1
-  #gc()
-  #memory.limit(size=100000)
-  #Generar capas solo para el primer registro
-  
-  testN1 <- raster(as.character(sppPath[s, 4]))
-  cat(s, '-', names[s], '\n')
-  
-  ## Funciones calculos estadisticas
-  # 1. Revisar que las proyecciones coinciden
-  #CheckProjection(r = testN2, proj=proj)
-  
-  area.raster <- area(testN2)
-  
-  # 2. Calcular el tamanno de ocurrencia de la espcie km2
-  RangeSize <- EstimateRangeSize( r = testN1, area.raster = area.raster)
-  
-  # 3. Minimo poligono convexo para Raster
-  
-  MCPRast <- PredictMcpRast( r = testN1, area.raster = area.raster, rast = rasts)
-  #MCPRast<-list (ch.area = ch.area, ch = ch.pred)  
-  
-  # 5. Area de ocupacion Se calculó con el paquete ConR
-  aoo <- AOO(r = testN2, Proj_col = Proj_col, proj = proj, rast = rasts, s = s,  sppPath = sppPath)
-  
-  sppModel <- gsub('.tif', '', basename(as.character(sppPath[s, 4]))) # Conserva el nombre de la especie y el tipo de modelo, sí es concenso o nivel 2
-  
-  #Out data frames
-  metadata <- cbind.data.frame(sppModel, aoo, MCPRast$ch.area, RangeSize)
-  metadata.potencial <- rbind(metadata.potencial, metadata)
-  
-}
-
-colnames(metadata.potencial) <- colnames(header.met2)
-
-#level 1
-write.csv(metadata.potencial,  paste0(spresult, 'stats_level1.csv'), row.names = F)
+####_______________________________________________________________________________________________________________________________________###
+## Nota                                                                                                                                    ###  
+## El numeroal  5. Area de ocupacion Se calculó con el paquete ConR, debido a que las funciones usadas ya no funcionan correctamente.      ###
+## El paquete conR ofrece cálculos que podrían intergrarse a esta rutina, en un mediano plazo                                              ###  
+##_________________________________________________________________________________________________________________________________________###

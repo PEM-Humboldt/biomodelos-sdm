@@ -53,7 +53,7 @@ PredictMcpRast <- function(r, area.raster, rast) {
 #   }
 # }
 
-PredictMcpRec <- function (r, Proj_col, rast, s, sppPath, proj, wr.mcp) {
+PredictMcpRec <- function (r, Proj_col, rast, s, sppPath, proj, wr.mcp, col = gadm_colombia) {
   recc <- data.table::fread(as.character(sppPath$Rec_file[s]))
   recc <- as.data.frame(recc)
   #revisar el argumento sep
@@ -67,37 +67,41 @@ PredictMcpRec <- function (r, Proj_col, rast, s, sppPath, proj, wr.mcp) {
     lon <- recc %>% select(any_of(lon_columns)) %>% .[, 1]
     lat <- recc %>% select(any_of(lat_columns)) %>% .[, 1]
     
-    lon_lat <- matrix(nrow = nrow(recc), ncol = 2)
-    lon_lat[,1] <- lon
-    lon_lat[,2] <- lat
+    # lon_lat <- matrix(nrow = nrow(recc), ncol = 2)
+    # lon_lat[,1] <- lon
+    # lon_lat[,2] <- lat
     
-    # table for ConR /to update
-    # lat_lon_sp[,1] <- recc[ , 2]
-    # lat_lon_sp[,2] <- recc[ , 1]
-    # lat_lon_sp[,3] <- "sp"
+    # in.pts <- SpatialPoints(lon_lat, proj4string = CRS(proj))
+    # cells <- unique(cellFromXY(r, in.pts))
+    #   if(length(cells) > 2){
+    #     ch_pol <- convHull(lon_lat)
+    #     ch_pol@polygons@proj4string@projargs <- proj
+    #     ch_proj <- spTransform(ch_pol@polygons, crs("+init=epsg:3116")) ##EPSG 3116 codigo Magna origen Bogota
+    #     ch_proj <- spTransform(ch_pol@polygons, Proj_col)
+    #     MCPrec_km2 <- gArea(ch_proj) / 1000000
+    #     return (list (MCP_recp = ch_proj, MCPrec_km2 = MCPrec_km2))
+    #   } else {
+    #     return (list (MCP_recp = NA, MCPrec_km2 = NA))
+    #   }
+  
     
-    # lat_lon_sp <- as.data.frame(lat_lon_sp)
-    # colnames(lat_lon_sp) <- c("ddlat", "ddlon", "species")
+    lat_lon_sp <-  data.frame("lat" = lat, "lon" = lon,  "sp")
+    lat_lon_sp <- lat_lon_sp[complete.cases(lat_lon_sp), ]
     
-    in.pts <- SpatialPoints(lon_lat, proj4string = CRS(proj))
-    cells <- unique(cellFromXY(r, in.pts))
-      if(length(cells) > 2){
-        ch_pol <- convHull(lon_lat)
-        ch_pol@polygons@proj4string@projargs <- proj
-        ch_proj <- spTransform(ch_pol@polygons, crs("+init=epsg:3116")) ##EPSG 3116 codigo Magna origen Bogota
-        ch_proj <- spTransform(ch_pol@polygons, Proj_col)
-        MCPrec_km2 <- gArea(ch_proj) / 1000000
-        return (list (MCP_recp = ch_proj, MCPrec_km2 = MCPrec_km2))
-      } else {
-        return (list (MCP_recp = NA, MCPrec_km2 = NA))
-      }
-    }
+    colnames(lat_lon_sp) <- c("ddlat", "ddlon", "tax")
+    
+    eoo. <- ConR::EOO.computing(lat_lon_sp, exclude.area = T, country_map = gadm_colombia, write_results = F) %>% 
+      unlist() 
+    names(eoo.) <- "MCPrec_km2"
+    return(eoo.)
+  }
+
 }
 
 # 5. Área de ocupación en km2 (registros)
 
-AOO <- function (r, Proj_col, rast, s, sppPath, proj){
-  library(ConR)
+AOO <- function (r, Proj_col, rast, s, sppPath, proj, col = gadm_colombia){
+  
   recc <- data.table::fread(as.character(sppPath$Rec_file[s]))
   recc <- as.data.frame(recc)#revisar el argumento sep
   if(dim(recc)[1]==0){
@@ -107,12 +111,23 @@ AOO <- function (r, Proj_col, rast, s, sppPath, proj){
     lon_columns <- c("Lon", "Longitud", "Longitude", "longitud", "decimalLongitude", "lon", "longitude", "LONG")
     lat_columns <- c("Lat", "Latitud", "Latitude", "latitud", "decimalLatitude", "lat", "latitude", "LAT")
     
+    # Extraer las coordenadas de longitud y latitud
     lon <- recc %>% select(any_of(lon_columns)) %>% .[, 1]
     lat <- recc %>% select(any_of(lat_columns)) %>% .[, 1]
     
-    lat_lon_sp <-  data.frame("lon" = lon, "lat" = lat, "sp")
-    lat_lon_sp <- recc[complete.cases(recc), ]
+    # Crear un objeto SpatialPoints con las coordenadas
+    lon_lat <- cbind(lon, lat)
+    in.pts <- SpatialPoints(lon_lat, proj4string = CRS(proj))
     
+    # Filtrar los puntos que están dentro de la región de interés
+    pts.in.col <- !is.na(over(in.pts, col)[, 1])
+    
+    # Preparar los datos para usar en ConR
+    lat_lon_sp <- data.frame("lat" = lat, "lon" = lon, "sp")
+    lat_lon_sp <- lat_lon_sp[pts.in.col, ]
+    lat_lon_sp <- lat_lon_sp[complete.cases(lat_lon_sp), ]
+    
+    # Renombrar las columnas según el formato requerido por ConR
     colnames(lat_lon_sp) <- c("ddlat", "ddlon", "tax")
     
     aoo. <- ConR::AOO.computing(lat_lon_sp)
@@ -242,7 +257,7 @@ TitulosMineros <- function(r, area.raster, titMin, rast) {
   nTit <- r * titMin
   nTit[nTit == 0] <- NA
   areaMin <- cellStats(nTit, stat = "sum") # sum(nTit[], na.rm = TRUE)
-  porcMin = areaMin*100/RangeSize
+  porcMin <- areaMin*100/RangeSize
   
   if (rast == T) {
     print ('Raster titulos mineros')
