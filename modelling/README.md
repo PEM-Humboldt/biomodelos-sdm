@@ -161,7 +161,7 @@ Having done the earlier steps, extract the files inside of the ".zip" folder *ex
 In this example, we are going to run a simple ENM of a single species database, a colorful bird species called [Chlorochrysa nitidissima](https://ebird.org/species/multan1?siteLanguage=es). So, load the "single_species.csv". After loading, feel free to explore the object call *dataSp*.
 
 ```
-dataSp <- read.csv("Example/Occurrences/single_species.csv")
+dataSp <- read.csv("example/Occurrences/single_species.csv")
 ```
 
 ### Running
@@ -212,11 +212,21 @@ Once you run the last script, you would monitor the process in the console (left
 
 ## References and packages
 
+Araújo, M. B., Anderson, R. P., Barbosa, A. M., Beale, C. M., Dormann, C. F., Early, R., Garcia, R. A., Guisan, A., Maiorano, L., Naimi, B., O’Hara, R. B., Zimmermann, N. E., & Rahbek, C. (2019). Standards for distribution models in biodiversity assessments. Science Advances, 5(1), eaat4858. https://doi.org/10.1126/sciadv.aat4858
+
+Feng, X., Park, D.S., Walker, C. et al. A checklist for maximizing reproducibility of ecological niche models. Nat Ecol Evol 3, 1382–1395 (2019). https://doi.org/10.1038/s41559-019-0972-5
+
+Guisan, A., Thuiller, W., & Zimmermann, N. E. (2017). Predictive species and habitat modeling in landscape ecology: Concepts and applications. Cambridge University Press. https://doi.org/10.1017/9781139028271
+
+Kass, J.M., Pinilla-Buitrago, G.E., Paz, A., Johnson, B.A., Grisales-Betancur, V., Meenan, S.I., Attali, D., Broennimann, O., Galante, P.J., Maitner, B.S., Owens, H.L., Varela, S., Aiello-Lammens, M.E., Merow, C., Blair, M.E. and Anderson, R.P. (2023), wallace 2: a shiny app for modeling species niches and distributions redesigned to facilitate expansion via module contributions. Ecography, 2023: e06547
+
 Kramer-Schadt, S., Niedballa, J., Pilgrim, J.D., Schröder, B., Lindenborn, J., Reinfelder, V., Stillfried, M., Heckmann, I., Scharf, A.K., Augeri, D.M., Cheyne, S.M., Hearn, A.J., Ross, J., Macdonald, D.W., Mathai, J., Eaton, J., Marshall, A.J., Semiadi, G., Rustam, R., Bernard, H., Alfred, R., Samejima, H., Duckworth, J.W., Breitenmoser-Wuersten, C., Belant, J.L., Hofer, H. and Wilting, A. (2013), The importance of correcting for sampling bias in MaxEnt species distribution models. Diversity Distrib., 19: 1366-1379. https://doi.org/10.1111/ddi.12096
 
 Peterson, A., Soberón, J., G. Pearson, R., Anderson, R., Martínez-Meyer, E., Nakamura,M., y Araújo, M. (2011) Ecological Niches and Geographic Distributions, tomo 49.  360 pp.
 
 Velásquez-Tibata,  J. I., Olaya-Rodríguez, M. H., López-Lozano, D. F., Gutierrez, C., Gonzales, I., & Londoño-Murcia, M. C. 2019. Biomodelos: a collaborative online system to map species distributions. Plos One, 14(3), e0214522.  https://doi.org/10.1371/journal.pone.0214522
+
+Zurell, D., Franklin, J., König, C., Bouchet, P.J., Dormann, C.F., Elith, J., Fandos, G., Feng, X., Guillera-Arroita, G., Guisan, A., Lahoz-Monfort, J.J., Leitão, P.J., Park, D.S., Peterson, A.T., Rapacciuolo, G., Schmatz, D.R., Schröder, B., Serra-Diaz, J.M., Thuiller, W., Yates, K.L., Zimmermann, N.E. and Merow, C. (2020), A standard protocol for reporting species distribution models. Ecography, 43: 1261-1277. https://doi.org/10.1111/ecog.04960
 
 ### Packages
 
@@ -252,9 +262,5 @@ Simon Urbanek (2021). rJava: Low-Level R to Java Interface. R package version 1.
 
 Wilfried Thuiller, Damien Georges, Maya Gueguen, Robin Engler and Frank Breiner (2021). biomod2: Ensemble Platform for Species Distribution Modeling. R package version 3.5.1. https://CRAN.R-project.org/package=biomod2
 
-Zizka A, Silvestro D, Andermann T, Azevedo J, Duarte Ritter C, Edler D, Farooq H, Herdean
-A, Ariza M, Scharn R, Svanteson S, Wengstrom N, Zizka V, Antonelli A (2019).
-“CoordinateCleaner: standardized cleaning of occurrence records from biological collection
-databases.” _Methods in Ecology and Evolution_, -7. doi: 10.1111/2041-210X.13152 (URL:
-https://doi.org/10.1111/2041-210X.13152), R package version 2.0-18, <URL:
+Zizka A, Silvestro D, Andermann T, Azevedo J, Duarte Ritter C, Edler D, Farooq H, Herdean A, Ariza M, Scharn R, Svanteson S, Wengstrom N, Zizka V, Antonelli A (2019). “CoordinateCleaner: standardized cleaning of occurrence records from biological collection databases.” _Methods in Ecology and Evolution_, -7. doi: 10.1111/2041-210X.13152 (URL: https://doi.org/10.1111/2041-210X.13152), R package version 2.0-18, <URL:
 https://github.com/ropensci/CoordinateCleaner>.
