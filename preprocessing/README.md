@@ -23,12 +23,20 @@ Required Libraries and Their Versions for Each Indicator. Ensure you have the ex
 "openxlsx"
 ```
 
+2. Spatial Bias Layer Generation from Target Group Sampling (TGS) Data
+
+```
+library(dplyr)
+library(sf)
+library(raster)
+```
+
 ## How to Run
 
 ### Independent Codes
 
  - [download_occurrences_biomodelos.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/download_occurrences_biomodelos.R)
- - [bias_layer.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/bias_layer.R)
+ - [bias_layer_generation_from_TGS.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/bias_layer_generation_from_TGS.R)
  - [move_river_occurrences.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/move_river_occurrences.R)
  
 
@@ -45,3 +53,6 @@ You can obtain the results of each code independently by following these steps:
 
 This R script is designed to download and process species records from the BioModelos MongoDB database. It utilizes several R packages specialized in data manipulation and database connections. The process begins with loading these packages and reading a list of species from a CSV file. Subsequently, connections are established to the species and records collections in BioModelos MongoDB. A function (RetrieveSpRecords) is defined to retrieve occurrence records of the species from the database. The script then iterates over the species list, using this function to obtain the records and store them in a list. The complete records are combined into a single DataFrame and saved in a CSV file. Finally, the data is filtered to remove records identified as erroneous or problematic by BioModelos experts, and the filtered result is saved in another CSV file. This process ensures efficient collection and cleaning of species occurrence data from a structured data source.
 
+#### [Spatial Bias Layer Generation from Target Group Sampling (TGS) Data](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/bias_layer_generation_from_TGS.R)
+
+This code is developed to create a bias layer from a Target Group Sampling (TGS) dataset, a common approach in ecological modeling and species distribution analysis. The script leverages spatial and statistical techniques to integrate occurrence data with ecological regions and environmental variables. This workflow exemplifies best practices in spatial ecology and contributes to advancing understanding and conservation efforts for biodiversity and ecosystem management.
