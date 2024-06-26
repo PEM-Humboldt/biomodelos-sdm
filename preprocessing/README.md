@@ -31,13 +31,22 @@ library(sf)
 library(raster)
 ```
 
+3. Spatial Relocation of Species Occurrences Around Aquatic Basins Using Raster Analysis
+
+```
+library(data.table)  
+library(sf)          
+library(terra)      
+library(dplyr)  
+```
+
 ## How to Run
 
 ### Independent Codes
 
  - [download_occurrences_biomodelos.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/download_occurrences_biomodelos.R)
  - [bias_layer_generation_from_TGS.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/bias_layer_generation_from_TGS.R)
- - [move_river_occurrences.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/move_river_occurrences.R)
+ - [species_occurrence_river_relocation.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/species_occurrence_river_relocation.R)
  
 
 You can obtain the results of each code independently by following these steps:
@@ -55,4 +64,9 @@ This R script is designed to download and process species records from the BioMo
 
 #### [Spatial Bias Layer Generation from Target Group Sampling (TGS) Data](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/bias_layer_generation_from_TGS.R)
 
-This code is developed to create a bias layer from a Target Group Sampling (TGS) dataset, a common approach in ecological modeling and species distribution analysis. The script leverages spatial and statistical techniques to integrate occurrence data with ecological regions and environmental variables. This workflow exemplifies best practices in spatial ecology and contributes to advancing understanding and conservation efforts for biodiversity and ecosystem management.
+This code is developed to create a bias layer from a Target Group Sampling (TGS) dataset, a common approach in ecological modeling and species distribution analysis. The script leverages spatial and statistical techniques to integrate occurrence data with ecological regions and environmental variables. In MaxEnt modeling using R, integrating a bias layer is a method to mitigate the effects of sampling biases inherent in species occurrence data. This layer enables adjustments that account for uneven sampling effort across landscapes, ensuring that model predictions more accurately reflect true species distributions. By correcting spatial biases and incorporating additional environmental context such as habitat suitability or anthropogenic influences, the bias layer enhances the robustness and reliability of MaxEnt models.
+
+#### [Spatial Relocation of Species Occurrences Around Aquatic Basins Using Raster Analysis](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/species_occurrence_river_relocation.R)
+
+The workflow facilitates the spatial adjustment of species occurrence records around aquatic basins using raster analysis techniques in R. This script is designed to integrate CSV data with raster templates, enabling the precise relocation of species points based on specified buffer distances from water bodies. Such spatial refinement is crucial for ecological studies aiming to accurately map species distributions and understand their environmental associations. By ensuring that species occurrences align with their ecological contexts, the script supports rigorous scientific research into distribution biodiversity patterns and habitat suitability assessments.
+
