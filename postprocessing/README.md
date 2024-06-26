@@ -88,7 +88,6 @@ Codes that are interlinked to produce comprehensive results. Follow these steps 
 
  - [future_ensemble.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/future_ensemble.R)
  - [calculate_future_refugia.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/calculate_future_refugia.R)
- - [future_ensemble_continuo.R](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/future_ensemble_continuo.R)
 
 1. Open the R folder.
 2. Open the files containing both interconnected codes.
@@ -103,6 +102,8 @@ Ensembling climate change scenarios involves aggregating multiple projections de
 
 
 #### [Calculate Future Climatic Refugia](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/calculate_future_refugia.R)
+
+This code focuses on constructing climate refugia, which are areas where environmental conditions are projected to be suitable in both current and future climate scenarios. The function accesses climate model ensembles for different future periods, generating raster maps that depict projected environmental conditions. These maps are compared with current data to pinpoint areas where environmental conditions consistently meet suitability criteria across present and future climate scenarios. This binary approach aids in categorizing areas as potential climate refugia based on specific thresholds of environmental suitability.
 
 #### Group 2: model statistics for BioModelos platform and Atlas  
 
