@@ -1,7 +1,6 @@
-# Automated Metadata Generation for Species Modeling Results
+# Auto Metadata Generation for Species Distribution Models
 
-# METADATA BETA VERSION 4
-# October 2022 to XXX 2023
+# Update date: November 2023
 
 # Load Libraries
 # Required libraries for executing the script.
@@ -13,26 +12,27 @@ library(xlsx)
 # Get Prerequisites
 
 # Load a reference map in case the model is not projected to the biomodelos extent.
-biomodelos_template <- raster::raster("data/raster_template.tif")
+biomodelos_template <- raster::raster(".../postprocessing/data/raster_template.tif")
 
 # Load the metadata template
-meta_template <- read.csv("data/metada_template.csv")
+meta_template <- read.csv(".../postprocessing/data/metada_template.csv")
 
-# Define the taxon for metadata generation
-taxon <- "JBM"
+# Define the taxon for metadata generation, it is used to search model folder
+taxon <- "name_of_the_taxon_or_agenda"
+# example: taxon <- "aves_endemicas"
 
 # Define the directory containing the folders from the bio2_routine
 dirmodels <- taxon
 
 # Create a directory for storing metadata and moved model tifs
-tmp <- paste0(taxon, "_2")
+tmp <- paste0(taxon, "_processed")
 dir.create(tmp)
 dirtowrite <- tmp
 
 # Define the current date
 dates <- Sys.Date() %>% as.character()
 
-source("R/make_models_metadata_functions.R")
+source(".../postprocessing/R/make_models_metadata_functions.R")
 
 a <- auto_metadata(dirmodels = dirmodels, dirtowrite = dirtowrite,
                    meta_template = meta_template, algos = "MAXENT", 
@@ -43,13 +43,3 @@ a <- auto_metadata(dirmodels = dirmodels, dirtowrite = dirtowrite,
 write.xlsx(a, file = paste0(dirtowrite, "/_metadata_", taxon,"_", dates, ".xlsx"),
            sheetName= "metadata", append= FALSE,
            showNA = FALSE, row.names = F)
-
-
-# b <- auto_metadata_invemar(dirmodels = dirmodels, dirtowrite = dirtowrite, fut_proj = F,
-#                            dates = dates, bm_umbral = 30, 
-#                            df_umbrales = "C:/humboldt/miscelanea/Invemar_areas_interes/umbrales.csv")
-# 
-# 
-# write.xlsx(b, file = paste0(dirtowrite, "/_metadata_b", dates, ".xlsx"),
-#            sheetName= "metadata", append= FALSE,
-#            showNA = FALSE, row.names = F)

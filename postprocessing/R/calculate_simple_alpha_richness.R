@@ -1,5 +1,7 @@
 # Progressive Accumulation of Raster Data for Total Richness Calculation
 
+# Update date: june 26 2024
+
 # This R script incrementally accumulates raster data from TIFF files to calculate total richness. 
 # It processes raster files in a loop, summing cell values and periodically saving the accumulated 
 # result. This approach enables efficient handling of large spatial datasets, particularly on 

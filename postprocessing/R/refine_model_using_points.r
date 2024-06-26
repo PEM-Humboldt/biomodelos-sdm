@@ -1,16 +1,24 @@
- # species distribution maps were refined following the Occurrences-based threshold restriction (OBR) 
- # approach (Mendes et al. 2020). This approach involves overlaying the binary distribution map without 
- # spatial constraints onto species occurrence records, and then selecting only the potential distribution 
- #  areas supported by concrete evidence of the species' presence. This method operates under the assumption 
- #that suitable patches that overlap with species occurrences are more likely to be components of species 
- # distributions, in contrast to suitable patches that do not intersect with any occurrences (Mendes et al. 2020).
+#' Refine Species Distribution Model Points
+#'
+#' Refines a species distribution model by overlaying occurrence points, ensuring spatially constrained distribution patches
+#' using observed occurrences
+#' 
+#' map, Raster: Binary distribution map to refine.
+#' sp.points, SpatialPointsDataFrame: Species occurrence points.
+#'
+#' return Raster object representing the refined distribution map.
+#'
+#' references
+#' Mendes et al. (2020). Occurrences-based threshold restriction (OBR) approach for refining species
+#' distribution maps.
+
 
 library(stringr)
 library(terra)
 library(sf)
 library(dplyr)
 
-refine_model_points <- function(map, sp.points) {
+refine_model_using_occurrences <- function(map, sp.points) {
   tmp.mask <- map >= 0
   map[map == 0] <- NA
   
@@ -32,3 +40,4 @@ refine_model_points <- function(map, sp.points) {
   
 
 }
+

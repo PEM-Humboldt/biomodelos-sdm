@@ -1,6 +1,28 @@
+#' auto_metadata()
+#'
+#' This function automates the generation of metadata for species distribution models (SDMs) by filling a 
+#' template with relevant information from model outputs.
+#'
+#' dirmodels Character. Path to the directory containing model output folders.
+#' dirtowrite Character. Path to the directory where metadata and other outputs will be written.
+#'
+#' meta_template, Data frame: Template for metadata that will be filled with information.
+#' algos, Character vector: Algorithms used for modeling (e.g., "MAXENT", "bioclim").
+#' fut_proj, Logical: Whether future projections are included (default is TRUE).
+#' Date, Character string: format "yyyy-mm-dd" indicating when the models were generated.
+#' transf_ext, Logical: Whether to transform extents (default is FALSE).
+#' ext_template, Raster: Template for the extent transformation (default is NULL).
+#' crs_project, CRS: Coordinate reference system for projection (default is NULL).
+#' authors, Character vector: Authors of the models (default is NULL).
+#'
+#' return Data frame containing the filled metadata template for each species.
+#' 
+#' examples
+#' auto_metadata("path/to/models", "path/to/write", template, c("MAXENT", "bioclim"), TRUE, "2023-06-26")
+
 auto_metadata <- function(dirmodels, dirtowrite, meta_template, algos, fut_proj = T, 
                           dates, transf_ext = FALSE, ext_template = NULL, 
-                          crs_project = NULL, images_BM = T, authors = NULL) {
+                          crs_project = NULL, authors = NULL) {
   
   # each directory must represent a species, so, how many species do we have?
   sps <- list.dirs(paste0(dirmodels, "/"), full.names = F, recursive = F)
@@ -269,11 +291,23 @@ auto_metadata <- function(dirmodels, dirtowrite, meta_template, algos, fut_proj 
 }
 
 #----------------------------------------------
-# auxiliary compare extent
+#' Compare Extents Between Raster and Vector
+#'
+#' This function compares the extent of a raster object with a vector extent to determine if they are the same.
+#'
+#' a, Raster: Raster object whose extent is to be compared.
+#' b, Numeric vector: Vector representing the extent to compare against.
+#' 
+#' return List containing the result of extent comparison (logical) and the direction of difference (character).
+#'
+#' examples
+#' equal.extent(raster_object, c(-83, -60, -14, 13))
+
+
 
 equal.extent <- function(a, b) { # a must be  a raster and b a vector extent
   
-  # to experiment
+  # to debug
   # a <- biomodelos.ext <- c(-83, -60, -14, 13)
   # b <- biomodelos.ext <- c(-83, -60, -14, 13)
   
@@ -313,7 +347,21 @@ equal.extent <- function(a, b) { # a must be  a raster and b a vector extent
 }
 
 #-----------------------------------------
-#
+#' Equalize Extents of Raster Data
+#'
+#' This function adjusts the extent of a raster based on comparison results from `equal.extent()` function 
+#' and a target extent (\code{biomodelosext}).
+#'
+#' equal.1, Logical: Indicates if extents are already equal.
+#' equal.2, Character: Direction of extent adjustment ("b>a" or "a>b").
+#' ras, Raster: Raster object to adjust extents for.
+#' folder.sp, Character: Folder path for saving temporary files.
+#' biomodelosext, Numeric vector: Target extent to adjust the raster to.
+#' 
+#' return Adjusted raster object with modified extent.
+#' 
+#' examples
+#' equalize.extents(TFALSE, "b>a", ras_object, "path/to/folder", c(-83, -60, -14, 13))
 
 equalize.extents <- function(equal.1, equal.2, ras, folder.sp, biomodelosext = biomodelos.ext) {
   if (equal.1 == TRUE) {

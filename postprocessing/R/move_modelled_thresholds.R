@@ -1,20 +1,27 @@
-# March 2nd, 2022
+#' Move Modelling Thresholds
+#'
+#' Function to move threshold layers and associated model records from one directory to another.
+#'
+#' This function moves model result files (threshold layers and optional occurrence records) from
+#' one directory (`from`) to another (`to`). It searches for specific model outputs based on the `bin_threshold`
+#' pattern and `model` algorithm within the `from` directory. If `move_occs` is TRUE, it also moves associated
+#' occurrence files from the `from` directory.
+#'
+#' species, Character: vector specifying the species name.
+#' from, Character: path to the directory containing the model result files.
+#' bin_threshold, Character: specifying the bin threshold pattern to match in file names.
+#' to, Character: path to the destination directory where files will be moved.
+#' time, Character: specifying the time period ("current" or "future") of the models.
+#' model, Character: specifying the model algorithm (default is "MAXENT").
+#' move_occs, Logical: indicating whether to move occurrence files along with thresholds (default is TRUE).
+#'
+#' return A data frame indicating success or failure of moving the files for each species.
 
-# Libraries
 library(stringr)
 library(dplyr)
 library(data.table)
 
-# mov_thresholds: Function to move threshold layers
-
-# species, character: name of the species to extract its threshold layers
-# from, character: directory path where result files of the modeling process are located
-# to, character: directory path to move threshold layers and records used for model calibration and testing
-# time, character: time of the models, either "current" or "future"
-# model, character: algorithm from which prediction layers are to be extracted
-# move_occs, logical: whether to move occurrence files along with thresholds
-
-mov_thresholds <- function(species, from, bin_threshold, to, time, model = "MAXENT",
+move_modelled_thresholds <- function(species, from, bin_threshold, to, time, model = "MAXENT",
                            move_occs = TRUE){
   
   if(file.exists(paste0(from, "/log_file.txt"))){
@@ -28,7 +35,7 @@ mov_thresholds <- function(species, from, bin_threshold, to, time, model = "MAXE
       
       dirs_in <- list.dirs(from, full.names = TRUE, recursive = FALSE)
       
-      # searching models
+      # Searching models
       index_ensembles <- grep(pattern = "ensembles", x = dirs_in)
       dir_ensamble <- dirs_in[index_ensembles]
       
@@ -41,7 +48,7 @@ mov_thresholds <- function(species, from, bin_threshold, to, time, model = "MAXE
       
       index_occs <- grep(pattern = "occurrences", x = dirs_in)
       
-      # searching occurrences
+      # Searching occurrences
       if(length(index_occs) > 0){
         if(time != "current"){
           to <- file.path(to, species)
@@ -69,46 +76,35 @@ mov_thresholds <- function(species, from, bin_threshold, to, time, model = "MAXE
   message(paste0(species, " log file was not found"))
 }
 
-# Directories and Species Run
 
-target <- "bees_flowers/"
+# List of species to extract
+
+target <- "folder_where_is_located_species_folders"
 spsSmall <- list.dirs(file.path(getwd(), target), recursive = FALSE, full.names = FALSE) %>% 
   gsub(pattern = "\\.", replacement = "_")
 sps <- list.dirs(file.path(getwd(), target), recursive = FALSE, full.names = TRUE)
 
-# Exercise 1: Move thresholds of all species run
+# Exercise 1: Move only 10 percentile current threshold without moving occurrences
 
 data_moved <- list() 
 for(i in 1:length(spsSmall)){
-  data_moved[[i]] <- mov_thresholds(species = spsSmall[i], from = sps[i], bin_threshold = "_10",
+  data_moved[[i]] <- move_modelling_thresholds(species = spsSmall[i], from = sps[i], bin_threshold = "_10",
                                     time = "current", to = file.path(getwd(), "thresholds_10"),
                                     move_occs = FALSE
   )
 }
 df_moved <- do.call(rbind, data_moved)
 
-write.csv(df_moved, "DM_13122021_mix_threshold_20.csv", row.names = FALSE)
-
-# Exercise 2: Move thresholds of specific species run
-
-## List of species to extract
-invasive_species <- fread("species_layers/invasives_01032022/Exotic_List_Final.csv") %>% 
-  as.data.frame() %>% dplyr::select(., acceptedNameUsage) %>% unlist() %>% 
-  gsub(pattern = " ", replacement = "_")
-
-index <- which(spsSmall %in% invasive_species == TRUE)
-
-sps <- sps[index]
-spsSmall <- spsSmall[index]
+# Exercise 2: Move all future thresholds moving occurrences (note nested for loop)
 
 thresholds <- c("_0", "10", "20", "30")
 
 data_moved <- list() 
 for(i in 1:length(spsSmall)){
   for(a in 1:length(thresholds)){
-    data_moved[[i]] <- mov_thresholds(species = spsSmall[i], from = sps[i], 
+    data_moved[[i]] <- move_model_results(species = spsSmall[i], from = sps[i], 
                                       bin_threshold = thresholds[a], time = "future", 
-                                      to = file.path(getwd(), "species_layers/invasives_01032022/"),
+                                      to = file.path(getwd()),
                                       move_occs = TRUE)  
   }
 }

@@ -1,58 +1,54 @@
-# Description:
-#   calculate_future_refugia  calculates future climatic refugia based on present and future distribution projections 
-#   raster data in tif format. It takes an input folder folder_in containing the raster files and saves the results to 
-# an output folder folder_out.
-# 
-# Arguments:
-#   
-# folder_in: The path to the input folder containing the raster files.
-# folder_out: The path to the output folder where the results will be saved.
-# algo (optional): The algorithm used for calculating refuges. The default value is "MAXENT".
-# threshold (optional): The threshold used for raster classification. The default value is 10.
+#' Calculate Future Climatic Refugia
+#'
+#' calculate_future_refugia_bin() function calculates future climatic refugia based on present and future
+#' distribution projections in raster data (tif format). It takes an input folder containing the raster
+#' files and saves the results to an output folder.
+#'
+#' folder_in, character: The path to the input folder containing the raster files.
+#' folder_out The path to the output folder where the results will be saved.
+#' algo, character (optional): The algorithm used for calculating refuges. Default is "MAXENT".
+#' threshold, character (optional): The threshold used for raster classification. Default is 10.
+#' refine, Logical: indicating whether to refine the model using occurrence points. Default is TRUE.
+#' shp_to_mask, character (optional): Path to a shapefile used for masking. Default is "data/Colombia_FINAL_wwgs84.shp".
+#' uncertainty, Logical: indicating whether to calculate uncertainty. Default is FALSE.
+#'
+#' details
+#' This function uses the threshold value to construct a search pattern in the raster file names. It loads
+#' current and future rasters from the specified paths in the input folder. It performs raster classification
+#' using a classification matrix `m`. If `refine` is TRUE, it refines the current rasters using
+#' occurrence points. It masks future rasters using current rasters, calculates the sum of current and future
+#' rasters to obtain the number of refugia, and saves the results in the specified output folders.
+#'
+#' return
+#' The function does not explicitly return a value but saves the output rasters in the specified folder_out.
+#'
+#' examples
+#' calculate_future_refugia_bin(folder_in = "path_to_input_folder", folder_out = "path_to_output_folder",
+#'                             algo = "MAXENT", threshold = 10, refine = TRUE,
+#'                             shp_to_mask = "path_to_shapefile", uncertainty = FALSE)
+#'
+#' import stringr terra sf dplyr
+#' importFrom parallel makeCluster clusterEvalQ clusterExport stopCluster
+#' 
+#'
+#' seealso: refine_model_using_occurrences
+#'
+#' references:
+#' Brambilla, M., Rubolini, D., Appukuttan, O., Calvi, G., Karger, D. N., Kmecl, P., Mihelič, T., Sattler, T., Seaman, B., 
+#' Teufelbauer, N., Wahl, J., y Celada, C. (2022). Identifying climate refugia for high-elevation Alpine birds under current
+#' climate warming predictions. Global Change Biology, 28, 4276– 4291. https://doi.org/10.1111/gcb.16187
+#' Araújo, M. B., y New, M. (2007). Ensemble forecasting of species distributions. Trends in ecology & evolution, 22(1), 42-47.
 
-# Details:
-#   
-#   The function uses the threshold value to construct a search pattern in the raster file names.
-# It loads the current and future rasters from the specified paths in the input folder.
-# Performs raster classification using a classification matrix m.
-# Applies a mask to the future rasters using the current rasters.
-# Calculates the sum of the current and future rasters to obtain the number of refugees.
-# Saves the current rasters and future refugee rasters in the corresponding output folders.
-#
-# Return Value:
-#   The function does not explicitly return a value, but it saves the output rasters in the specified folders.
-#
 
 library(stringr)
 library(terra)
 library(sf)
 library(dplyr)
 
-refine_model_points <- function(map, sp.points) {
-  tmp.mask <- map >= 0
-  map[map == 0] <- NA
-  
-  map.patch <- suppressWarnings(terra::as.polygons(map, na.rm = TRUE) |> st_as_sf() |> st_cast("POLYGON"))
-  pts <- suppressWarnings(st_as_sf(sp.points, coords = c("X", "Y"), crs = "+proj=longlat +datum=WGS84"))
-  map.patch <- suppressWarnings(map.patch[pts,] |> terra::vect())
-  
-  map.raster <- suppressWarnings(rast(map.patch, nrows = nrow(tmp.mask), ncols = ncol(tmp.mask), res = res(tmp.mask), 
-                                      ext = ext(map)))
-  values(map.raster) <- NA
-  map.raster[map.patch] <- 1
-  terra::crs(map.raster) <- terra::crs(map)
-  names(map.raster) <- names(map)
-  
-  return(map.raster)
-  
-  rm(map, map.patch, pts)
-  invisible(gc())
-  
-
-}
+source(".../postprocessing/R/refine_model_using_occurrences.R")
 
 calculate_future_refugia_bin <- function(folder_in = spp[1], folder_out, algo = "MAXENT", threshold = 10, refine = T,
-                                         shp_to_mask = "data/Colombia_FINAL_wwgs84.shp", uncertainty = F) {
+                                         shp_to_mask = ".../modelling/Data/Colombia_FINAL_wwgs84.shp", uncertainty = F) {
   
   message(folder_in)
   
@@ -91,7 +87,7 @@ calculate_future_refugia_bin <- function(folder_in = spp[1], folder_out, algo = 
       occ_ <- dplyr::select(occ_, cols_exist)
       occ_ <- occ_ %>%
         rename(X = all_of(cols_exist[1]), Y = all_of(cols_exist[2]))
-      rasters_current <- refine_model_points(map = rasters_current, sp.points = occ_)
+      rasters_current <- refine_model_using_occurrences(map = rasters_current, sp.points = occ_)
       message("refine [step 1]")
     }
     
@@ -205,63 +201,17 @@ calculate_future_refugia_bin <- function(folder_in = spp[1], folder_out, algo = 
   unlink(paste0(folder_in, "/Temp"), recursive = T, force = T)
 }
 
-data_ <- list.files("postprocesamiento/refugios_2030/presente/", pattern = ".tif")
-data_ <- stringr::str_split(string = data_, pattern = "_", simplify = T )
-data_ <- paste0(data_[ , 1], ".", data_[ , 2])
-write.csv(data_, "spp_procesed_29062023.csv", row.names = F)
-
-spp <- as.character()
-
 # Plantas: hecho a 28062023
-spp_i <- list.dirs("M:/BioModelos_4k_2022-2023/plantas/", full.names = F, recursive = F)
-spp_i <- paste0("M:/BioModelos_4k_2022-2023/plantas/", spp_i)
-spp <- c(spp, spp_i)
+spp <- list.dirs("path_to_models", full.names = T, recursive = F)
 
-# peces
-spp_i <- list.dirs("N:/peces/", full.names = F, recursive = F)
-spp_i <- paste0("N:/peces/", spp_i)
-spp <- c(spp, spp_i)
-
-# aves
-spp_i <- list.dirs("N:/aves/", full.names = F, recursive = F)
-index <- !(spp_i %in% data_)
-spp_i <- spp_i[index]
-spp_i <- paste0("N:/aves/", spp_i)
-spp <- c(spp, spp_i)
-
-# mamiferos
-spp_i <- list.dirs("N:/mamiferos/", full.names = F, recursive = F)
-index <- !(spp_i %in% data_)
-spp_i <- spp_i[index]
-spp_i <- paste0("N:/mamiferos/", spp_i)
-spp <- c(spp, spp_i)
-
-# squamata
-spp_i <- list.dirs("N:/squamata/", full.names = F, recursive = F)
-index <- !(spp_i %in% data_)
-spp_i <- spp_i[index]
-spp_i <- paste0("N:/squamata/", spp_i)
-spp <- c(spp, spp_i)
-
-# crocodilia/reptilia
-spp_i <- list.dirs("N:/crocodylia_reptilia/", full.names = F, recursive = F)
-index <- !(spp_i %in% data_)
-spp_i <- spp_i[index]
-spp_i <- paste0("N:/crocodylia_reptilia/", spp_i)
-spp <- c(spp, spp_i)
-
-# anfibios
-spp_i <- list.dirs("N:/anfibios/", full.names = F, recursive = F)
-spp_i <- paste0("N:/anfibios/", spp_i)
-spp <- c(spp, spp_i)
-
-
-indexStop <- which(spp == "M:/WW/Dalechampia.dioscoreifolia")
+# sequential processing
 
 invisible(lapply(X = spp, FUN = function(X){calculate_future_refugia_bin(folder_in = X, 
                         folder_out = "G:/BioModelos_4k2022-2023/postprocesamiento/peces", 
                         threshold = 10, refine = T)}))
 
+
+# parallel processing
 
 library(parallel)
 
