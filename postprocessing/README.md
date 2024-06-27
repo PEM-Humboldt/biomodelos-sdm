@@ -11,20 +11,18 @@ This section plays a crucial role in biomodelos-sdm project pipeline, where we r
 
 ## How to Run
 
-## Code to transform species distribution models
-
-### Richness calculation from species distribution models
-
-[Progressive Accumulation of Raster Data for Total Richness Calculation](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/calculate_simple_alpha_richness.R)
-
-This R script performs the progressive accumulation of raster data from TIFF files in a specified directory. During the loop, the cell values of each file are loaded and summed, accumulating them into a total raster. Every 100 iterations or at the last iteration, the accumulated raster is saved to a new TIFF file, memory is cleaned, and the accumulated result is reloaded as the new base raster. At the end of the loop, a graph of the accumulated raster is generated and the final result is saved in a TIFF file with a specific name. This approach aims to calculate the total richness of raster data incrementally, facilitating the processing of large spatial datasets on **computers with low processing power and a massive number of raster surfaces to process**. This function must be used using one raster per species.
-
-You can obtain the results of this code by following these steps:
+You can obtain the results of these code by following these steps:
 
 1. Open the R folder.
 2. Open the file corresponding to the code you wish to run.
 3. Follow the execution instructions provided within the code file itself. This might include configuring specific parameters or loading required data.
 4. Run the code.
+
+## Code to transform species distribution models
+
+### [Richness calculation from species distribution models](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/calculate_simple_alpha_richness.R)
+
+This R script performs the progressive accumulation of raster data from TIFF files in a specified directory. During the loop, the cell values of each file are loaded and summed, accumulating them into a total raster. Every 100 iterations or at the last iteration, the accumulated raster is saved to a new TIFF file, memory is cleaned, and the accumulated result is reloaded as the new base raster. At the end of the loop, a graph of the accumulated raster is generated and the final result is saved in a TIFF file with a specific name. This approach aims to calculate the total richness of raster data incrementally, facilitating the processing of large spatial datasets on **computers with low processing power and a massive number of raster surfaces to process**. This function must be used using one raster per species.
 
 ### Future refugia from ensembles of predicted species distribution models 
 
