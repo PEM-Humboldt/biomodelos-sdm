@@ -1,4 +1,4 @@
-#Ajustado por: Cristian Cruz Rodríguez 01-08-2923
+#Ajustado por: Cristian Cruz Rodríguez 01-08-2023
 
 
 ##  ----------------  CALCULO DE ESTADISTICAS PARA BIOMODELOS--------------------------------
@@ -24,9 +24,13 @@ library(raster)
 library(dismo)
 library(rgeos)
 library(red)
+library(dplyr)
+library(data.table)
+library(geodata)
+library(ConR)
 
 # Cargar capas y scripts
-setwd('I:/BioModelos')
+setwd('.../biomodelos-sdm/postprocessing/Ediciones_BioModelos')
 
 source('Rutinas/Funciones/stats_SDM_V2withCLC.R')
 
@@ -39,19 +43,22 @@ load(paste0(var, 'redSinInfo201709.RData'))
 load(paste0(var, 'redBosqueAll201709.RData'))
 load(paste0(var, 'protAreaTif.RData'))#stack de AP
 load(paste0(var, 'Escenarios201708.RData'))
-load(paste0(var, 'hfp&Min.RData'))#stack de hfp y titMin
+load(paste0(var, 'hfp_Min.RData'))#stack de hfp y titMin
+
+gadm_colombia <- gadm(country= "COL", level=0, path = getwd(), resolution = 1) %>% 
+  as("Spatial")
 
 header.met <- read.csv("Info_base/Indice_metadatosCLC.csv",header=T, sep=";")
 
 
-fold<-"Especies"
+fold<-"Especies/N2/"
 setwd(fold)
-files<-list.files('N2/', pattern = "veg.tif$",full.names=T)
+files<-list.files(getwd(), pattern = "veg.tif$",full.names=T)
 names<-sub("_veg.tif$","", files)
-names<-sub("N2/","", names)
+names<-sub(getwd(),"", names)
 
 sppPath<-data.frame(Species=names,File=files)
-sppRecords <- list.files("Records/", full.names = T) # Directorio de los archivos csv con los valores de registro o puntos geograficos 'records'
+sppRecords <- list.files(getwd(), full.names = T, pattern = "*.csv$") # Directorio de los archivos csv con los valores de registro o puntos geograficos 'records'
 sppPath$Rec_file <- paste0(sppRecords)
 
 #REVISAR QUE SOLO QUEDE EL NOMBRE DE LA ESPECIE (QUITAR SUFIJOS)
@@ -95,7 +102,7 @@ for(s in 1:length(names)){
   #CheckProjection(r = testN2, proj=proj)
   
   area.raster <- area(testN2)
-
+  
   # 2. Calcular el tamanno de ocurrencia de la espcie km2
   RangeSize <- EstimateRangeSize( r = testN2, area.raster = area.raster)
   
@@ -103,13 +110,13 @@ for(s in 1:length(names)){
   
   MCPRast <- PredictMcpRast( r = testN2, area.raster = area.raster, rast = rasts)
   #MCPRast<-list (ch.area = ch.area, ch = ch.pred)  
-
+  
   # 4. Minimo poligono convexo para Registros de especies
   cat('procesing eoo and aoo \n') 
   eoo <- PredictMcpRec(r = testN2, Proj_col = Proj_col, proj = proj, rast = rasts, s = s,  sppPath = sppPath) # se reemplazó por el resultado del prquete ConR
   
   # 5. Area de ocupacion (necesario para atlas, no para estadisticas de la plataforma BioModelos)
-  # aoo <- 0
+  aoo <- 0
   #AOO <- AOO.computing(testN2)
   
   # # 6. Habitat CLC
@@ -142,14 +149,18 @@ for(s in 1:length(names)){
   sppModel <- gsub('.tif', '', basename(as.character(sppPath[s, 2]))) # Conserva el nombre de la especie y el tipo de modelo, sí es concenso o nivel 2
   
   #Out data frames
-  metadata <- cbind.data.frame(sppModel, HabitatPercent, ForestPercentage, EscenariosBosquePorcentaje, MCPRast$ch.area, eoo$MCPrec_km2, aoo, RangeSize, ProtAreaRep)
+  metadata <- cbind.data.frame(sppModel, HabitatPercent, ForestPercentage, EscenariosBosquePorcentaje, MCPRast$ch.area, eoo, aoo, RangeSize, ProtAreaRep)
   threats <- cbind.data.frame(sppModel, HFPrint$Alto, HFPrint$Bajo, HFPrint$Medio, HFPrint$Natural, MinTitArea)
   metadata.all <- rbind(metadata.all, metadata)
   threats.all <- rbind(threats.all, threats)
   
 }
 
+
 colnames(metadata.all) <- colnames(header.met)
+
+# remove statRecsAOO
+metadata.all <- select(metadata.all, -statRecsAOO)
 
 #level 2
 write.csv(metadata.all,  paste0(spresult, 'stats_level2.csv'), row.names = F)
@@ -158,5 +169,52 @@ write.csv(threats.all, paste0 (spresult, 'stats_threats_level2.csv'), row.names 
 ####_______________________________________________________________________________________________________________________________________###
 ## Nota                                                                                                                                    ###  
 ## El numeroal  5. Area de ocupacion Se calculó con el paquete ConR, debido a que las funciones usadas ya no funcionan correctamente.      ###
-## El paquete conR ofrece cálculos que podrían intergrarse a esta rutina, en un mediano plazo                                              ###  
+## El paquete conR ofrece cálculos que podrían intergrarse a esta rutina, en un mediano plazo  
+## revisado y realizado: 25 de junio de 2024  
 ##_________________________________________________________________________________________________________________________________________###
+
+header.met2 <- read.csv("Info_base/Indice_metadatosN1.csv",header=T, sep=";")
+
+files<-list.files('Especies/N1/', pattern = "con.tif$",full.names=T)
+sppPath$potencial <- files
+metadata.potencial <- data.frame()
+
+for(s in 1:length(names)){
+  # s <- 1
+  #gc()
+  #memory.limit(size=100000)
+  #Generar capas solo para el primer registro
+  
+  testN1 <- raster(as.character(sppPath[s, 4]))
+  cat(s, '-', names[s], '\n')
+  
+  ## Funciones calculos estadisticas
+  # 1. Revisar que las proyecciones coinciden
+  #CheckProjection(r = testN2, proj=proj)
+  
+  area.raster <- area(testN2)
+  
+  # 2. Calcular el tamanno de ocurrencia de la espcie km2
+  RangeSize <- EstimateRangeSize( r = testN1, area.raster = area.raster)
+  
+  # 3. Minimo poligono convexo para Raster
+  
+  MCPRast <- PredictMcpRast( r = testN1, area.raster = area.raster, rast = rasts)
+  #MCPRast<-list (ch.area = ch.area, ch = ch.pred)  
+  
+  # 5. Area de ocupacion Se calculó con el paquete ConR
+  aoo <- AOO(r = testN2, Proj_col = Proj_col, proj = proj, rast = rasts, s = s,  sppPath = sppPath)
+  
+  sppModel <- gsub('.tif', '', basename(as.character(sppPath[s, 4]))) # Conserva el nombre de la especie y el tipo de modelo, sí es concenso o nivel 2
+  
+  #Out data frames
+  metadata <- cbind.data.frame(sppModel, aoo, MCPRast$ch.area, RangeSize)
+  metadata.potencial <- rbind(metadata.potencial, metadata)
+  
+}
+
+colnames(metadata.potencial) <- colnames(header.met2)
+
+#level 1
+write.csv(metadata.potencial,  paste0(spresult, 'stats_level1.csv'), row.names = F)
+

@@ -27,18 +27,18 @@ library(dplyr)
 
 # 1: prepare objects and load functions
 
-wd <- "path_to_working_directory"
+wd <- ".../biomodelos-sdm/postprocessing/Ediciones_BioModelos"
 # Example: wd <- "D:/humboldt/bm_ediciones_upload/actualizacion_carnivoros"
 
 # Set the working directory and load necessary raster files.
 setwd(wd)
 
 # load reference map
-ref.map <- raster("path_where_is_stored_Info_base/ref_map.tif")
+ref.map <- raster("Info_base/ref_map.tif")
 # Example: ref.map <- raster("D:/humboldt/biomodelos-sdm/postprocessing/Ediciones_BioModelos/Info_base/ref_map.tif")
 
 # Load the convert2PNG function and necessary parameters for the conversion process.
-ruta_funcion <- ("path_where_is_stored_function_convert2PNG.R_and_params.RData")
+ruta_funcion <- ("Rutinas/Funciones/")
 # Example: ruta_funcion <- ("D:/humboldt/biomodelos-sdm/postprocessing/Ediciones_BioModelos/Rutinas/Funciones/")
 
 source(paste0(ruta_funcion, "/convert2PNG.R"))
@@ -54,14 +54,14 @@ h <- 220
 
 # 2.1 prepare folders
 # path in where are stored tif models
-in.folder <- "path_to_statistics_models"
-# Example: in.folder <- "Extent/"
+in.folder <- "Especies/Statistics"
+
+output.folder <- getwd()
+
 sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = T)
 names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%  
   gsub('*.tif$', '', .)
 
-output.folder <- "path_to_save"
-# Example: output.folder <- "Extent/imagenes"
 
 # 2.2 Adjust the projection and extent of each raster to WGS84 and BioModelos standards:
 # Use if the TIFF files have a coordinate system different from WGS84 or if they have 
@@ -106,7 +106,7 @@ for (i in 1:length(sp.raster)) {
   # Use TRUE when the TIFF file contains NA, 0, and 1 values; use FALSE when
   # the TIFF only has NA and 1 values.
   
-  convert2PNG(rc, names[i], output.folder, colpal[vals[vals > 0]], FALSE, params, w, h)
+  convert2PNG(rc, names[i], in.folder, colpal[vals[vals > 0]], FALSE, params, w, h)
 }
 
 #-----------
@@ -115,7 +115,7 @@ for (i in 1:length(sp.raster)) {
 col.pal <- rgb(193, 140, 40, maxColorValue = 255)
 
 # path in where are stored tif models
-in.folder <- 'path_to_tif_N1'
+in.folder <- 'Especies/N1'
 # Example: in.folder <- "flujo_imagenes/"
 
 sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = F)
@@ -139,7 +139,7 @@ for (i in 1:length(sp.raster)) {
 col.pal <- rgb(138, 47, 95, maxColorValue = 255)
 
 # path in where are stored tif models
-in.folder <- 'path_to_tif_N2'
+in.folder <- 'Especies/N2'
 
 sp.raster <- list.files(in.folder, pattern = "*.tif$", full.names = F)
 names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%  
