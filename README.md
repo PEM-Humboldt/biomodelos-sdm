@@ -10,13 +10,13 @@ Current state: in development.
 This folder includes routines that produce layers and data necessaries to run ecological niche models. The first implementation correspond to the obtention of mask in GIS format to cut environmental layers.
 
 ### Modelling
-This folder includes functions and routines necessaries to run ecological niche models using Maxent. This routines represent the BioModelos backbone used to infer spatial distribution models.
+This folder includes functions and routines necessary to run ecological niche models using Maxent. These routines represent the BioModelos backbone used to infer spatial distribution models.
 
 ### Post-Processing
-This folder includes functions and routines proposed to clean ecological niche models and to obtain products based on the BioModelos such as spcies richness maps, vulnerability index and another which could be used as indicators.
+This folder includes functions and routines proposed to clean ecological niche models and to obtain products based on the BioModelos, such as species richness maps, vulnerability index, and others that could be used as indicators.
 
 ### Study-cases
-This folder includes functions and routines (Pre-processing, modelling, post-processing) modified to run models to specific cases or biological groups.
+This folder includes functions and routines (Pre-processing, modeling, post-processing) modified to run models to specific cases or biological groups. Other examples in Spanish and English are available online through the [Biodiversity and Climate Change website](https://proyectos.humboldt.org.co/cambioclimatico/en/developing-an-integrated-species-distribution-modelling-system-to-identify-complementary-conservation-areas-in-colombia/) 
 
 ## Authors and contact
 
