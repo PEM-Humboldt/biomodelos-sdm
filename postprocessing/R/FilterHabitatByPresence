@@ -66,7 +66,7 @@ FilterHabitatByPresence <- function(map, sp.points, namras = "output") {
 
 ### 🧪 Example: Simulating a Binary Raster with Intersecting Presence Points
 
-The following example demonstrates how to simulate a binary habitat raster and test the `CutModel2` function by selecting only the patch intersecting with species presence points.
+The following example demonstrates how to simulate a binary habitat raster and test the `FilterHabitatByPresence` function by selecting only the patch intersecting with species presence points.
 
 ```r
 # Set seed for reproducibility
