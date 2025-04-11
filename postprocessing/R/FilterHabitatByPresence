@@ -8,7 +8,6 @@
 # to reduce overprediction by limiting outputs to areas with confirmed presence.
 # Dependencies: terra 1.8-29
 
-library(terra)
 ```        
 library(terra)
       
@@ -27,12 +26,6 @@ library(terra)
 #' @return A SpatRaster with only habitat patches where presence points occur. All other cells are set to NA.
 #' @export
 #'
-#' @examples
-#' r <- rast(nrows=10, ncols=10, xmin=0, xmax=10, ymin=0, ymax=10)
-#' values(r) <- sample(c(0, 1), ncell(r), replace=TRUE, prob=c(0.7, 0.3))
-#' points_df <- data.frame(x = c(2.5, 5.5, 8.5), y = c(2.5, 5.5, 8.5))
-#' r_cut <- FilterHabitatByPresence(r, points_df)
-#' plot(r_cut)
 
 FilterHabitatByPresence <- function(map, sp.points, namras = "output") {
   # Ensure NA values are treated as absence (set to 0)
@@ -69,3 +62,37 @@ FilterHabitatByPresence <- function(map, sp.points, namras = "output") {
   
   return(result)
 }
+
+
+### 🧪 Example: Simulating a Binary Raster with Intersecting Presence Points
+
+The following example demonstrates how to simulate a binary habitat raster and test the `CutModel2` function by selecting only the patch intersecting with species presence points.
+
+```r
+# Set seed for reproducibility
+set.seed(42)
+
+# Simulate a binary raster (1 = habitat, 0 = non-habitat)
+r <- rast(nrows = 10, ncols = 10, xmin = 0, xmax = 10, ymin = 0, ymax = 10)
+values(r) <- sample(c(0, 1), ncell(r), replace = TRUE, prob = c(0.7, 0.3))
+
+# Plot the original raster
+plot(r, main = "Original Raster (habitat = 1)")
+
+# Extract coordinates of habitat cells (value == 1)
+hab_cells <- which(values(r) == 1)
+hab_coords <- xyFromCell(r, hab_cells)
+
+# Randomly select some coordinates to simulate presence points
+pres_coords <- hab_coords[sample(1:nrow(hab_coords), 3), ]
+points(pres_coords, col = "red", pch = 16)
+
+# Convert selected points to SpatVector
+presencias <- vect(pres_coords, type = "points", crs = crs(r))
+
+# Apply the FilterHabitatByPresence function to retain only patches with presence
+r_cut <- FilterHabitatByPresence(r, presencias)
+
+# Plot the resulting raster with only relevant patches
+plot(r_cut, main = "Result: Patches with Presence")
+points(pres_coords, col = "red", pch = 16)
