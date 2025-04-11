@@ -1,6 +1,6 @@
 # Postprocessing
 
-This section plays a crucial role in biomodelos-sdm project pipeline, where we refine and enhance the results obtained from our modeling and preprocessing efforts. The postprocessing phase is where we take the output of our models and apply a series of carefully designed steps to extract valuable insights, improve the quality of our data, and present our findings in a clear and meaningful manner. In this folder, you will find a collection of scripts, tools, and documentation dedicated to the postprocessing stage of our project. Our team has put in significant effort to develop methodologies that help us distill raw model outputs into refined outcomes that are ready for analysis, visualization, and further interpretation.
+This section plays a crucial role in biomodelos-sdm project pipeline, where we refine and enhance the results obtained from our modeling and preprocessing efforts. In the postprocessing phase, we take the output of our models and apply a series of carefully designed steps to extract valuable insights, improve the quality of our data, and present our findings clearly and meaningfully. In this folder, you will find a collection of scripts, tools, and documentation dedicated to the postprocessing stage of our project. Our team has made significant efforts to develop methodologies that help us distill raw model outputs into refined outcomes ready for analysis, visualization, and further interpretation.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ This section plays a crucial role in biomodelos-sdm project pipeline, where we r
 
 ## How to Run
 
-You can obtain the results of these code by following these steps:
+You can obtain the results of these codes by following these steps:
 
 1. Open the R folder.
 2. Open the file corresponding to the code you wish to run.
@@ -20,29 +20,23 @@ You can obtain the results of these code by following these steps:
 
 ## Code to reduce the overprediction in the species distribution models
 
-Filter habitat By Presences
-
-```        
-library(terra)
-      
-```
 #### [Filter habitat By Presences](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/species_occurrence_river_relocation.R)
 
 This R routine, implemented using the terra package, aims to retain only those habitat patches within a binary raster where the records support species presence. The function, named CutModel2, first transforms the input raster into a binary mask by treating all NA values as absent. It then identifies contiguous habitat patches using the patches function (with 8-cell neighborhood connectivity). The presence points provided are used to extract which patches they intersect. Only patches containing at least one presence point are retained, while all others are masked. The final output maintains the original values of the retained patches and is saved as a new .tif raster file. The latter part of the script includes simulated examples to test the function. The first example randomly generates a habitat raster and a set of presence points (some of which may fall outside the habitat), demonstrating how the function filters out non-relevant patches. The second example ensures the presence points fall within valid habitat cells, showing a successful case of patch selection. This routine is beneficial in ecological niche modeling or species distribution modeling when it is necessary to restrict predictions to areas with confirmed presence, thereby reducing overestimation and increasing the spatial accuracy of habitat suitability maps.
 
-#### Species richness and refugia maps 
+## Species richness and refugia maps 
 
 ### [Richness calculation from multi-stack species distribution models](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/calculate_simple_alpha_richness.R)
 
-This R script performs the progressive accumulation of raster data from TIFF files in a specified directory. During the loop, the cell values of each file are loaded and summed, accumulating them into a total raster. Every 100 iterations or at the last iteration, the accumulated raster is saved to a new TIFF file, memory is cleaned, and the accumulated result is reloaded as the new base raster. At the end of the loop, a graph of the accumulated raster is generated and the final result is saved in a TIFF file with a specific name. This approach aims to calculate the total richness of raster data incrementally, facilitating the processing of large spatial datasets on **computers with low processing power and a massive number of raster surfaces to process**. This function must be used using one raster per species.
+This R script performs the progressive accumulation of raster data from TIFF files in a specified directory. During the loop, the cell values of each file are loaded and summed, accumulating them into a total raster. Every 100 iterations or at the last iteration, the accumulated raster is saved to a new TIFF file, memory is cleaned, and the accumulated result is reloaded as the new base raster. At the end of the loop, a graph of the accumulated raster is generated, and the final result is saved in a TIFF file with a specific name. This approach aims to calculate the total richness of raster data incrementally, facilitating the processing of large spatial datasets on **computers with low processing power and a massive number of raster surfaces to process**. This function must be used using one raster per species.
 
 ### Future refugia from ensembles of predicted species distribution models 
 
-By running these scripts you will be able to find the areas of climatic stability or refugia according to the theoretical framework of Type 1, as outlined by Brambilla et al. (2022). Type 1 refugia are defined as locations that meet the criteria of being suitable across all projected time periods (eg., present, 2050, and 2070), indicating significant temporal persistence and being found exclusively in areas of climatic stability (in situ). Climatic refugia are sectors of species distribution that can be considered resistant to change and play a fundamental role in the survival of populations. These areas are currently suitable and are expected to remain suitable in the future. Therefore, they are being considered the most important places for species conservation, regardless of the period and future conditions (Brambilla et al. 2022).
+By running these scripts, you can find the areas of climatic stability or refugia according to the theoretical framework of Type 1, as outlined by Brambilla et al. (2022). Type 1 refugia are defined as locations that meet the criteria of being suitable across all projected time periods (eg., present, 2050, and 2070), indicating significant temporal persistence and being found exclusively in areas of climatic stability (in situ). Climatic refugia are sectors of species distribution that can be considered resistant to change and play a fundamental role in the survival of populations. These areas are currently suitable and are expected to remain suitable in the future. Therefore, they are considered the most important places for species conservation, regardless of the period and future conditions (Brambilla et al., 2022).
 
 #### [Future Ensemble Processing](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/future_ensemble.R)
 
-Ensembling climate change scenarios involves aggregating multiple projections derived from climate models to provide a comprehensive view of potential ecological impacts. This function processes raster data representing future climate conditions, utilizing either binary or continuous methods to derive insights. The binary method categorizes suitable habitats based on threshold values, while the continuous method calculates medians and standard deviations to assess ecological suitability. By integrating these approaches, the function addresses uncertainty and variability in climate projections. As it only works in biomodelos-sdm modelling results. *As it only works in biomodelos-sdm modelling results*.
+Ensembling climate change scenarios involves aggregating multiple projections from climate models to provide a comprehensive view of potential ecological impacts. This function processes raster data representing future climate conditions, utilizing either binary or continuous methods to derive insights. The binary method categorizes suitable habitats based on threshold values, while the continuous method calculates medians and standard deviations to assess ecological suitability. The function addresses uncertainty and variability in climate projections by integrating these approaches. As it only works in biomodelos-sdm modeling results. *As it only works in biomodelos-sdm modeling results*.
 
 
 #### [Calculate Future Climatic Refugia](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/calculate_future_refugia.R)
