@@ -1,5 +1,5 @@
 # FilterHabitatByPresence
-# Version 2 - 10/04/2024
+# Version 2 - 10/04/2025
 # Author: E. A. Noguera-Urbano
 # Description:
 # This function filters a binary habitat raster to retain only patches 
