@@ -41,3 +41,12 @@ refine_model_using_occurrences <- function(map, sp.points) {
 
 }
 
+### Limitations and Considerations
+
+- **More computationally intensive**: Converting from raster to polygons and back can be slower and more memory-demanding, especially with large spatial datasets.
+
+- **Increased dependency on `sf`**: While powerful, using the `sf` package introduces additional complexity related to projections, geometric precision, and data conversions.
+
+- **Assumes geographic coordinates**: The function assumes that coordinates are in latitude/longitude (`+proj=longlat`), which may not hold true for all raster inputs.
+
+- **Loss of original values**: The output raster assigns a value of 1 to all selected areas and does not retain the original suitability or habitat values from the input raster.
