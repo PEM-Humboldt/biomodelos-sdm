@@ -39,6 +39,12 @@ library(sf)
 library(terra)      
 library(dplyr)  
 ```
+4. Filter habitat By Presences
+
+```        
+library(terra)
+      
+```
 
 ## How to Run
 
