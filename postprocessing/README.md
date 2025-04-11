@@ -18,11 +18,26 @@ You can obtain the results of these code by following these steps:
 3. Follow the execution instructions provided within the code file itself. This might include configuring specific parameters or loading required data.
 4. Run the code.
 
-## Code to transform species distribution models
+## Code to reduce the overprediction in the species distribution models
 
-### [Richness calculation from species distribution models](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/calculate_simple_alpha_richness.R)
+Filter habitat By Presences
+
+```        
+library(terra)
+      
+```
+#### [Filter habitat By Presences](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/preprocessing/R/species_occurrence_river_relocation.R)
+
+This R routine, implemented using the terra package, aims to retain only those habitat patches within a binary raster where the records support species presence. The function, named CutModel2, first transforms the input raster into a binary mask by treating all NA values as absent. It then identifies contiguous habitat patches using the patches function (with 8-cell neighborhood connectivity). The presence points provided are used to extract which patches they intersect. Only patches containing at least one presence point are retained, while all others are masked. The final output maintains the original values of the retained patches and is saved as a new .tif raster file. The latter part of the script includes simulated examples to test the function. The first example randomly generates a habitat raster and a set of presence points (some of which may fall outside the habitat), demonstrating how the function filters out non-relevant patches. The second example ensures the presence points fall within valid habitat cells, showing a successful case of patch selection. This routine is beneficial in ecological niche modeling or species distribution modeling when it is necessary to restrict predictions to areas with confirmed presence, thereby reducing overestimation and increasing the spatial accuracy of habitat suitability maps.
+
+
+### [Richness calculation from multi-stack species distribution models](https://github.com/PEM-Humboldt/biomodelos-sdm/blob/master/postprocessing/R/calculate_simple_alpha_richness.R)
 
 This R script performs the progressive accumulation of raster data from TIFF files in a specified directory. During the loop, the cell values of each file are loaded and summed, accumulating them into a total raster. Every 100 iterations or at the last iteration, the accumulated raster is saved to a new TIFF file, memory is cleaned, and the accumulated result is reloaded as the new base raster. At the end of the loop, a graph of the accumulated raster is generated and the final result is saved in a TIFF file with a specific name. This approach aims to calculate the total richness of raster data incrementally, facilitating the processing of large spatial datasets on **computers with low processing power and a massive number of raster surfaces to process**. This function must be used using one raster per species.
+
+### Future refugia from ensembles of predicted species distribution models 
+
+By running these scripts you will be able to find the areas of climatic stability or refugia according to the theoretical framework of Type 1, as outlined by Brambilla et al. (2022). Type 1 refugia are defined as locations that meet the criteria of being suitable across all projected time periods (eg., present, 2050, and 2070), indicating significant temporal persistence and being found exclusively in areas of climatic stability (in situ). Climatic refugia are sectors of species distribution that can be considered resistant to change and play a fundamental role in the survival of populations. These areas are currently suitable and are expected to remain suitable in the future. Therefore, they are being considered the most important places for species conservation, regardless of the period and future conditions (Brambilla et al. 2022).
 
 ### Future refugia from ensembles of predicted species distribution models 
 
