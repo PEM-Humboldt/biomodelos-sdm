@@ -68,17 +68,146 @@ names <- list.files(in.folder, pattern = "*.tif$", full.names = F) %>%
 # an extent smaller than of BioModelos (xmin: -83, xmax: -60, ymin: -14, ymax: 13).
 # In case of use biomodelos-sdm modelling tool, it is usual not to need.
 
-for (i in 1:length(con.list)) {
-  map <- raster(con.list[i])
-  if (map@crs@projargs != ref.map@crs@projargs) {
-    cat('Adjusting projection for', names[i], '\n')
-    map <- projectRaster(map, ref.map)
-    map2 <- extend(map, ref.map)
-    extent(map2) <- extent(ref.map)
-    writeRaster(map2, paste0(output.folder, "/", names[i]), format = "GTiff", datatype = 'INT2S', overwrite = TRUE)
-  } else
-    cat(names[i], "doesn't need adjustment to projection \n")
+#for (i in 1:length(con.list)) {
+ # map <- raster(con.list[i])
+  #if (map@crs@projargs != ref.map@crs@projargs) {
+   # cat('Adjusting projection for', names[i], '\n')
+    #map <- projectRaster(map, ref.map)
+    #map2 <- extend(map, ref.map)
+    #extent(map2) <- extent(ref.map)
+    #writeRaster(map2, paste0(output.folder, "/", names[i]), format = "GTiff", datatype = 'INT2S', overwrite = TRUE)
+  #} else
+   # cat(names[i], "doesn't need adjustment to projection \n")
+#}
+######################################################################################################
+#Este es la función for de arriba modificada 
+con.list<- sp.raster
+# 1. Crear carpeta para los TIFF procesados
+output_tif_folder <- file.path(output.folder, "tiff_procesados")
+if (!dir.exists(output_tif_folder)) dir.create(output_tif_folder, recursive = TRUE)
+
+# 2. Función para detectar si un raster es categórico / binario
+es_categorico_o_binario <- function(r) {
+  # Muestra aleatoria de valores, para no cargar todo en memoria
+  n_muestra <- min(10000, ncell(r))
+  vals <- tryCatch(
+    sampleRandom(r, size = n_muestra, na.rm = TRUE, useGDAL = TRUE),
+    error = function(e) {
+      # Si falla sampleRandom, intentamos getValues (puede ser pesado)
+      v <- getValues(r)
+      v[!is.na(v)]
+    }
+  )
+  
+  vals <- vals[!is.na(vals)]
+  if (length(vals) == 0) return(FALSE)
+  
+  # Si tiene pocos valores únicos y todos son enteros, lo tratamos como categórico/binario
+  unicos <- unique(vals)
+  es_entero <- all(unicos == round(unicos))
+  pocos_valores <- length(unicos) <= 20  # puedes ajustar este umbral
+  
+  return(es_entero && pocos_valores)
 }
+
+for (i in seq_along(con.list)) {
+  cat("Procesando:", names[i], "\n")
+  
+  r <- raster(con.list[i])
+  
+  # 3. Decidir método y tipo de dato según el tipo de raster
+  if (es_categorico_o_binario(r)) {
+    cat("  -> Detectado como CATEGÓRICO/BINARIO\n")
+    metodo <- "ngb"
+    dtype  <- "INT2S"
+  } else {
+    cat("  -> Detectado como CONTINUO\n")
+    metodo <- "bilinear"
+    dtype  <- "FLT4S"
+  }
+  
+  # 4. Alinear al mapa de referencia
+  if (!compareCRS(r, ref.map)) {
+    cat("  -> Ajustando proyección (CRS distinto)\n")
+    r2 <- projectRaster(from = r, to = ref.map, method = metodo)
+  } else if (!compareRaster(r, ref.map,
+                            extent = TRUE, rowcol = TRUE,
+                            res = TRUE, crs = TRUE,
+                            stopiffalse = FALSE)) {
+    cat("  -> CRS igual pero tamaño/resolución/extensión diferentes: remuestreando\n")
+    r2 <- resample(r, ref.map, method = metodo)
+  } else {
+    cat("  -> Ya está alineado con ref.map, solo se copia\n")
+    r2 <- r
+  }
+  
+  # 5. Forzar extent idéntico (por seguridad)
+  extent(r2) <- extent(ref.map)
+  
+  # 6. Chequeos de seguridad
+  mismo_dim <- (nrow(r2) == nrow(ref.map)) && (ncol(r2) == ncol(ref.map))
+  misma_res <- all(res(r2) == res(ref.map))
+  mismo_crs <- compareCRS(r2, ref.map)
+  mismo_ext <- all(as.vector(extent(r2)) == as.vector(extent(ref.map)))
+  
+  if (!mismo_dim || !misma_res || !mismo_crs || !mismo_ext) {
+    stop(paste("⚠️ El raster", names[i], "NO quedó alineado con ref.map. Revisa el archivo de origen."))
+  }
+  
+  # 7. Guardar el TIFF alineado en la carpeta "tiff_procesados"
+  writeRaster(
+    r2,
+    filename = file.path(output_tif_folder, paste0(names[i], ".tif")),
+    format   = "GTiff",
+    datatype = dtype,
+    overwrite = TRUE
+  )
+  
+  cat("✔ Guardado:", paste0(names[i], ".tif"), "en", output_tif_folder, "\n\n")
+}
+
+#se renombran en las demás funciones sp.raster y conlist por sp.raster2 y conlist2 para usar los nuevos archivos redimensionados 
+sp.raster2 <- list.files("C:/biomodelos-sdm-master/postprocessing/Ediciones_BioModelos/Especies/anfibios_amazonicos/tiff_procesados", pattern = "*.tif$", full.names = T)
+
+con.list2 <-sp.raster2
+######################################################################################################
+# map <- raster(con.list[4])
+# map <- projectRaster(map, ref.map)
+# map2 <- extend(map, ref.map)
+# extent(map2) <- extent(ref.map)
+# writeRaster(map2, paste0(output.folder, "/", names[4]), format = "GTiff", datatype = 'INT2S', overwrite = TRUE)
+
+###for de la función de arriba 
+
+for (i in seq_along(con.list2)) {
+  
+  cat("Procesando:", con.list2[i], "\n")
+  
+  # cargar raster
+  map <- raster(con.list2[i])
+  
+  # reproyectar si es necesario
+  if (!compareCRS(map, ref.map)) {
+    map <- projectRaster(map, ref.map)
+  }
+  
+  # extender al extent del mapa de referencia
+  map2 <- extend(map, ref.map)
+  
+  # asignar extent exactamente igual al del mapa de referencia
+  extent(map2) <- extent(ref.map)
+  
+  # escribir el nuevo raster
+  writeRaster(
+    map2,
+    filename = paste0(output.folder, "/", names[i]),
+    format = "GTiff",
+    datatype = "INT2S",
+    overwrite = TRUE
+  )
+}
+
+###
 
 # 2.3 Color Palette and Reclassification
 # Define a color palette for continuous models.
@@ -96,9 +225,9 @@ rclmat <- matrix(c(-Inf, 0, 1, 0, 0.2, 2, 0.2, 0.4, 3, 0.4, 0.6, 4, 0.6, 0.8, 5,
 # 2.4 Conversion to PNG
 # Apply the convert2PNG function to each raster, generating PNG images and thumbnails.
 
-for (i in 1:length(sp.raster)) {
-  print(sp.raster[i])
-  in.raster <- raster(sp.raster[i])
+for (i in 1:length(sp.raster2)) {
+  print(sp.raster2[i])
+  in.raster <- raster(sp.raster2[i])
   rc <- reclassify(in.raster, rclmat, include.lowest = FALSE)
   vals <- unique(rc)
   
