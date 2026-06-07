@@ -1,4 +1,4 @@
-#' Calibrate, evaluate and select ecological niche models using Maxent with the ENMeval package
+#' Updated: 7/07/20206. Calibrate, evaluate and select ecological niche models using Maxent with the ENMeval package
 #' 
 #' @description
 #' The 'do_enmeval' function uses the Maxent algorithm with the ENMeval package to calibrate, evaluate, and select 
@@ -54,7 +54,7 @@
 do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
                        use.bias, extrap, predic = "kuenm", redo., redo.path, E = E, outf = outformat,
-                       Max.Bg, sel., algo.enmeval, sbg.file) {
+                       Max.Bg, sel., algo.enmeval, sbg.file = NULL) {
 
   # MISSING user choose function to predict
 
@@ -71,28 +71,43 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
     env.G <- terra::rast(env.Gfiles)
   }
 
-  #--------------------
-  # 1. Formatting background and occurrences to enmeval package
-  #--------------------
 
-  if(!is.null(sbg.file)){
-    
-    Sbg <- data.table::fread(sbg.file) %>% 
-      data.frame()
-    
-    if(dim(Sbg)[2] != 2){
-      error("Sample background must be a csv with longitude and latitude columns")
-    } 
-    
-  }else{
+  #--------------------
+  # 1. Formatting background and occurrences to ENMeval
+  #--------------------
+  
+  ## Normaliza sbg.file:
+  ## - Si es ruta, debe existir; si no existe, se ignora y se construye Sbg abajo.
+  ## - Si es data.frame (lon,lat[,prob?]), lo volcamos a CSV temporal de 2 columnas.
+  if (!is.null(sbg.file)) {
+    if (is.character(sbg.file) && length(sbg.file) == 1L) {
+      if (!file.exists(sbg.file)) sbg.file <- NULL
+    } else if (is.data.frame(sbg.file)) {
+      if (ncol(sbg.file) < 2) {
+        sbg.file <- NULL
+      } else {
+        tmp_sbg <- tempfile(fileext = ".csv")
+        utils::write.csv(sbg.file[, 1:2], tmp_sbg, row.names = FALSE)
+        sbg.file <- tmp_sbg
+      }
+    } else {
+      sbg.file <- NULL
+    }
+  }
+  
+  if (!is.null(sbg.file)) {
+    Sbg <- data.table::fread(sbg.file) |> as.data.frame()
+    if (ncol(Sbg) != 2) stop("Sample background must be a CSV with exactly 2 columns: longitude, latitude")
+    names(Sbg) <- c("longitude","latitude")
+  } else {
     # bias sample to create the background for modeling
-    if (use.bias == TRUE) {
+    if (use.bias == TRUE && !is.null(bias.file) && nrow(bias.file) > 0) {
       if (nrow(bias.file) > Max.Bg) {
         Sbg <- bias.file[
           sample(
-            x = seq(1:nrow(bias.file)),
+            x = seq_len(nrow(bias.file)),
             size = Max.Bg,
-            replace = F,
+            replace = FALSE,
             prob = bias.file[, 3]
           ),
           1:2
@@ -100,36 +115,38 @@ do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, e
       } else {
         Sbg <- bias.file[
           sample(
-            x = seq(1:nrow(bias.file)),
+            x = seq_len(nrow(bias.file)),
             size = ceiling(nrow(bias.file) * 0.2),
-            replace = F,
+            replace = FALSE,
             prob = bias.file[, 3]
           ),
           1:2
         ]
       }
+      names(Sbg) <- c("longitude","latitude")
     } else {
-      M.points <- as.data.frame(env.M[[1]], xy = T, values= F)
+      M.points <- as.data.frame(env.M[[1]], xy = TRUE, values = FALSE)
       if (nrow(M.points) > Max.Bg) {
         Sbg <- M.points[
           sample(
-            x = seq(1:nrow(M.points)),
+            x = seq_len(nrow(M.points)),
             size = Max.Bg,
-            replace = F
+            replace = FALSE
           ),
           1:2
         ]
       } else {
         Sbg <- M.points[
           sample(
-            x = seq(1:nrow(M.points)),
+            x = seq_len(nrow(M.points)),
             size = ceiling(nrow(M.points) * 0.2),
-            replace = F
+            replace = FALSE
           ),
           1:2
         ]
       }
-    }  
+      names(Sbg) <- c("longitude","latitude")
+    }
   }
   
   if(nrow(Sbg) > Max.Bg){
