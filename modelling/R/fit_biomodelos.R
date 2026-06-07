@@ -1,4 +1,4 @@
-#' fit_biomodelos automates the fitting of Species Distribution Models from occurrence and environmental data
+#' Updated: 07/06/2026fit_biomodelos automates the fitting of Species Distribution Models from occurrence and environmental data
 #' 
 #' @description  'fit_biomodelos' is a function that automates the process of fitting Species Distribution 
 #' Models (SDMs) using occurrence and environmental data. The function follows a flexible and automated general 
@@ -656,10 +656,10 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             occ. = interest_areas$occurrences, bias.file = BiasSp, beta.mult = beta_small_sample, f.clas = fc_small_sample,
             env.Mdir = paste0(folder_sp, "/M_variables"), env.Gdir = paste0(folder_sp, "/G_variables"),
             env.Fdir = paste0(folder_sp, "/G_variables"), do.future = do_future, folder.sp = folder_sp,
-            col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "checkerboard1", #"jackknife",
+            col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
-            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval
+            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval, sbg.file = if (!is.null(sbg_file) && is.character(sbg_file) && length(sbg_file) == 1L && file.exists(sbg_file)) sbg_file else NULL
           )
           paste("\nPath Maxent, number occ less than 20\nSmall samples Maxent modelling: ok.")
         },
