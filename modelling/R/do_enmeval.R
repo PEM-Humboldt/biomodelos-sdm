@@ -54,7 +54,7 @@
 do_enmeval <- function(occ., bias.file, beta.mult, f.clas, env.Mdir, env.Gdir, env.Fdir, do.future,
                        folder.sp, sp.name, col.lon, col.lat, proj.models, partitionMethod, crs.proyect, 
                        use.bias, extrap, predic = "kuenm", redo., redo.path, E = E, outf = outformat,
-                       Max.Bg, sel., algo.enmeval, sbg.file) {
+                       Max.Bg, sel., algo.enmeval, sbg.file = NULL) {
 
   # MISSING user choose function to predict
 
