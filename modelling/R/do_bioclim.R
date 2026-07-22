@@ -34,13 +34,13 @@ do.bioclim <- function(occ. = M_$occurrences, env.Mdir = paste0(folder_sp, "/M_v
                        col.lon = col_lon, col.lat = col_lat, proj.models = proj_models) {
   if (proj.models == "M-M") {
     # M reading
-    env.Mfiles <- list.files(env.Mdir, pattern = "*.asc", full.names = T, recursive = T)
+    env.Mfiles <- list.files(env.Mdir, pattern = "\\.asc$", full.names = T, recursive = T)
     env.Data <- raster::stack(env.Mfiles)
   }
   
   if (proj.models == "M-G") {
     # G reading
-    env.Gfiles <- list.files(paste0(env.Gdir, "/Set_1/G/"), pattern = "*.asc$", full.names = T, recursive = F)
+    env.Gfiles <- list.files(paste0(env.Gdir, "/Set_1/G/"), pattern = "\\.asc$", full.names = T, recursive = F)
     env.Data <- raster::stack(env.Gfiles)
   }
   
