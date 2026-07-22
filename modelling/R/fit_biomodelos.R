@@ -659,7 +659,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "checkerboard1", #"jackknife",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
-            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval, sbg.file = if (!is.null(sbg_file) && is.character(sbg_file) && length(sbg_file) == 1L && file.exists(sbg_file)) sbg_file else NULL
+            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval, sbg.file = sbg_file
           )
           paste("\nPath Maxent, number occ less than 20\nSmall samples Maxent modelling: ok.")
         },
@@ -692,7 +692,7 @@ fit_biomodelos <- function(occ, col_sp = NULL, col_lat = NULL, col_lon = NULL, c
             col.lon = col_lon, col.lat = col_lat, proj.models = proj_models, partitionMethod = "block",
             use.bias = use_bias, crs.proyect = crs_proyect, extrap = extrapo,
             sp.name = sp_name, redo. = redo, redo.path = redo_path, E = E, outf = outformat,
-            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval, sbg.file = if (!is.null(sbg_file) && is.character(sbg_file) && length(sbg_file) == 1L && file.exists(sbg_file)) sbg_file else NULL
+            Max.Bg = Max_Bg, sel. = selection, algo.enmeval = algo_enmeval, sbg.file = sbg_file
           )
           paste("\nPath Maxent, number occ greater than 20\nLarge sample Maxent modelling: ok.")
         },
